@@ -104,7 +104,7 @@ var tiState = {
   screen: 'list', monthF: 'all', statusF: 'Semua',
   cur: null, open: {}, flash: null, lastJump: null,
   saveLabel: '', saveError: false, saving: false, pending: null,
-  picker: null, songForm: null,
+  picker: null, songForm: null, dialog: null,
   dl: { busy: '', error: '' },
   liturgy: { fixed: {}, defaults: {}, offeringVerse: { ref: '', text: '' } },
   conflict: null, baFetch: { busy: false, error: '' },
@@ -469,7 +469,12 @@ function tiGoList() {
 
 function tiDeleteCurrent() {
   var svc = tiState.cur;
-  if (!svc || !window.confirm('Hapus tata ibadah ' + tiDateLong(svc.date) + '? Ini tidak bisa dibatalkan.')) return;
+  if (!svc) return;
+  tiConfirm({ title: 'Hapus tata ibadah?', text: tiDateLong(svc.date) + ' akan dihapus. Ini tidak bisa dibatalkan.', ok: 'Hapus', danger: true },
+    function () { tiDeleteService(svc); });
+}
+
+function tiDeleteService(svc) {
   if (tiState.pending === svc) { clearTimeout(tiState.saveTimer); tiState.pending = null; }
   var drop = function () {
     tiState.services = tiState.services.filter(function (s) { return s !== svc; });
@@ -984,7 +989,7 @@ function tiOutputHtml(svc, redN) {
   var btn = function (fmt, label, primary) {
     var dis = !svc.id || busy;
     return '<button data-ti="download" data-v="' + fmt + '" class="' + (primary ? 'ti-btn-orange' : 'ti-btn-outline') + '" style="flex:1;' + (dis ? ' opacity:.5; cursor:not-allowed;' : '') + '"' + (dis ? ' disabled' : '') + '>' +
-      (busy === fmt ? 'Menyiapkan…' : label) + '</button>';
+      (busy === fmt ? (fmt === 'gdocUpdate' ? 'Memperbarui…' : 'Menyiapkan…') : label) + '</button>';
   };
   return '<div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;"><span class="ti-eyebrow">Liturgi</span>' +
       '<span style="font-size:12px; font-weight:600; color:#9a8763;">A5 · format Pemuda</span></div>' +
@@ -1005,11 +1010,18 @@ function tiOutputHtml(svc, redN) {
 }
 
 /* Builds the liturgy on the server (after any pending autosave): saves .pdf/.docx in the browser, or makes a Google Doc. */
-function tiDownload(fmt) {
+function tiDownload(fmt, confirmed) {
   var svc = tiState.cur, dl = tiState.dl;
-  var reds = tiChecks(svc).reds.length;
-  if (reds && !window.confirm('Masih ada ' + reds + ' pemblokir merah. Tetap buat liturgi?')) return;
-  if (fmt === 'gdocUpdate' && !window.confirm('Ganti isi Google Doc dengan tata ibadah terbaru? Perubahan manual di Doc itu akan tertimpa (versi lama tetap ada di File › Riwayat versi).')) return;
+  if (!confirmed) {
+    var reds = tiChecks(svc).reds.length, warn = [];
+    if (fmt === 'gdocUpdate') warn.push('Isi Google Doc akan ditulis ulang dari tata ibadah ini. Perubahan manual di Doc itu tertimpa; versi lama tetap ada di File › Riwayat versi.');
+    if (reds) warn.push('Masih ada ' + reds + ' pemblokir merah di pemeriksaan.');
+    if (warn.length) {
+      tiConfirm({ title: fmt === 'gdocUpdate' ? 'Perbarui Google Doc?' : 'Tetap buat liturgi?', text: warn.join(' '), ok: fmt === 'gdocUpdate' ? 'Perbarui' : 'Tetap buat' },
+        function () { tiDownload(fmt, true); });
+      return;
+    }
+  }
   dl.busy = fmt; dl.error = '';
   tiRenderAside();
   tiAfterSave(function () {
@@ -1242,8 +1254,12 @@ function tiLibOpen(id) {
   tiRenderLibPanel();
 }
 
-function tiImportAllTitles() {
-  if (!window.confirm('Tambahkan semua judul KJ, KK, PKJ dan NKB ke perpustakaan? Lagu yang sudah ada tidak diubah.')) return;
+function tiImportAllTitles(confirmed) {
+  if (!confirmed) {
+    tiConfirm({ title: 'Impor semua judul?', text: 'Semua judul KJ, KK, PKJ dan NKB yang belum ada ditambahkan ke perpustakaan. Lagu yang sudah ada tidak diubah.', ok: 'Impor' },
+      function () { tiImportAllTitles(true); });
+    return;
+  }
   tiState.lib.importing = true;
   tiState.lib.menu = false;
   tiRender();
@@ -1887,6 +1903,39 @@ function tiSaveSongForm() {
     .saveSong({ id: f.id, hymnal: f.hymnal, number: f.number, title: f.title, credits: f.credits, language: f.language, arr: f.arr, sections: f.sections });
 }
 
+/* ---------- confirm dialog ---------- */
+
+/*
+ * In-app replacement for window.confirm. opts: { title, text, ok, cancel, danger }.
+ * onOk runs when confirmed; Esc, Batal or the backdrop cancel.
+ */
+function tiConfirm(opts, onOk) {
+  tiState.dialog = { opts: opts, onOk: onOk };
+  var host = document.getElementById('tiDialog');
+  if (!host) { host = document.createElement('div'); host.id = 'tiDialog'; document.body.appendChild(host); }
+  var okBg = opts.danger ? TI_RED : '#E85511';
+  host.innerHTML = '<div style="position:fixed; inset:0; z-index:200; display:flex; align-items:center; justify-content:center; padding:20px;">' +
+    '<div data-ti="dialogCancel" style="position:absolute; inset:0; background:rgba(58,42,21,.45);"></div>' +
+    '<div role="dialog" aria-modal="true" style="position:relative; width:100%; max-width:420px; background:#FBF6E7; border-radius:20px; box-shadow:0 30px 70px rgba(58,42,21,.4); padding:22px 22px 18px; display:flex; flex-direction:column; gap:10px;">' +
+      '<h2 style="margin:0; font-weight:800; font-size:20px; letter-spacing:-.02em; color:#3a2a15;">' + esc(opts.title || 'Lanjutkan?') + '</h2>' +
+      (opts.text ? '<p style="margin:0; font-size:14px; line-height:1.55; color:#6b5a38;">' + esc(opts.text) + '</p>' : '') +
+      '<div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">' +
+        '<button data-ti="dialogCancel" class="ti-btn-outline" style="padding:10px 16px; font-size:14px;">' + esc(opts.cancel || 'Batal') + '</button>' +
+        '<button id="tiDialogOk" data-ti="dialogOk" style="padding:10px 18px; border-radius:12px; background:' + okBg + '; color:#fff; font-weight:700; font-size:14px; cursor:pointer;">' + esc(opts.ok || 'Lanjutkan') + '</button>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+  document.getElementById('tiDialogOk').focus();
+}
+
+function tiCloseDialog(confirmed) {
+  var d = tiState.dialog;
+  tiState.dialog = null;
+  var host = document.getElementById('tiDialog');
+  if (host) host.innerHTML = '';
+  if (confirmed && d && d.onOk) d.onOk();
+}
+
 /* ---------- events (delegated) ---------- */
 
 function tiOnClick(e) {
@@ -1904,6 +1953,8 @@ function tiOnClick(e) {
   if (editing[a] && svc && svc.status === 'Published' && tiState.screen === 'builder') { flash('Terkunci: ubah status ke Review untuk mengedit'); return; }
 
   switch (a) {
+    case 'dialogOk': tiCloseDialog(true); return;
+    case 'dialogCancel': tiCloseDialog(false); return;
     case 'tab': tiState.screen = v; tiState.cur = null; tiRender(); window.scrollTo(0, 0); break;
     case 'libH': tiState.lib.h = v; tiState.lib.limit = 80; tiRenderLibraryList(); break;
     case 'libOpen': tiLibOpen(el.getAttribute('data-id')); break;
@@ -1914,11 +1965,13 @@ function tiOnClick(e) {
     case 'libDelete':
       var sid = el.getAttribute('data-id'), stats = tiSongStats(sid);
       if (stats.count) { tiState.lib.merge = sid; tiState.lib.mergeTo = ''; tiRenderLibPanel(); }
-      else if (window.confirm('Hapus “' + tiState.songById[sid].title + '” dari perpustakaan?')) tiDeleteSong(sid);
+      else tiConfirm({ title: 'Hapus lagu?', text: '“' + tiState.songById[sid].title + '” dihapus dari perpustakaan.', ok: 'Hapus', danger: true }, function () { tiDeleteSong(sid); });
       break;
     case 'libMerge':
       if (!tiState.lib.mergeTo) { flash('Pilih lagu pengganti dulu'); return; }
-      if (window.confirm('Ganti lagu ini dengan “' + tiState.songById[tiState.lib.mergeTo].title + '” di semua tata ibadah, lalu hapus?')) tiDeleteSong(el.getAttribute('data-id'), tiState.lib.mergeTo);
+      var mid = el.getAttribute('data-id'), into = tiState.lib.mergeTo;
+      tiConfirm({ title: 'Gabungkan lagu?', text: '“' + tiState.songById[mid].title + '” diganti dengan “' + tiState.songById[into].title + '” di semua tata ibadah, lalu dihapus.', ok: 'Gabungkan & hapus', danger: true },
+        function () { tiDeleteSong(mid, into); });
       break;
     case 'libCancel': tiState.lib.merge = null; tiRenderLibPanel(); break;
     case 'libImportAll': tiImportAllTitles(); break;
@@ -2042,6 +2095,11 @@ function tiOnInput(e) {
 
 function tiOnKey(e) {
   var pk = tiState.picker;
+  if (tiState.dialog) {
+    if (e.key === 'Escape') { e.preventDefault(); tiCloseDialog(false); }
+    if (e.key === 'Enter' && e.target.id !== 'tiDialogOk') { e.preventDefault(); tiCloseDialog(true); }
+    return;
+  }
   if (e.key === 'Escape') {
     if (tiState.songForm) { tiState.songForm = null; tiRenderModal(); return; }
     if (pk) { tiState.picker = null; tiRenderModal(); return; }

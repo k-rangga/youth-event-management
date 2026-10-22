@@ -1,24 +1,18 @@
-// Path checks for updateLiturgyDoc with faked Apps Script services.
+// Path checks for updateLiturgyDoc (rewrite in place) with faked Apps Script services.
 const fs = require('fs'), vm = require('vm');
 function run(opts) {
   const log = [];
-  const ctx = { console: { warn: m => log.push('warn: ' + m) }, TZ: 'Asia/Jakarta',
-    Utilities: { formatDate: () => '22 Okt, 17.00' },
-    DriveApp: { getFileById: id => ({ isTrashed: () => !!opts.trashed, setTrashed: () => log.push('trash ' + id), getId: () => id }) },
-    Drive: { Files: { update: (meta, id, blob) => { if (opts.noDrive) throw new Error('Drive API has not been used'); log.push('drive.update ' + id + ' name=' + meta.name + ' blob=' + blob); } } } };
+  const ctx = { console, TZ: 'Asia/Jakarta', Utilities: { formatDate: () => '22 Okt, 17.00' },
+    DriveApp: { getFileById: id => { if (opts.missing) throw new Error('not found'); return { isTrashed: () => !!opts.trashed }; } },
+    DocumentApp: { openById: id => ({ getBody: () => ({ clear: () => log.push('clear ' + id) }), setName: n => log.push('name ' + n), saveAndClose: () => log.push('save') }) } };
   vm.createContext(ctx);
   vm.runInContext(fs.readFileSync('Liturgi.js', 'utf8'), ctx);
   const saved = [];
-  vm.runInContext('findService_ = ' + (opts.missing ? 'function () { return null; }' : `function () { return { sheet: { getRange: function () { return { setValue: function (v) { SAVED.push(v); } }; } }, row: 2, svc: { date: '2026-10-25' }, data: ${opts.noDoc ? '{}' : "{ doc: { id: 'D1', url: 'u', at: '22 Okt, 00.17' } }"} }; }`), Object.assign(ctx, { SAVED: saved }));
-  ctx.makeLiturgyDoc_ = () => ({ getId: () => 'TEMP', setTrashed: () => log.push('trash TEMP') });
-  ctx.exportDocx_ = () => 'docx';
-  ctx.addPageNumbers_ = () => 'numbered-docx';
-  ctx.stripPageMark_ = id => log.push('strip ' + id);
-  ctx.copyDocContent_ = (a, b, n) => log.push('copy ' + a + '→' + b + ' ' + n);
+  ctx.SAVED = saved;
+  vm.runInContext(`findService_ = function () { return { sheet: { getRange: function () { return { setValue: function (v) { SAVED.push(v); } }; } }, row: 2, svc: { date: '2026-10-25' }, data: ${opts.noDoc ? '{}' : "{ doc: { id: 'D1', url: 'u', at: '22 Okt, 00.17' } }"} }; }`, ctx);
+  ctx.liturgySongs_ = () => ({});
+  ctx.buildLiturgy_ = (doc, svc, songs, o) => log.push('build inPlace=' + !!(o && o.inPlace));
   const res = vm.runInContext('updateLiturgyDoc("1")', ctx);
-  return { res: JSON.stringify(res), log, saved: saved.length ? JSON.parse(saved[0]).doc : null };
+  return { res, log, saved: saved.length ? JSON.parse(saved[0]).doc.updatedAt : null };
 }
-console.log('normal  ', JSON.stringify(run({})));
-console.log('no Drive', JSON.stringify(run({ noDrive: true })));
-console.log('trashed ', JSON.stringify(run({ trashed: true })));
-console.log('no doc  ', JSON.stringify(run({ noDoc: true })));
+for (const [name, o] of [['normal', {}], ['trashed', { trashed: true }], ['missing', { missing: true }], ['no doc', { noDoc: true }]]) console.log(name.padEnd(8), JSON.stringify(run(o)));

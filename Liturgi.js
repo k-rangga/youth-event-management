@@ -175,10 +175,10 @@ function createLiturgyDoc(serviceId) {
 }
 
 /**
- * Rebuilds the service's existing Google Doc in place: same file, link and
+ * Rewrites the service's existing Google Doc in place: same file, link and
  * sharing, new content (the old content stays in the Doc's version history).
- * The new booklet is uploaded over the Doc through the Drive API; without it,
- * the body and footer are copied across instead (no page numbers).
+ * The footer is kept, with only its date updated, so a Doc made with page
+ * numbers keeps them.
  */
 function updateLiturgyDoc(serviceId) {
   var found = findService_(serviceId);
@@ -190,55 +190,15 @@ function updateLiturgyDoc(serviceId) {
   } catch (e) {
     return { success: false, gone: true, message: 'Google Doc tidak ditemukan. Buat Google Doc baru.' };
   }
-  var name = 'Liturgi Pemuda ' + idDate_(found.svc.date);
-  var temp = makeLiturgyDoc_(found.svc, name);
-  try {
-    var docx = null;
-    try { docx = addPageNumbers_(exportDocx_(temp.getId())); } catch (e) { console.warn('Page numbers skipped: ' + e.message); }
-    var uploaded = false;
-    if (docx) {
-      try { Drive.Files.update({ name: name }, doc.id, docx); uploaded = true; } catch (e) { console.warn('Drive update unavailable: ' + e.message); }
-    }
-    if (!uploaded) {
-      stripPageMark_(temp.getId());
-      copyDocContent_(temp.getId(), doc.id, name);
-    }
-  } finally {
-    temp.setTrashed(true);
-  }
+  var gdoc = DocumentApp.openById(doc.id);
+  gdoc.getBody().clear();
+  buildLiturgy_(gdoc, found.svc, liturgySongs_(), { inPlace: true });
+  gdoc.setName('Liturgi Pemuda ' + idDate_(found.svc.date));
+  gdoc.saveAndClose();
   doc.updatedAt = Utilities.formatDate(new Date(), TZ, 'd MMM, HH.mm');
   found.data.doc = doc;
   found.sheet.getRange(found.row, 11).setValue(JSON.stringify(found.data));
   return { success: true, message: 'Google Doc diperbarui', doc: doc };
-}
-
-/* Replaces the target Doc's body, page setup and footer with the source Doc's. */
-function copyDocContent_(sourceId, targetId, name) {
-  var src = DocumentApp.openById(sourceId), dst = DocumentApp.openById(targetId);
-  var sb = src.getBody(), db = dst.getBody();
-  db.setPageWidth(sb.getPageWidth()).setPageHeight(sb.getPageHeight())
-    .setMarginTop(sb.getMarginTop()).setMarginBottom(sb.getMarginBottom()).setMarginLeft(sb.getMarginLeft()).setMarginRight(sb.getMarginRight());
-  db.clear();
-  var placeholder = db.getChild(0);
-  var T = DocumentApp.ElementType;
-  for (var i = 0; i < sb.getNumChildren(); i++) {
-    var el = sb.getChild(i).copy(), type = el.getType();
-    if (type === T.PARAGRAPH) db.appendParagraph(el);
-    else if (type === T.TABLE) db.appendTable(el);
-    else if (type === T.LIST_ITEM) db.appendListItem(el);
-  }
-  if (db.getNumChildren() > 1) db.removeChild(placeholder);
-  var sf = src.getFooter(), df = dst.getFooter() || dst.addFooter();
-  if (sf) {
-    var first = df.getNumChildren() ? df.getChild(0) : null;
-    for (var j = 0; j < sf.getNumChildren(); j++) {
-      if (sf.getChild(j).getType() === T.PARAGRAPH) df.appendParagraph(sf.getChild(j).copy());
-    }
-    if (first && df.getNumChildren() > 1) df.removeChild(first);
-    while (df.getNumChildren() > sf.getNumChildren()) df.removeChild(df.getChild(0));
-  }
-  dst.setName(name);
-  dst.saveAndClose();
 }
 
 function yearFolder_(year) {
@@ -529,7 +489,8 @@ function writeFixed_(w, k) {
   });
 }
 
-function buildLiturgy_(doc, svc, songs) {
+/* opts.inPlace: rewriting an existing Doc, whose footer (and page numbers) is kept. */
+function buildLiturgy_(doc, svc, songs, opts) {
   var body = doc.getBody();
   var m = LIT.page.margin;
   body.setPageWidth(LIT.page.w).setPageHeight(LIT.page.h).setMarginTop(m).setMarginBottom(m).setMarginLeft(m).setMarginRight(m);
@@ -682,11 +643,25 @@ function buildLiturgy_(doc, svc, songs) {
   writeFixed_(w, 'b23');
   w.flush();
 
-  // footer: "{{PAGE}}" becomes the page number in the .docx/PDF route (see addPageNumbers_)
-  var footer = doc.getFooter() || doc.addFooter();
+  writeFooter_(doc, date, opts && opts.inPlace);
+}
+
+/*
+ * New Docs get "{{PAGE}}  |  PEMUDA … , DATE"; the marker becomes the page
+ * number in the .docx route (addPageNumbers_). An existing Doc's footer is
+ * kept and only its date replaced, so its page number field survives.
+ */
+function writeFooter_(doc, date, inPlace) {
+  var label = 'TATA IBADAH MINGGU, ' + date.toUpperCase();
+  var footer = doc.getFooter();
+  if (inPlace && footer) {
+    if (/TATA IBADAH MINGGU, /.test(footer.getText())) footer.replaceText('TATA IBADAH MINGGU, .*', label);
+    return;
+  }
+  if (!footer) footer = doc.addFooter();
   var fp = footer.getNumChildren() ? footer.getChild(0).asParagraph() : footer.appendParagraph('');
   fp.setText('');
   fp.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
-  fp.appendText(PAGE_MARK).setAttributes(litAttrs_({ size: 8, color: '#555555', bold: true }));
-  fp.appendText('  |  PEMUDA KOTA WISATA – TATA IBADAH MINGGU, ' + date.toUpperCase()).setAttributes(litAttrs_({ size: 8, color: '#555555' }));
+  if (!inPlace) fp.appendText(PAGE_MARK).setAttributes(litAttrs_({ size: 8, color: '#555555', bold: true }));
+  fp.appendText((inPlace ? '' : '  |  ') + 'PEMUDA KOTA WISATA – ' + label).setAttributes(litAttrs_({ size: 8, color: '#555555' }));
 }
