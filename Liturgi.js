@@ -174,6 +174,73 @@ function createLiturgyDoc(serviceId) {
   return { success: true, message: 'Google Doc dibuat di Drive › Tata Ibadah', doc: doc };
 }
 
+/**
+ * Rebuilds the service's existing Google Doc in place: same file, link and
+ * sharing, new content (the old content stays in the Doc's version history).
+ * The new booklet is uploaded over the Doc through the Drive API; without it,
+ * the body and footer are copied across instead (no page numbers).
+ */
+function updateLiturgyDoc(serviceId) {
+  var found = findService_(serviceId);
+  if (!found) return { success: false, message: 'Simpan tata ibadah ini dulu.' };
+  var doc = found.data.doc;
+  if (!doc || !doc.id) return { success: false, message: 'Belum ada Google Doc. Buat dulu.' };
+  try {
+    if (DriveApp.getFileById(doc.id).isTrashed()) return { success: false, gone: true, message: 'Google Doc itu ada di sampah. Buat Google Doc baru.' };
+  } catch (e) {
+    return { success: false, gone: true, message: 'Google Doc tidak ditemukan. Buat Google Doc baru.' };
+  }
+  var name = 'Liturgi Pemuda ' + idDate_(found.svc.date);
+  var temp = makeLiturgyDoc_(found.svc, name);
+  try {
+    var docx = null;
+    try { docx = addPageNumbers_(exportDocx_(temp.getId())); } catch (e) { console.warn('Page numbers skipped: ' + e.message); }
+    var uploaded = false;
+    if (docx) {
+      try { Drive.Files.update({ name: name }, doc.id, docx); uploaded = true; } catch (e) { console.warn('Drive update unavailable: ' + e.message); }
+    }
+    if (!uploaded) {
+      stripPageMark_(temp.getId());
+      copyDocContent_(temp.getId(), doc.id, name);
+    }
+  } finally {
+    temp.setTrashed(true);
+  }
+  doc.updatedAt = Utilities.formatDate(new Date(), TZ, 'd MMM, HH.mm');
+  found.data.doc = doc;
+  found.sheet.getRange(found.row, 11).setValue(JSON.stringify(found.data));
+  return { success: true, message: 'Google Doc diperbarui', doc: doc };
+}
+
+/* Replaces the target Doc's body, page setup and footer with the source Doc's. */
+function copyDocContent_(sourceId, targetId, name) {
+  var src = DocumentApp.openById(sourceId), dst = DocumentApp.openById(targetId);
+  var sb = src.getBody(), db = dst.getBody();
+  db.setPageWidth(sb.getPageWidth()).setPageHeight(sb.getPageHeight())
+    .setMarginTop(sb.getMarginTop()).setMarginBottom(sb.getMarginBottom()).setMarginLeft(sb.getMarginLeft()).setMarginRight(sb.getMarginRight());
+  db.clear();
+  var placeholder = db.getChild(0);
+  var T = DocumentApp.ElementType;
+  for (var i = 0; i < sb.getNumChildren(); i++) {
+    var el = sb.getChild(i).copy(), type = el.getType();
+    if (type === T.PARAGRAPH) db.appendParagraph(el);
+    else if (type === T.TABLE) db.appendTable(el);
+    else if (type === T.LIST_ITEM) db.appendListItem(el);
+  }
+  if (db.getNumChildren() > 1) db.removeChild(placeholder);
+  var sf = src.getFooter(), df = dst.getFooter() || dst.addFooter();
+  if (sf) {
+    var first = df.getNumChildren() ? df.getChild(0) : null;
+    for (var j = 0; j < sf.getNumChildren(); j++) {
+      if (sf.getChild(j).getType() === T.PARAGRAPH) df.appendParagraph(sf.getChild(j).copy());
+    }
+    if (first && df.getNumChildren() > 1) df.removeChild(first);
+    while (df.getNumChildren() > sf.getNumChildren()) df.removeChild(df.getChild(0));
+  }
+  dst.setName(name);
+  dst.saveAndClose();
+}
+
 function yearFolder_(year) {
   var props = PropertiesService.getScriptProperties();
   var root = null, id = props.getProperty('TI_OUTPUT_FOLDER_ID');
@@ -327,12 +394,12 @@ LitWriter_.prototype.posture = function (text) {
   return this.p('(' + text + ')', { italic: true, align: 'right', before: LIT.space.note[0], after: LIT.space.note[1] });
 };
 
-/* Numbered steps: "1." in the number column, text beside it. */
+/* Bulleted steps: "•" in the number column, text beside it. */
 LitWriter_.prototype.steps = function (items) {
   this.flush();
   this.table([LIT.num, LIT.width - LIT.num], items.map(function (runs, i) {
     var o = { before: i ? 3 : 0 };
-    return [[[[[(i + 1) + '.', {}]], o]], [[runs, o]]];
+    return [[[[['•', {}]], o]], [[runs, o]]];
   }));
 };
 

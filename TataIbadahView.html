@@ -171,7 +171,7 @@ function tiFixedHtml(k) {
       case 'say': return '<p ' + line + '><span style="display:inline-block; min-width:34px; font-weight:700;">' + esc(e[1]) + '</span>' + (e[1] ? ': ' : '') + tiMarksHtml(e[2]) + '</p>';
       case 'note': case 'p': return '<p style="margin:0 0 4px; text-align:center; font-style:italic;">' + tiMarksHtml(e[1]) + '</p>';
       case 'line': return '<p ' + line + '>' + tiMarksHtml(e[1]) + '</p>';
-      case 'steps': return e[1].map(function (x, i) { return '<p ' + line + '>' + (i + 1) + '. ' + tiMarksHtml(x) + '</p>'; }).join('');
+      case 'steps': return e[1].map(function (x) { return '<p style="margin:0 0 4px; padding-left:16px; text-indent:-16px;">•&nbsp;&nbsp;' + tiMarksHtml(x) + '</p>'; }).join('');
       case 'image': return '<p style="margin:0 0 4px; text-align:center; color:#9a8763;">[notasi ' + esc(e[1]) + ']</p>';
       case 'posture': return '<p style="margin:0 0 4px; text-align:right; font-style:italic;">(' + esc(e[1]) + ')</p>';
     }
@@ -989,12 +989,18 @@ function tiOutputHtml(svc, redN) {
   return '<div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;"><span class="ti-eyebrow">Liturgi</span>' +
       '<span style="font-size:12px; font-weight:600; color:#9a8763;">A5 · format Pemuda</span></div>' +
     '<div style="display:flex; gap:8px;">' + btn('pdf', 'Unduh PDF', true) + btn('docx', 'Unduh .docx', false) + '</div>' +
-    btn('gdoc', 'Buat Google Doc', false).replace('flex:1;', 'width:100%;') +
-    (svc.doc ? '<div style="display:flex; justify-content:space-between; align-items:center; gap:10px; padding-top:10px; border-top:1px solid #f1e7cd;">' +
-      '<span style="display:flex; flex-direction:column; gap:1px;"><span style="font-size:14px; font-weight:700; color:#3a2a15;">Google Doc</span>' +
-      '<span style="font-size:12px; color:#8a7952;">Dibuat ' + esc(svc.doc.at) + ' · Drive › Tata Ibadah</span></span>' +
-      '<a href="' + esc(svc.doc.url) + '" target="_blank" style="font-size:13px; font-weight:700; color:#E85511; white-space:nowrap;">Buka ↗</a></div>' : '') +
-    '<span style="font-size:12px; color:#8a7952; line-height:1.5;">Dokumen lengkap dari tata ibadah ini: sampul, liturgi dan lirik lagu. Google Doc bisa diedit lalu diunduh dari Docs. Butuh beberapa detik.</span>' +
+    (svc.doc
+      ? '<div style="display:flex; flex-direction:column; gap:10px; padding-top:10px; border-top:1px solid #f1e7cd;">' +
+          '<div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">' +
+            '<span style="display:flex; flex-direction:column; gap:1px; min-width:0;"><span style="font-size:14px; font-weight:700; color:#3a2a15;">Google Doc</span>' +
+            '<span style="font-size:12px; color:#8a7952;">' + (svc.doc.updatedAt ? 'Diperbarui ' + esc(svc.doc.updatedAt) : 'Dibuat ' + esc(svc.doc.at)) + ' · Drive › Tata Ibadah</span></span>' +
+            '<a href="' + esc(svc.doc.url) + '" target="_blank" style="font-size:13px; font-weight:700; color:#E85511; white-space:nowrap;">Buka ↗</a>' +
+          '</div>' +
+          btn('gdocUpdate', 'Perbarui Google Doc', false).replace('flex:1;', 'width:100%;') +
+          '<span data-ti="download" data-v="gdoc" class="ti-link" style="align-self:flex-start;' + (busy ? ' pointer-events:none; opacity:.5;' : '') + '">' + (busy === 'gdoc' ? 'Membuat…' : 'Buat Google Doc baru') + '</span>' +
+        '</div>'
+      : btn('gdoc', 'Buat Google Doc', false).replace('flex:1;', 'width:100%;')) +
+    '<span style="font-size:12px; color:#8a7952; line-height:1.5;">Dokumen lengkap dari tata ibadah ini: sampul, liturgi dan lirik lagu. ' + (svc.doc ? 'Perbarui mengganti isi Doc yang sama (link tetap); versi lama ada di Riwayat versi Google Docs.' : 'Google Doc bisa diedit lalu diunduh dari Docs.') + ' Butuh beberapa detik.</span>' +
     (err ? '<span style="font-size:12.5px; font-weight:600; color:' + TI_RED + '; line-height:1.5;">' + esc(err) + '</span>' : '');
 }
 
@@ -1003,14 +1009,15 @@ function tiDownload(fmt) {
   var svc = tiState.cur, dl = tiState.dl;
   var reds = tiChecks(svc).reds.length;
   if (reds && !window.confirm('Masih ada ' + reds + ' pemblokir merah. Tetap buat liturgi?')) return;
+  if (fmt === 'gdocUpdate' && !window.confirm('Ganti isi Google Doc dengan tata ibadah terbaru? Perubahan manual di Doc itu akan tertimpa (versi lama tetap ada di File › Riwayat versi).')) return;
   dl.busy = fmt; dl.error = '';
   tiRenderAside();
   tiAfterSave(function () {
     google.script.run
       .withSuccessHandler(function (res) {
         dl.busy = '';
-        if (!res.success) { dl.error = res.message; tiRenderAside(); return; }
-        if (fmt === 'gdoc') { svc.doc = res.doc; flash(res.message); tiRenderAside(); return; }
+        if (!res.success) { if (res.gone) svc.doc = null; dl.error = res.message; tiRenderAside(); return; }
+        if (fmt === 'gdoc' || fmt === 'gdocUpdate') { svc.doc = res.doc; flash(res.message); tiRenderAside(); return; }
         var bin = atob(res.base64), bytes = new Uint8Array(bin.length);
         for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
         var url = URL.createObjectURL(new Blob([bytes], { type: res.mimeType }));
@@ -1022,7 +1029,7 @@ function tiDownload(fmt) {
         tiRenderAside();
       })
       .withFailureHandler(function (err) { dl.busy = ''; dl.error = err && err.message ? err.message : String(err); tiRenderAside(); })
-      [fmt === 'gdoc' ? 'createLiturgyDoc' : 'downloadLiturgy'](svc.id, fmt);
+      [{ gdoc: 'createLiturgyDoc', gdocUpdate: 'updateLiturgyDoc' }[fmt] || 'downloadLiturgy'](svc.id, fmt);
   });
 }
 

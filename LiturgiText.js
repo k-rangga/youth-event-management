@@ -6,7 +6,7 @@
  *   ['say', who, text]   speaker line ("L", "U", "Pnt", "PF"); who '' continues
  *   ['note', text]       centred instruction (blue italic)
  *   ['p', text]          centred plain line
- *   ['steps', [text…]]   numbered list
+ *   ['steps', [text…]]   bulleted list
  *   ['line', text]       left-aligned line
  *   ['image', key, width]
  *   ['posture', text]    right-aligned "(duduk)" between elements

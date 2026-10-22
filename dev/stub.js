@@ -44,7 +44,8 @@
       return { success: true, id: copy.id, savedAt: '14.32', updatedAt: copy.updatedAt };
     },
     deleteTataIbadah: function (id) { db.services = db.services.filter(function (s) { return s.id !== id; }); return { success: true, message: 'Tata ibadah dihapus' }; },
-    createLiturgyDoc: function (id) { return { success: true, message: 'Google Doc dibuat di Drive › Tata Ibadah', doc: { id: 'G1', url: 'https://docs.google.com/document/d/G1', at: '22 Okt, 00.06' } }; },
+    updateLiturgyDoc: function (id) { var s = db.services.filter(function (x) { return x.id === id; })[0]; if (!s || !s.doc) return { success: false, message: 'Belum ada Google Doc. Buat dulu.' }; s.doc.updatedAt = '22 Okt, 16.50'; db.updates = (db.updates || 0) + 1; return { success: true, message: 'Google Doc diperbarui', doc: s.doc }; },
+    createLiturgyDoc: function (id) { var d = { id: 'G1', url: 'https://docs.google.com/document/d/G1', at: '22 Okt, 00.06' }; db.services.forEach(function (s) { if (s.id === id) s.doc = d; }); return { success: true, message: 'Google Doc dibuat di Drive › Tata Ibadah', doc: d }; },
     downloadLiturgy: function (id, fmt) { db.dl = (db.dl || []).concat([id + ':' + fmt]); return { success: true, filename: 'Liturgi Pemuda 18 Oktober 2026.' + fmt, mimeType: fmt === 'pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', base64: btoa('%PDF-1.4 test') }; },
     getLiturgyTemplate: function () { return db.template || null; },
     uploadLiturgyTemplate: function (b64, name) { db.template = { id: 'T1', name: 'Template Liturgi Pemuda', url: 'https://docs.google.com/document/d/T1' }; db.uploadLen = b64.length; return { success: true, message: 'Template liturgi diunggah', template: db.template }; },
