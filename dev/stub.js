@@ -57,6 +57,15 @@
       return { success: true, results: idx.filter(function (r) { return (!h || r[0] === h) && ((r[0] + ' ' + r[1]).toLowerCase().indexOf(q) !== -1 || r[2].toLowerCase().indexOf(q) !== -1 || r[1] === q); })
         .map(function (r) { return { hymnal: r[0], number: r[1], title: r[2], songId: '' }; }) };
     },
+    importHymnalIndex: function () {
+      var have = {}; db.songs.forEach(function (s) { if (s.hymnal) have[s.hymnal + '|' + s.number] = 1; });
+      var added = { KJ: 0, KK: 0, PKJ: 0, NKB: 0 }, total = 0;
+      [['KJ', 120], ['KK', 90], ['PKJ', 40], ['NKB', 30]].forEach(function (b) {
+        for (var i = 1; i <= b[1]; i++) { if (have[b[0] + '|' + i]) continue; db.songs.push({ id: (b[0] + i).toLowerCase(), hymnal: b[0], number: String(i), title: b[0] + ' lagu ' + i, credits: '', language: 'Indonesia', sections: [], arr: '' }); added[b[0]]++; total++; }
+      });
+      if (!have['KK|767']) { db.songs.push({ id: 'kk767', hymnal: 'KK', number: '767', title: 'Haleluya', credits: '', language: 'Indonesia', sections: [], arr: '' }); added.KK++; total++; }
+      return { success: true, added: added, total: total };
+    },
     importHymnalSong: function (h, n) {
       if (h === 'KK' && n === '767') return { success: false, message: 'KK 767 punya beberapa versi.', variants: [{ number: '767a', preview: 'Haleluya, Haleluya, Haleluya.', credits: 'Syair: Tradisional · Lagu: Medan' }, { number: '767h', preview: 'Haleluya, Haleluya, Haleluya.', credits: 'Syair: Tradisional · Lagu: Dari Zambia' }] };
       var song = { id: (h + n).toLowerCase(), hymnal: h, number: n, title: h === 'KK' ? 'Haleluya' : h === 'PKJ' ? 'Ajaib Namanya' : "'Ku Berbahagia", credits: 'Syair: X', language: 'Indonesia', sections: [{ label: 'Bait 1', text: 'Baris satu\nBaris dua' }, { label: 'Ref', text: 'Ref satu' }], arr: 'Bait 1 → Ref' };

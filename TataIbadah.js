@@ -532,3 +532,38 @@ function deleteSong(id, replaceWith) {
     lock.releaseLock();
   }
 }
+
+/**
+ * Adds every KJ, KK, PKJ and NKB title from the online index to the library
+ * (book, number, title only). Songs already there are left alone; lyrics are
+ * fetched later, the first time a song is used (importHymnalSong).
+ * Returns { success, added: { KJ: n, … }, total }.
+ */
+function importHymnalIndex() {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    var sheet = getSongsSheet_();
+    var songs = readSongs_();
+    var have = {}, ids = {};
+    songs.forEach(function (s) { ids[s.id] = true; if (s.hymnal) have[s.hymnal + '|' + s.number.toLowerCase()] = true; });
+    var rows = [], added = {};
+    Object.keys(HYMNAL_CODES).forEach(function (book) {
+      added[book] = 0;
+      getHymnalIndex_(book).forEach(function (entry) {
+        var number = entry[0].toLowerCase();
+        // a book number whose versions are already in the library (e.g. KK 767h) still gets its plain entry
+        if (have[book + '|' + number]) return;
+        var id = (book + number).toLowerCase(), base = id;
+        for (var k = 2; ids[id]; k++) id = base + '-' + k;
+        ids[id] = true;
+        rows.push([id, book, number, entry[1], '', 'Indonesia', '[]', '']);
+        added[book]++;
+      });
+    });
+    if (rows.length) sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, SONG_HEADERS.length).setValues(rows);
+    return { success: true, added: added, total: rows.length };
+  } finally {
+    lock.releaseLock();
+  }
+}

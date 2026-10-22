@@ -44,3 +44,14 @@ if (require.main === module) {
   console.log('merge', JSON.stringify(r(`deleteSong('kj3', 'goodness')`)), JSON.stringify(r(`getTataIbadahData().services[0]`).slots), Object.keys(r(`getTataIbadahData().services[0]`).lyrics));
   console.log('delete unused', JSON.stringify(r(`deleteSong('waymaker')`)), 'songs left', r('readSongs_().length'));
 }
+if (require.main === module && process.argv[3] === 'index') {
+  const r = module.exports.r;
+  const before = r('readSongs_().length');
+  const res = r('importHymnalIndex()');
+  const again = r('importHymnalIndex()');
+  const songs = r('readSongs_()');
+  console.log('before', before, 'added', JSON.stringify(res), 'second run', again.total, 'after', songs.length);
+  console.log('sample', JSON.stringify(songs.filter(s => s.id === 'kj410' || s.id === 'kk767')));
+  const imp = r(`importHymnalSong('KJ', '410')`);
+  console.log('lazy fetch KJ 410 →', imp.message, imp.song && imp.song.sections.map(s => s.label).join(','), '| rows', r('readSongs_().length'));
+}
