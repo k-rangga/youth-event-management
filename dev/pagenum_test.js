@@ -1,0 +1,14 @@
+const fs = require('fs'), vm = require('vm');
+const ctx = {}; vm.createContext(ctx);
+vm.runInContext(fs.readFileSync('Liturgi.js', 'utf8').replace(/^[\s\S]*?(var DOCX_MIME)/m, '$1').replace(/\/\* Without page numbers[\s\S]*$/, ''), ctx);
+const footer = '<w:ftr><w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r w:rsidDel="00000000" w:rsidR="00000000"><w:rPr><w:b w:val="1"/><w:bCs w:val="1"/><w:color w:val="555555"/><w:sz w:val="16"/><w:rtl w:val="0"/></w:rPr><w:t xml:space="preserve">{{PAGE}}</w:t></w:r><w:r><w:rPr><w:color w:val="555555"/><w:sz w:val="16"/></w:rPr><w:t xml:space="preserve">  |  PEMUDA KOTA WISATA</w:t></w:r></w:p></w:ftr>';
+const merged = '<w:ftr><w:p><w:r><w:rPr><w:sz w:val="16"/></w:rPr><w:t xml:space="preserve">{{PAGE}}  |  PEMUDA</w:t></w:r></w:p></w:ftr>';
+const out = ctx.pageNumberXml_('word/footer1.xml', footer);
+console.log(out.includes('{{PAGE}}') ? 'FAIL marker left' : 'marker replaced', '| field runs', (out.match(/fldChar/g) || []).length, '| PEMUDA kept', out.includes('PEMUDA'), '| bold dropped in field', !/<w:b w:val="1"\/>[^]*?fldChar/.test(out.split('PEMUDA')[0].slice(out.indexOf('fldChar') - 200)));
+const out2 = ctx.pageNumberXml_('word/footer1.xml', merged);
+console.log('merged run →', out2.replace(/<w:rPr>.*?<\/w:rPr>/g, ''));
+const doc = fs.readFileSync('/private/tmp/claude-501/-Users-kalakarangga-Code-youth-attendance-app/963c3145-d489-4ce5-bac6-2e1d6392143b/scratchpad/liturgi/unpacked/word/document.xml', 'utf8').replace('<w:titlePg w:val="1"/>', '');
+const d2 = ctx.pageNumberXml_('word/document.xml', doc);
+console.log('sectPr →', d2.slice(d2.lastIndexOf('<w:sectPr')).replace(/r:id="[^"]*"/, ''));
+const g = '<w:body><w:p/><w:sectPr><w:pgSz w:w="8390" w:h="11906"/><w:pgMar w:top="850"/><w:docGrid w:linePitch="360"/></w:sectPr></w:body>';
+console.log('before docGrid →', ctx.pageNumberXml_('word/document.xml', g));

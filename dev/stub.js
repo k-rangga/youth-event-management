@@ -17,17 +17,31 @@
     schedule: [{ date: '2026-10-25', theme: 'Glorious Purpose: Soul of The Calling', pastor: 'Tpg. Siska', tag: 'Service' }, { date: '2026-10-24', theme: 'Rapat', pastor: '', tag: 'Meeting' }]
   };
   window.__db = db; window.__calls = [];
+  /* Simulates another device saving service id. */
+  window.__bump = function (id, field, value) { var s = db.services.filter(function (x) { return x.id === id; })[0]; s[field] = value; db.stamp = (db.stamp || 0) + 1; s.updatedAt = 'T' + db.stamp; };
   var api = {
     getSchedule: function () { return db.schedule.map(function (e, i) { return { id: String(i + 1), date: e.date, theme: e.theme, pastor: e.pastor, tag: e.tag, notes: '', pic: [], timeStart: '', timeEnd: '' }; }); },
     getMemberPool: function () { return []; },
-    getTataIbadahData: function () { return JSON.parse(JSON.stringify({ services: db.services, songs: db.songs, schedule: db.schedule })); },
+    getTataIbadahData: function () { return JSON.parse(JSON.stringify({ services: db.services, songs: db.songs, schedule: db.schedule, liturgy: getLiturgyText_() })); },
+    fetchBibleText: function (book, ch, vs) { db.bibleCalls = (db.bibleCalls || 0) + 1; return book === 'Mazmur' ? { success: true, ref: book + ' ' + ch + ':' + vs, text: 'Selidikilah aku, ya Allah, dan kenallah hatiku (' + vs + ').' } : { success: false, message: 'Teks Alkitab tidak bisa diambil sekarang.' }; },
+    syncScheduleFromService: function (id) { var svc = db.services.filter(function (s) { return s.id === id; })[0]; var ev = db.schedule.filter(function (e) { return e.date === svc.date && e.tag !== 'Meeting'; })[0];
+      var theme = (svc.series ? svc.series + ': ' : '') + svc.sub; if (ev) { ev.theme = theme; ev.pastor = svc.pf; } else db.schedule.push({ id: 'n' + db.schedule.length, date: svc.date, theme: theme, pastor: svc.pf, tag: 'Service' });
+      return { success: true, message: ev ? 'Jadwal ' + svc.date + ' diperbarui' : 'Ibadah ' + svc.date + ' ditambahkan ke jadwal', schedule: JSON.parse(JSON.stringify(db.schedule)) }; },
+    deleteSong: function (id, rep) { var used = db.services.filter(function (s) { return Object.keys(s.slots).some(function (k) { return s.slots[k] === id; }); });
+      if (used.length && !rep) return { success: false, used: used.length, message: 'Lagu dipakai di ' + used.length + ' tata ibadah. Pilih lagu pengganti dulu.' };
+      used.forEach(function (s) { Object.keys(s.slots).forEach(function (k) { if (s.slots[k] === id) s.slots[k] = rep; }); });
+      db.songs = db.songs.filter(function (s) { return s.id !== id; }); return { success: true, message: used.length ? 'Lagu digabungkan' : 'Lagu dihapus' }; },
     saveTataIbadah: function (p) {
       var clash = db.services.filter(function (s) { return s.date === p.date && s.id !== p.id; })[0];
       if (clash) return { success: false, message: 'Sudah ada tata ibadah untuk tanggal ' + p.date + '.' };
+      var cur = p.id && db.services.filter(function (s) { return s.id === p.id; })[0];
+      if (cur && !p.force && p.baseUpdatedAt && cur.updatedAt && cur.updatedAt !== p.baseUpdatedAt) return { success: false, conflict: true, message: 'conflict', latest: JSON.parse(JSON.stringify(cur)) };
+      db.stamp = (db.stamp || 0) + 1;
       var copy = JSON.parse(JSON.stringify(p));
+      copy.updatedAt = 'T' + db.stamp; delete copy.baseUpdatedAt; delete copy.force;
       if (p.id) { db.services = db.services.map(function (s) { return s.id === p.id ? copy : s; }); }
       else { copy.id = String(db.services.reduce(function (m, s) { return Math.max(m, Number(s.id)); }, 0) + 1); db.services.push(copy); }
-      return { success: true, id: copy.id, savedAt: '14.32' };
+      return { success: true, id: copy.id, savedAt: '14.32', updatedAt: copy.updatedAt };
     },
     deleteTataIbadah: function (id) { db.services = db.services.filter(function (s) { return s.id !== id; }); return { success: true, message: 'Tata ibadah dihapus' }; },
     createLiturgyDoc: function (id) { return { success: true, message: 'Google Doc dibuat di Drive › Tata Ibadah', doc: { id: 'G1', url: 'https://docs.google.com/document/d/G1', at: '22 Okt, 00.06' } }; },

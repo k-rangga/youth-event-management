@@ -1,8 +1,9 @@
 /*
  * Liturgy output: builds the whole "Tata Ibadah Minggu" booklet (A5, as in
- * the Pemuda liturgy) as a Google Doc from a saved service. Downloads export
- * a temporary Doc as .docx or .pdf; "Buat Google Doc" keeps an editable Doc
- * in Drive / Tata Ibadah / <year>.
+ * the Pemuda liturgy) as a Google Doc from a saved service, with the fixed
+ * wording from LiturgiText.js and the service's weekly texts. Downloads
+ * return .docx or .pdf; "Buat Google Doc" keeps an editable Doc in
+ * Drive / Tata Ibadah / <year>.
  */
 
 var ID_MONTHS = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
@@ -31,6 +32,9 @@ function liturgySongs_() {
   return songs;
 }
 
+var DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+var PAGE_MARK = '{{PAGE}}';
+
 /* Builds the booklet as a new Google Doc in My Drive and returns its Drive file. */
 function makeLiturgyDoc_(svc, name) {
   var doc = DocumentApp.create(name);
@@ -45,33 +49,114 @@ function makeLiturgyDoc_(svc, name) {
   return file;
 }
 
-/** format: 'docx' or 'pdf'. Returns { success, filename, mimeType, base64 }; the temporary Doc goes to the trash. */
+function exportDocx_(fileId) {
+  var res = UrlFetchApp.fetch('https://docs.google.com/document/d/' + fileId + '/export?format=docx', {
+    headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() }, muteHttpExceptions: true
+  });
+  if (res.getResponseCode() !== 200) throw new Error('Ekspor .docx gagal (HTTP ' + res.getResponseCode() + ').');
+  return res.getBlob().setContentType(DOCX_MIME);
+}
+
+/*
+ * Word XML edits Apps Script cannot make on a Doc: the footer's {{PAGE}}
+ * becomes a PAGE field, and the section gets a separate (empty) first-page
+ * footer so the cover has none.
+ */
+function pageNumberXml_(name, xml) {
+  if (/^word\/footer\d*\.xml$/.test(name) && xml.indexOf(PAGE_MARK) !== -1) {
+    return xml.replace(/<w:r(?:\s[^>]*)?>(?:(?!<w:r[\s>])[\s\S])*?\{\{PAGE\}\}[\s\S]*?<\/w:r>/, function (run) {
+      var rPr = (run.match(/<w:rPr>[\s\S]*?<\/w:rPr>/) || [''])[0];
+      var text = (run.match(/<w:t(?:\s[^>]*)?>([\s\S]*?)<\/w:t>/) || ['', PAGE_MARK])[1].split(PAGE_MARK);
+      var plain = rPr.replace(/<w:b(?:Cs)?(?:\s[^>]*)?\/>/g, '');
+      var r = function (inner, pr) { return '<w:r>' + pr + inner + '</w:r>'; };
+      var t = function (str) { return str ? r('<w:t xml:space="preserve">' + str + '</w:t>', rPr) : ''; };
+      return t(text[0]) +
+        r('<w:fldChar w:fldCharType="begin"/>', plain) + r('<w:instrText xml:space="preserve"> PAGE </w:instrText>', plain) +
+        r('<w:fldChar w:fldCharType="separate"/>', plain) + r('<w:t>1</w:t>', plain) + r('<w:fldChar w:fldCharType="end"/>', plain) +
+        t(text[1]);
+    });
+  }
+  if (name === 'word/document.xml') {
+    var at = xml.lastIndexOf('<w:sectPr');
+    if (at === -1) return xml;
+    var end = xml.indexOf('</w:sectPr>', at);
+    var sect = xml.slice(at, end);
+    if (/<w:titlePg[^>]*\/>/.test(sect)) sect = sect.replace(/<w:titlePg[^>]*\/>/, '<w:titlePg/>');
+    else {
+      var m = sect.search(/<w:(textDirection|bidi|rtlGutter|docGrid|printerSettings)\b/);
+      sect = m === -1 ? sect + '<w:titlePg/>' : sect.slice(0, m) + '<w:titlePg/>' + sect.slice(m);
+    }
+    return xml.slice(0, at) + sect + xml.slice(end);
+  }
+  return xml;
+}
+
+function addPageNumbers_(docx) {
+  var marked = false;
+  var parts = Utilities.unzip(docx.setContentType('application/zip')).map(function (b) {
+    var name = b.getName();
+    if (!/^word\/(document|footer\d*)\.xml$/.test(name)) return b;
+    var xml = b.getDataAsString('UTF-8'), out = pageNumberXml_(name, xml);
+    if (out !== xml && name !== 'word/document.xml') marked = true;
+    return out === xml ? b : Utilities.newBlob(out, 'application/xml', name);
+  });
+  if (!marked) throw new Error('page marker not found in footer');
+  return Utilities.zip(parts, 'liturgi.docx').setContentType(DOCX_MIME);
+}
+
+/* Without page numbers: drop the marker from the Doc's footer. */
+function stripPageMark_(fileId) {
+  var doc = DocumentApp.openById(fileId), footer = doc.getFooter();
+  if (footer) footer.replaceText('\\{\\{PAGE\\}\\}\\s*\\|\\s*', '');
+  doc.saveAndClose();
+}
+
+/*
+ * The finished booklet as kind 'docx' or 'pdf' (a blob) or 'gdoc' (a Drive
+ * file to keep). Page numbers come from the .docx route; PDF and Google Doc
+ * re-import that .docx through the Drive API. If any step is unavailable
+ * the plain Doc is used, without page numbers. Temporary files are trashed.
+ */
+function produceLiturgy_(svc, name, kind) {
+  var temp = makeLiturgyDoc_(svc, name);
+  var trash = [temp], keep = null;
+  try {
+    var docx = null;
+    try { docx = addPageNumbers_(exportDocx_(temp.getId())); } catch (e) { console.warn('Page numbers skipped: ' + e.message); }
+    if (kind === 'docx') {
+      if (!docx) { stripPageMark_(temp.getId()); docx = exportDocx_(temp.getId()); }
+      return docx.setName(name + '.docx');
+    }
+    var source = null;
+    if (docx) {
+      try {
+        var created = Drive.Files.create({ name: name, mimeType: MimeType.GOOGLE_DOCS }, docx);
+        source = DriveApp.getFileById(created.id);
+        trash.push(source);
+      } catch (e) { console.warn('Drive import unavailable: ' + e.message); }
+    }
+    if (!source) { stripPageMark_(temp.getId()); source = temp; }
+    if (kind === 'pdf') return source.getAs(MimeType.PDF).setName(name + '.pdf');
+    keep = source;
+    return source;
+  } finally {
+    trash.forEach(function (f) { if (f !== keep) { try { f.setTrashed(true); } catch (e) { /* already gone */ } } });
+  }
+}
+
+/** format: 'docx' or 'pdf'. Returns { success, filename, mimeType, base64 }. */
 function downloadLiturgy(serviceId, format) {
   format = format === 'pdf' ? 'pdf' : 'docx';
   var found = findService_(serviceId);
   if (!found) return { success: false, message: 'Simpan tata ibadah ini dulu.' };
   var name = 'Liturgi Pemuda ' + idDate_(found.svc.date);
-  var file = makeLiturgyDoc_(found.svc, name);
-  try {
-    var blob;
-    if (format === 'pdf') {
-      blob = file.getAs(MimeType.PDF);
-    } else {
-      var res = UrlFetchApp.fetch('https://docs.google.com/document/d/' + file.getId() + '/export?format=docx', {
-        headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() }, muteHttpExceptions: true
-      });
-      if (res.getResponseCode() !== 200) return { success: false, message: 'Ekspor .docx gagal (HTTP ' + res.getResponseCode() + ').' };
-      blob = res.getBlob();
-    }
-    return {
-      success: true,
-      filename: name + '.' + format,
-      mimeType: format === 'pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      base64: Utilities.base64Encode(blob.getBytes())
-    };
-  } finally {
-    file.setTrashed(true);
-  }
+  var blob = produceLiturgy_(found.svc, name, format);
+  return {
+    success: true,
+    filename: name + '.' + format,
+    mimeType: format === 'pdf' ? 'application/pdf' : DOCX_MIME,
+    base64: Utilities.base64Encode(blob.getBytes())
+  };
 }
 
 /**
@@ -81,7 +166,7 @@ function downloadLiturgy(serviceId, format) {
 function createLiturgyDoc(serviceId) {
   var found = findService_(serviceId);
   if (!found) return { success: false, message: 'Simpan tata ibadah ini dulu.' };
-  var file = makeLiturgyDoc_(found.svc, 'Liturgi Pemuda ' + idDate_(found.svc.date));
+  var file = produceLiturgy_(found.svc, 'Liturgi Pemuda ' + idDate_(found.svc.date), 'gdoc');
   file.moveTo(yearFolder_(found.svc.date.slice(0, 4)));
   var doc = { id: file.getId(), url: file.getUrl(), at: Utilities.formatDate(new Date(), TZ, 'd MMM, HH.mm') };
   found.data.doc = doc;
@@ -341,6 +426,42 @@ function writeSong_(w, svc, k, songs) {
 
 /* ---------- the booklet ---------- */
 
+/* "*bold* _italic_ ~blue italic~ ^blue^" (LiturgiText.js marks) → runs. */
+function litMarks_(text) {
+  var runs = [], buf = '', st = { bold: false, italic: false, bi: false, blue: false };
+  var keys = { '*': 'bold', '_': 'italic', '~': 'bi', '^': 'blue' };
+  var flush = function () {
+    if (!buf) return;
+    var o = {};
+    if (st.bold) o.bold = true;
+    if (st.italic || st.bi) o.italic = true;
+    if (st.bi || st.blue) o.color = LIT_BLUE;
+    runs.push([buf, o]);
+    buf = '';
+  };
+  for (var i = 0; i < text.length; i++) {
+    var key = keys[text.charAt(i)];
+    if (key) { flush(); st[key] = !st[key]; } else buf += text.charAt(i);
+  }
+  flush();
+  return runs;
+}
+
+/* Writes one fixed block from LiturgiText.js. */
+function writeFixed_(w, k) {
+  (LITURGI_FIXED[k] || []).forEach(function (e) {
+    switch (e[0]) {
+      case 'say': w.say(e[1], litMarks_(e[2])); break;
+      case 'note': w.note(litMarks_(e[1])); break;
+      case 'p': w.p(litMarks_(e[1]), { align: 'center', before: LIT.space.note[0], after: LIT.space.note[1] }); break;
+      case 'line': w.p(litMarks_(e[1]), { before: 6, after: 2 }); break;
+      case 'steps': w.steps(e[1].map(litMarks_)); break;
+      case 'image': w.image(e[1], e[2], { before: 2, after: 4 }); break;
+      case 'posture': w.posture(e[1]); break;
+    }
+  });
+}
+
 function buildLiturgy_(doc, svc, songs) {
   var body = doc.getBody();
   var m = LIT.page.margin;
@@ -350,7 +471,9 @@ function buildLiturgy_(doc, svc, songs) {
   var theme = (svc.series ? svc.series + ': ' : '') + svc.sub;
   var date = idDate_(svc.date);
   var ba = svc.baBook && svc.baCh && svc.baVs ? svc.baBook + ' ' + svc.baCh + ':' + svc.baVs : '…';
+  var texts = litMerge_(LITURGI_DEFAULT_TEXTS, svc.texts || {});
   var on = function (k) { return !!svc.enabled[k]; };
+  var blueI = { italic: true, color: LIT_BLUE };
   var w = new LitWriter_(body);
   var sora = { font: 'Sora', align: 'center', after: 0 };
 
@@ -372,32 +495,18 @@ function buildLiturgy_(doc, svc, songs) {
   body.appendPageBreak();
   w.fresh = body.appendParagraph('');
 
-  // persiapan
+  // persiapan (b1)
   w.item('PERSIAPAN');
-  var blueI = { italic: true, color: LIT_BLUE };
-  w.steps([
-    [['PNJ, liturgos, pemusik, usher, Penatua, dan PF sudah siap di posisi masing-masing.', {}]],
-    [['10 menit sebelum kebaktian: Multimedia menampilkan video loop.', blueI]],
-    [['5 menit sebelum kebaktian: Multimedia menampilkan slide tema.', blueI]],
-    [['15 menit sebelumnya, multimedia menampilkan slide pengumuman dan pengurus menyampaikan pengumuman (jika ada.)', blueI]],
-    [['Saat Teduh, liturgos memimpin saat teduh', {}]],
-    [['Instrumentalia lagu tanpa judul (multimedia menampilkan slide saat teduh.)', blueI]],
-    [['Ibadah dimulai ', {}], ['tepat pk 09.40', { italic: true }]]
-  ]);
-  w.p([['Pengumuman: ', { bold: true, color: LIT_BLUE }], ['Pengurus menyampaikan pengumuman', { color: LIT_BLUE }]], { before: 8 });
+  writeFixed_(w, 'b1');
 
   // umat berhimpun
   w.part('UMAT BERHIMPUN');
   w.item('PANGGILAN BERIBADAH', 'berdiri');
-  w.say('Liturgos', [['Teman-teman pemuda...', { color: LIT_BLUE }]]);
+  w.say('Liturgos', [[texts.call || '…', { color: LIT_BLUE }]]);
   writeSong_(w, svc, 'b2', songs);
 
   w.item('VOTUM DAN SALAM');
-  w.say('L', 'Rekan pemuda terkasih, saat ini kita boleh hadir di rumah Tuhan hanya oleh karena pertolongan Tuhan Sang Pencipta langit dan bumi, yang kasih setia-Nya sampai selama-lamanya.');
-  w.say('U', [['(menyanyikan) ♫ AMIN', {}], ['  (Aprijaya Rumahorbo, 2023)', { bold: false }]]);
-  w.image('amin', 275, { before: 2, after: 4 });
-  w.say('L', 'Tuhan besertamu!');
-  w.say('U', 'Dan besertamu juga!');
+  writeFixed_(w, 'b3');
 
   w.item('KATA PEMBUKA', 'duduk');
   w.say('L', [['(menyampaikan tema: ' + theme + ' dan Firman Tuhan ' + (svc.kp || '…') + ')', { bold: true, color: LIT_BLUE }]]);
@@ -406,7 +515,7 @@ function buildLiturgy_(doc, svc, songs) {
   writeSong_(w, svc, 'b5', songs);
 
   w.item('PENGAKUAN DOSA');
-  w.say('L', [['Teman-teman pemuda sekalian, kalau kita jujur, masa-masa dewasa muda ini penuh tekanan—baik dari kuliah, pekerjaan, relasi, maupun kekhawatiran soal masa depan. Sering kali kita terjebak dalam kecemasan, iri melihat pencapaian orang lain, atau mengandalkan kekuatan sendiri, bahkan mengabaikan Tuhan karena kesibukan kita. Hari ini, Tuhan tidak meminta kita untuk pura-pura sempurna. Mari kita ambil waktu sejenak untuk jujur dan merendahkan diri di hadapan-Nya.', { color: LIT_BLUE }]]);
+  w.say('L', [[texts.confession || '…', { color: LIT_BLUE }]]);
   w.p('(Umat menaikkan doa pengakuan dosa secara pribadi)', { italic: true, align: 'center', before: LIT.space.note[0], after: LIT.space.note[1] });
 
   w.item('NYANYIAN UMAT');
@@ -414,6 +523,7 @@ function buildLiturgy_(doc, svc, songs) {
 
   w.item('BERITA ANUGERAH', 'berdiri');
   w.say('L', [['Kini terimalah berita anugerah dari Tuhan menurut ', {}], [ba, { bold: true }]]);
+  if (String(texts.baText || '').trim()) w.say('', [['(' + String(texts.baText).trim() + ')', blueI]]);
   if (svc.variants.b8 === 'A') {
     w.say('', 'Demikianlah berita anugerah dari Tuhan.');
     w.say('U', 'Syukur kepada Allah!');
@@ -434,21 +544,17 @@ function buildLiturgy_(doc, svc, songs) {
   w.part('PELAYANAN FIRMAN');
   w.p([['DOA PELAYANAN FIRMAN ', { bold: true }], ['(oleh PF)', { italic: true, color: LIT_BLUE }]], { before: LIT.space.item[0], after: LIT.space.item[1] });
   w.item('PEMBACAAN ALKITAB');
-  w.say('PF', 'Pembacaan Firman Tuhan menurut...');
+  w.say('PF', [['Pembacaan Firman Tuhan menurut ', {}], [String(texts.reading || '').trim() || '…', { bold: true }]]);
   w.say('', '….. Demikianlah Firman Tuhan. Berbahagialah mereka yang mendengarkan Firman Allah dan yang memeliharanya.');
   w.say('', [['Haleluya!', { bold: true, italic: true }]]);
   w.say('U', '(menyanyikan KK ' + (svc.variants.b11 || '767h') + ') ♫ Haleluya, Haleluya, Haleluya');
   w.posture('duduk');
   w.item('KHOTBAH : ' + theme.toUpperCase());
   w.item('SAAT HENING');
-  w.say('', [['instrumentalia lagu tanpa judul (optional) selama 15 detik', blueI]]);
+  writeFixed_(w, 'b13');
 
   w.item('PENGAKUAN IMAN RASULI', 'berdiri');
-  w.say('Pnt', [['Bersama dengan Gereja di segala abad dan tempat, berdasarkan pada pengakuan baptisan kita, marilah kita mengakui iman kita dengan mengikrarkan Pengakuan Iman Rasuli ', {}], ['(Catatan utk Pnt: ingat dengan sikap sempurna).', blueI]]);
-  w.say('U', 'Aku percaya …. Amin.');
-  w.note('Multimedia menayangkan slide:', { before: 6 });
-  w.p([['PENGAKUAN IMAN RASULI', { bold: true, color: LIT_BLUE }]], { align: 'center', after: LIT.space.note[1] });
-  w.posture('duduk');
+  writeFixed_(w, 'b14');
 
   if (on('b15')) {
     w.item('PERSIAPAN PERJAMUAN KUDUS (SENSURA MORUM)', 'duduk');
@@ -456,13 +562,13 @@ function buildLiturgy_(doc, svc, songs) {
   }
 
   w.item('DOA SYAFAAT');
-  w.p([['(PF menaikkan pokok-pokok doa syafaat diakhiri dengan ', {}], ['Doa Bapa Kami. ', { bold: true, italic: true }], ['Durasi: maks. 3 menit', blueI], [')', {}]], { align: 'center', before: LIT.space.note[0], after: LIT.space.note[1] });
+  writeFixed_(w, 'b16');
 
   // persembahan
   w.part('PELAYANAN PERSEMBAHAN');
   w.item('NAS PERSEMBAHAN');
-  w.say('Pnt', [['Mari kita mempersiapkan hati untuk memberi. Persembahan adalah ungkapan syukur kita atas anugerah yang Tuhan curahkan sepanjang minggu ini. Sebagai generasi penerus gereja, kiranya melalui persembahan ini, kita belajar untuk menjadi pribadi yang murah hati dan terus mengandalkan Tuhan dalam setiap rencana masa depan kita. Dasar Persembahan kita adalah Mazmur 116:12-14', { color: LIT_BLUE }]]);
-  w.say('', [['(Bagaimanakah akan kubalas kepada TUHAN segala kebajikan-Nya kepadaku? Aku akan mengangkat piala keselamatan, dan akan menyerukan nama TUHAN, akan membayar nazarku kepada TUHAN di depan seluruh umat-Nya.)', blueI]]);
+  w.say('Pnt', [[(String(texts.offering || '').trim() || '…') + ' Dasar Persembahan kita adalah ' + LITURGI_OFFERING_VERSE.ref, { color: LIT_BLUE }]]);
+  w.say('', [['(' + LITURGI_OFFERING_VERSE.text + ')', blueI]]);
 
   w.item('NYANYIAN PERSEMBAHAN');
   writeSong_(w, svc, 'b18', songs);
@@ -472,9 +578,7 @@ function buildLiturgy_(doc, svc, songs) {
   w.p('(umat berdiri)', { italic: true, align: 'center', before: 8, after: LIT.space.note[1] });
 
   w.item('DOA PERSEMBAHAN', 'berdiri');
-  w.say('Pnt', '……….');
-  w.say('L', [['(menyampaikan kesimpulan khotbah / kesan pesan dari khotbah hari ini.)', blueI]]);
-  w.posture('berdiri');
+  writeFixed_(w, 'b19');
 
   // pengutusan
   w.part('PENGUTUSAN');
@@ -508,14 +612,14 @@ function buildLiturgy_(doc, svc, songs) {
   }
 
   w.item('SAAT TEDUH');
-  w.p([['Pengumuman: ', { bold: true, color: LIT_BLUE }], ['Pengurus menyampaikan pengumuman', { color: LIT_BLUE }]], { before: 4 });
-  w.p('Multimedia menayangkan:', { color: LIT_BLUE, before: 8, after: 2 });
-  w.steps([[['Saat teduh.', blueI]], [['Slide pengumuman tambahan.', blueI]]]);
+  writeFixed_(w, 'b23');
   w.flush();
 
+  // footer: "{{PAGE}}" becomes the page number in the .docx/PDF route (see addPageNumbers_)
   var footer = doc.getFooter() || doc.addFooter();
   var fp = footer.getNumChildren() ? footer.getChild(0).asParagraph() : footer.appendParagraph('');
-  fp.setText('PEMUDA KOTA WISATA – TATA IBADAH MINGGU, ' + date.toUpperCase());
+  fp.setText('');
   fp.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
-  fp.editAsText().setAttributes(litAttrs_({ size: 8, color: '#555555' }));
+  fp.appendText(PAGE_MARK).setAttributes(litAttrs_({ size: 8, color: '#555555', bold: true }));
+  fp.appendText('  |  PEMUDA KOTA WISATA – TATA IBADAH MINGGU, ' + date.toUpperCase()).setAttributes(litAttrs_({ size: 8, color: '#555555' }));
 }

@@ -4,6 +4,6 @@ import os, re
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 page = open(os.path.join(root, 'Index.html')).read()
 page = re.sub(r"<\?!= include\('(\w+)'\); \?>", lambda m: open(os.path.join(root, m.group(1) + '.html')).read(), page)
-page = page.replace('<head>', '<head><script src="stub.js"></script>', 1)
+page = page.replace('<head>', '<head><script>' + open(os.path.join(root, 'LiturgiText.js')).read() + '</script><script src="stub.js"></script>', 1)
 open(os.path.join(root, 'dev', 'index.html'), 'w').write(page)
 print('dev/index.html built')

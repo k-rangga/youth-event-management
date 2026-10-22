@@ -48,7 +48,7 @@ const ctx = { console, DocumentApp: { Attribute: { FONT_FAMILY: 'font', FONT_SIZ
   HorizontalAlignment: { CENTER: 'center', RIGHT: 'right', JUSTIFY: 'justify', LEFT: 'left' }, ParagraphHeading: { NORMAL: 'N' }, ElementType: ET },
   Utilities: { newBlob: (d, t, n) => ({ name: n }), base64Decode: x => x } };
 vm.createContext(ctx);
-vm.runInContext(fs.readFileSync(T + '/LiturgiAssets.js', 'utf8') + fs.readFileSync(T + '/Liturgi.js', 'utf8'), ctx);
+vm.runInContext(['LiturgiText.js', 'LiturgiAssets.js', 'Liturgi.js'].map(f => fs.readFileSync(T + '/' + f, 'utf8')).join('\n'), ctx);
 const songs = {
   kk34: { id: 'kk34', hymnal: 'KK', number: '34', title: 'Kita Masuk RumahNya', credits: 'Syair & lagu: Bruce Ballinger, 1976 · Terjemahan: Yamuger, 1998', sections: [{ label: 'Bait 1', text: 'Kita masuk rumahNya, berkumpul menyembah kepadaNya.\nMenyembah Kristus Tuhan.' }, { label: 'Bait 2', text: 'Lupakanlah dirimu, arahkan hatimu kepadaNya.\nMenyembah Kristus Tuhan.' }, { label: 'Bait 3', text: 'Muliakan namaNya dan angkat tanganmu kepadaNya.' }], arr: 'Bait 1 → Bait 2 → Bait 3' },
   sahk: { id: 'sahk', hymnal: '', number: '', title: 'Sampai Akhir Hidupku', credits: 'Syair & Lagu: JPCC Worship, 2017', sections: [{ label: 'Bait 1', text: 'Baris bait satu\nBaris bait dua' }, { label: 'Chorus', text: 'Baris chorus satu\nBaris chorus dua' }], arr: 'Bait 1 → Chorus → Chorus' },
@@ -56,7 +56,7 @@ const songs = {
 };
 const svc = { id: '3', date: '2026-10-25', season: 'Bulan Keluarga', series: 'Glorious Purpose', sub: 'Body of Christ', pf: 'Sdr. Paul Sirait (GKP Tanjung Barat)', kp: '1 Korintus 12:12', baBook: 'Mazmur', baCh: '139', baVs: '23-24', pk: false,
   slots: { b2: 'kk34', b5: 'sahk', b7: 'kj410', b10: 'sahk', b18: 'kj410', b20: 'kk34', b22: null }, arr: {},
-  variants: { b8: 'B', b9: '1×', b11: '767F', b21: 'ongko' }, enabled: { b15: true, b22: false }, lyrics: {} };
+  variants: { b8: 'B', b9: '1×', b11: '767F', b21: 'ongko' }, enabled: { b15: true, b22: false }, lyrics: {}, texts: { call: 'Selamat pagi teman-teman, mari bersiap beribadah.', reading: 'Roma 12:1-8', baText: 'Selidikilah aku, ya Allah, dan kenallah hatiku.' } };
 vm.runInContext('buildLiturgy_', ctx)(doc, svc, songs);
 
 // structural checks
