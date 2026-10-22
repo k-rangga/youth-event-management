@@ -1,0 +1,1494 @@
+<style>
+  .ti-field { width: 100%; padding: 11px 13px; border-radius: 12px; border: 1px solid #e6d8b6; background: #fff; font-size: 14.5px; }
+  .ti-label { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+  .ti-label > span:first-child { font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #3a2a15; }
+  .ti-eyebrow { font-size: 11.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: #8a7952; }
+  .ti-card { background: #fff; border: 1px solid #ece0c2; border-radius: 20px; }
+  .ti-pill { font-size: 11.5px; font-weight: 700; padding: 3px 9px; border-radius: 7px; white-space: nowrap; }
+  .ti-posture { font-size: 11.5px; font-weight: 600; color: #8a7952; border: 1px solid #e6d8b6; border-radius: 20px; padding: 2px 9px; white-space: nowrap; }
+  .ti-btn-outline { border: 1px solid #e6d8b6; background: #fff; color: #6E2621; font-size: 13px; font-weight: 700; padding: 8px 13px; border-radius: 10px; cursor: pointer; white-space: nowrap; }
+  .ti-btn-outline:hover { border-color: #6E2621; }
+  .ti-btn-orange { background: #E85511; color: #fff; font-weight: 700; font-size: 14.5px; padding: 12px 18px; border-radius: 12px; cursor: pointer; box-shadow: 0 10px 24px -12px rgba(232,85,17,.6); }
+  .ti-btn-orange:hover { background: #d44c0e; }
+  .ti-link { color: #E85511; font-size: 12.5px; font-weight: 700; cursor: pointer; }
+  .ti-link:hover { text-decoration: underline; }
+  .ti-seg { display: inline-flex; flex-wrap: wrap; gap: 2px; background: #F3E9CE; border-radius: 11px; padding: 3px; }
+  .ti-seg button { padding: 7px 12px; border-radius: 9px; font-size: 13px; font-weight: 700; color: #6E2621; cursor: pointer; }
+  .ti-seg button.on { background: #6E2621; color: #fff; }
+  .ti-seg button:disabled { color: #c9b88f; cursor: not-allowed; }
+  .ti-hover:hover { background: #FEFBF2 !important; }
+  .ti-tile:hover { border-color: #d9c79b !important; }
+  .ti-row:hover { border-color: #d9c79b !important; box-shadow: 0 10px 24px -20px rgba(74,59,23,.5); }
+  .ti-seq-chip { display: flex; align-items: center; gap: 7px; padding: 5px 4px 5px 10px; border-radius: 10px; cursor: grab; user-select: none; font-size: 13.5px; font-weight: 600; }
+</style>
+
+<script>
+/* ===================== Tata Ibadah ===================== */
+
+var TI_ST_COLORS = { Draft: ['#F3E9CE', '#8a7952'], Review: ['#CFE4F7', '#31536f'], Published: ['#24401F', '#ffffff'] };
+var TI_RED = '#B5483A', TI_AMBER = '#D08A1E', TI_GREEN = '#24401F';
+var TI_MONTHS = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+var TI_MON = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+var TI_DAYS = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+var TI_HYMNALS = ['Semua', 'KK', 'KJ', 'NKB', 'PKJ', 'Kontemporer'];
+var TI_BOOKS = ['Kejadian','Keluaran','Imamat','Bilangan','Ulangan','Yosua','Hakim-hakim','Rut','1 Samuel','2 Samuel','1 Raja-raja','2 Raja-raja','1 Tawarikh','2 Tawarikh','Ezra','Nehemia','Ester','Ayub','Mazmur','Amsal','Pengkhotbah','Kidung Agung','Yesaya','Yeremia','Ratapan','Yehezkiel','Daniel','Hosea','Yoel','Amos','Obaja','Yunus','Mikha','Nahum','Habakuk','Zefanya','Hagai','Zakharia','Maleakhi','Matius','Markus','Lukas','Yohanes','Kisah Para Rasul','Roma','1 Korintus','2 Korintus','Galatia','Efesus','Filipi','Kolose','1 Tesalonika','2 Tesalonika','1 Timotius','2 Timotius','Titus','Filemon','Ibrani','Yakobus','1 Petrus','2 Petrus','1 Yohanes','2 Yohanes','3 Yohanes','Yudas','Wahyu'];
+var TI_VS_RE = /^\d+(\s*[-–]\s*\d+)?(\s*,\s*\d+(\s*[-–]\s*\d+)?)*$/;
+var TI_PLACEHOLDER = /(x\s*:\s*x-x|\bTEMA\b|\.{4,}|…{2,}|lirik lagu)/i;
+var TI_RECENT_WEEKS = 4;
+
+function tiB(k, n, title, kind, posture, extra) {
+  var b = { k: k, n: n, title: title, kind: kind, posture: posture };
+  for (var key in (extra || {})) b[key] = extra[key];
+  return b;
+}
+
+/* Liturgy template: fixed blocks are read-only, the rest are filled per service. */
+var TI_TPL = [
+  { name: 'Persiapan', blocks: [
+    tiB('b0', 0, 'Sampul', 'auto', '—'),
+    tiB('b1', 1, 'Persiapan · mulai 09.40', 'fixed', '—', { body: 'Petugas berkumpul dan berdoa.\nVideo loop diputar di layar sampai ibadah dimulai.' })
+  ]},
+  { name: 'Umat Berhimpun', blocks: [
+    tiB('b2', 2, 'Panggilan beribadah', 'song', 'Berdiri'),
+    tiB('b3', 3, 'Votum dan salam', 'fixed', 'Berdiri', { body: 'PF: Pertolongan kita adalah dalam nama Tuhan, yang menjadikan langit dan bumi.\nU: Amin (Rumahorbo)' }),
+    tiB('b4', 4, 'Kata pembuka', 'auto', 'Duduk'),
+    tiB('b5', 5, 'Nyanyian umat 1', 'song', 'Duduk'),
+    tiB('b6', 6, 'Pengakuan dosa', 'fixed', 'Duduk', { body: 'L: Marilah kita mengaku dosa di hadapan Allah yang Mahakasih…' }),
+    tiB('b7', 7, 'Nyanyian umat 2 · pengakuan dosa', 'song', 'Duduk'),
+    tiB('b8', 8, 'Berita anugerah', 'variant', 'Berdiri', { verse: true, opts: [['A', 'Formula A'], ['B', 'Formula B']], notes: { A: '“Demikianlah berita anugerah dari Tuhan” / “Syukur kepada Allah”', B: '“Di dalam Kristus, engkau telah diampuni” + Damai Kristus' } }),
+    tiB('b9', 9, 'Salam damai', 'variant', 'Berdiri', { opts: [['1×', 'Lagu 1×'], ['2×', 'Lagu 2×'], ['3×', 'Lagu 3×']], notes: { '1×': 'Lagu pengiring dinyanyikan 1 kali', '2×': 'Lagu pengiring dinyanyikan 2 kali', '3×': 'Lagu pengiring dinyanyikan 3 kali' } }),
+    tiB('b10', 10, 'Nyanyian umat 3', 'song', 'Berdiri → duduk')
+  ]},
+  { name: 'Pelayanan Firman', blocks: [
+    tiB('b11', 11, 'Doa, pembacaan Alkitab, Haleluya', 'variant', 'Duduk', { opts: [['767h', 'KK 767h'], ['767F', 'KK 767F']], notes: { '767h': 'Notasi Haleluya KK 767h disisipkan sebagai gambar', '767F': 'Notasi Haleluya KK 767F disisipkan sebagai gambar' } }),
+    tiB('b12', 12, 'Khotbah', 'auto', 'Duduk'),
+    tiB('b13', 13, 'Saat hening', 'fixed', 'Duduk', { body: 'Umat merenungkan firman dalam keheningan.' }),
+    tiB('b14', 14, 'Pengakuan Iman Rasuli', 'fixed', 'Berdiri', { body: 'Aku percaya kepada Allah, Bapa yang Mahakuasa, Khalik langit dan bumi…' }),
+    tiB('b15', 15, 'Persiapan Perjamuan Kudus (Sensura Morum)', 'optional', 'Duduk'),
+    tiB('b16', 16, 'Doa syafaat', 'fixed', 'Duduk', { body: 'Doa bagi gereja, bangsa dan sesama.' })
+  ]},
+  { name: 'Persembahan', blocks: [
+    tiB('b17', 17, 'Nas persembahan · Mazmur 116:12-14', 'fixed', 'Duduk', { body: 'Bagaimana akan kubalas kepada TUHAN segala kebajikan-Nya kepadaku?…' }),
+    tiB('b18', 18, 'Nyanyian persembahan', 'song', 'Duduk → berdiri', { cue: 'Kantong persembahan diedarkan · QR persembahan tampil di layar' }),
+    tiB('b19', 19, 'Doa persembahan dan kesimpulan khotbah', 'fixed', 'Berdiri', { body: 'PF mendoakan persembahan dan menyimpulkan khotbah.' })
+  ]},
+  { name: 'Pengutusan', blocks: [
+    tiB('b20', 20, 'Nyanyian pengutusan', 'song', 'Berdiri'),
+    tiB('b21', 21, 'Pengutusan dan berkat', 'variant', 'Berdiri', { opts: [['768b', 'KK 768b'], ['ongko', 'Haleluya Amin (Ongkowidjaja)']], notes: { '768b': 'Ordinarium KK 768b setelah berkat', ongko: 'Ordinarium Haleluya Amin (Ongkowidjaja) setelah berkat' } }),
+    tiB('b22', 22, 'Nyanyian penutup', 'song', 'Berdiri', { optional: true }),
+    tiB('b23', 23, 'Penutup · saat teduh dan pengumuman', 'fixed', 'Duduk', { body: 'Saat teduh pribadi, lalu pengumuman oleh pengurus.' })
+  ]}
+];
+var TI_BLOCKS = [].concat.apply([], TI_TPL.map(function (s) { return s.blocks; }));
+var TI_BLOCK = {};
+TI_BLOCKS.forEach(function (b) { TI_BLOCK[b.k] = b; });
+var TI_VARIANT_KEYS = TI_BLOCKS.filter(function (b) { return b.kind === 'variant'; }).map(function (b) { return b.k; });
+var TI_VARIANT_DEFAULT = { b8: 'A', b9: '1×', b11: '767h', b21: '768b' };
+
+var tiState = {
+  loaded: false, loading: false, loadError: '',
+  services: [], songs: [], songById: {}, schedule: [],
+  screen: 'list', monthF: 'all', statusF: 'Semua',
+  cur: null, open: {}, flash: null, lastJump: null,
+  saveLabel: '', saveError: false, saving: false, pending: null,
+  picker: null, songForm: null,
+  dl: { busy: '', error: '' }
+};
+
+/* ---------- helpers ---------- */
+
+function tiN(n) { return String(n).padStart(2, '0'); }
+function tiAddDays(s, n) { return iso(shiftDays(fromIso(s), n)); }
+function tiIsSunday(s) { var d = fromIso(s); return !!d && !isNaN(d) && d.getDay() === 0; }
+function tiShort(s) { var d = fromIso(s); return d && !isNaN(d) ? d.getDate() + ' ' + TI_MON[d.getMonth()] : ''; }
+function tiDateLong(s) {
+  var d = fromIso(s);
+  if (!d || isNaN(d)) return 'Tanggal belum diisi';
+  return TI_DAYS[d.getDay()] + ', ' + d.getDate() + ' ' + TI_MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+}
+function tiSongCode(s) { return s && s.hymnal ? s.hymnal + ' ' + s.number : ''; }
+function tiTheme(svc) { return (svc.series ? svc.series + ': ' : '') + (svc.sub || '…'); }
+function tiBa(svc) { return svc.baBook && svc.baCh && TI_VS_RE.test(String(svc.baVs || '').trim()) ? svc.baBook + ' ' + svc.baCh + ':' + String(svc.baVs).trim() : ''; }
+function tiIsOn(svc, b) { return (b.optional || b.kind === 'optional') ? !!svc.enabled[b.k] : true; }
+function tiActiveSongBlocks(svc) { return TI_BLOCKS.filter(function (b) { return b.kind === 'song' && tiIsOn(svc, b); }); }
+function tiByDate(date, exceptId) { return tiState.services.filter(function (s) { return s.date === date && s !== exceptId; })[0]; }
+function tiSortedServices() { return tiState.services.slice().sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; }); }
+function tiPrevService(svc) {
+  return tiSortedServices().filter(function (s) { return s !== svc && s.date && s.date < svc.date; })[0];
+}
+function tiScheduleOn(date) {
+  return tiState.schedule.filter(function (e) { return e.date === date; }).sort(function (a, b) { return a.tag === 'Service' ? -1 : b.tag === 'Service' ? 1 : 0; })[0];
+}
+function tiArr(svc, k) { var s = svc.arr[k]; return s ? s.split(' → ') : []; }
+
+/* Most recent other service before svc that used songId: { date, weeks } or null. */
+function tiSongUsage(songId, svc) {
+  var hit = null;
+  tiState.services.forEach(function (s) {
+    if (s === svc || !s.date || s.date >= svc.date) return;
+    var used = TI_BLOCKS.some(function (b) { return b.kind === 'song' && s.slots[b.k] === songId && tiIsOn(s, b); });
+    if (used && (!hit || s.date > hit.date)) hit = { date: s.date };
+  });
+  if (hit) hit.weeks = Math.max(1, Math.round((fromIso(svc.date) - fromIso(hit.date)) / (7 * 86400000)));
+  return hit;
+}
+
+/* Church-year label for a date (Gregorian Easter via the anonymous algorithm). */
+function tiEaster(y) {
+  var a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4;
+  var f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30;
+  var i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
+  var month = Math.floor((h + l - 7 * m + 114) / 31), day = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(y, month - 1, day);
+}
+function tiSeason(s) {
+  var d = fromIso(s);
+  if (!d || isNaN(d)) return '';
+  var y = d.getFullYear(), t = d.getTime();
+  var easter = tiEaster(y).getTime(), day = 86400000;
+  var ashWed = easter - 46 * day, pentecost = easter + 49 * day;
+  var dec24 = new Date(y, 11, 24);
+  var advent1 = shiftDays(dec24, -dec24.getDay() - 21).getTime();
+  var christKing = advent1 - 7 * day;
+  if (t >= new Date(y, 11, 25).getTime() || t < new Date(y, 0, 6).getTime()) return 'Masa Natal';
+  if (t >= advent1) return 'Masa Adven';
+  if (t < ashWed) return 'Masa Epifania';
+  if (t < easter) return 'Masa Prapaskah';
+  if (t === easter) return 'Minggu Paskah';
+  if (t < pentecost) return 'Masa Paskah';
+  if (t === pentecost) return 'Minggu Pentakosta';
+  if (t === christKing) return 'Minggu Kristus Raja';
+  return d.getMonth() === 9 ? 'Bulan Keluarga' : 'Masa Biasa';
+}
+
+/* ---------- checks ---------- */
+
+function tiChecks(svc) {
+  var reds = [], ambers = [], greens = [];
+  var req = [['date', 'Tanggal', svc.date], ['series', 'Seri', svc.series], ['sub', 'Sub-tema', svc.sub], ['pf', 'Pelayan Firman', svc.pf], ['kp', 'Nas kata pembuka', svc.kp], ['baBook', 'Nas berita anugerah', tiBa(svc)]]
+    .filter(function (r) { return !String(r[2] || '').trim(); });
+  if (req.length) reds.push({ text: 'Kolom wajib kosong', sub: req.map(function (r) { return r[1]; }).join(', '), to: 'tiF-' + req[0][0] });
+  else greens.push({ text: 'Kolom wajib lengkap' });
+
+  if (tiIsSunday(svc.date)) greens.push({ text: 'Tanggal hari Minggu' });
+  else if (svc.date) reds.push({ text: 'Tanggal bukan hari Minggu', to: 'tiF-date' });
+
+  var songBlocks = tiActiveSongBlocks(svc);
+  var empty = songBlocks.filter(function (b) { return !svc.slots[b.k]; });
+  empty.forEach(function (b) { reds.push({ text: 'Slot lagu kosong', sub: tiN(b.n) + ' · ' + b.title, to: 'tiBlk-' + b.k }); });
+  if (!empty.length) greens.push({ text: 'Semua slot lagu terisi' });
+
+  var ph = [['series', svc.series], ['sub', svc.sub], ['kp', svc.kp], ['season', svc.season]].filter(function (f) { return TI_PLACEHOLDER.test(String(f[1] || '')); });
+  if (ph.length) reds.push({ text: 'Teks placeholder tertinggal', sub: ph.map(function (f) { return '“' + f[1] + '”'; }).join(', '), to: 'tiF-' + ph[0][0] });
+  else greens.push({ text: 'Tanpa teks placeholder' });
+
+  var ids = songBlocks.map(function (b) { return svc.slots[b.k]; }).filter(Boolean);
+  var dups = ids.filter(function (x, i) { return ids.indexOf(x) !== i; }).filter(function (x, i, a) { return a.indexOf(x) === i; });
+  dups.forEach(function (id) {
+    var last = songBlocks.filter(function (b) { return svc.slots[b.k] === id; }).pop();
+    reds.push({ text: 'Lagu dipakai dua kali', sub: (tiState.songById[id] || {}).title || id, to: 'tiBlk-' + last.k });
+  });
+  if (!dups.length) greens.push({ text: 'Tidak ada lagu ganda' });
+
+  songBlocks.forEach(function (b) {
+    var song = tiState.songById[svc.slots[b.k]];
+    var u = song && tiSongUsage(song.id, svc);
+    if (u && u.weeks <= TI_RECENT_WEEKS) ambers.push({ text: song.title + ' baru dipakai', sub: tiShort(u.date) + ' · ' + b.title, to: 'tiBlk-' + b.k });
+  });
+  songBlocks.forEach(function (b) {
+    if (svc.slots[b.k] && !svc.arr[b.k]) ambers.push({ text: 'Urutan lagu belum diisi', sub: tiN(b.n) + ' · ' + b.title, to: 'tiBlk-' + b.k });
+  });
+
+  var next = svc.date ? tiByDate(tiAddDays(svc.date, 7)) : null;
+  if (next && next.pk) {
+    if (svc.enabled.b15) greens.push({ text: 'Sensura Morum sesuai kalender', sub: 'Perjamuan Kudus pada ' + tiShort(next.date) });
+    else ambers.push({ text: 'Sensura Morum mati', sub: 'Minggu depan Perjamuan Kudus (' + tiShort(next.date) + ')', to: 'tiBlk-b15' });
+  }
+
+  var prev = tiPrevService(svc);
+  if (prev) {
+    TI_VARIANT_KEYS.forEach(function (k) {
+      if (prev.variants[k] && svc.variants[k] !== prev.variants[k]) ambers.push({ text: 'Variasi berbeda dari minggu lalu', sub: TI_BLOCK[k].title + ': pastikan disengaja', to: 'tiBlk-' + k });
+    });
+  }
+  return { reds: reds, ambers: ambers, greens: greens };
+}
+
+function tiTodos(svc) {
+  var t = [];
+  [['date', 'Tanggal'], ['series', 'Seri'], ['sub', 'Sub-tema'], ['pf', 'Pelayan Firman'], ['kp', 'Nas kata pembuka']].forEach(function (f) {
+    if (!String(svc[f[0]] || '').trim() || (f[0] === 'date' && !tiIsSunday(svc.date))) t.push({ id: 'tiF-' + f[0], label: f[1] });
+  });
+  TI_BLOCKS.forEach(function (b) {
+    if (b.k === 'b8' && !tiBa(svc)) t.push({ id: 'tiF-baBook', label: 'Nas berita anugerah' });
+    if (b.kind === 'song' && tiIsOn(svc, b)) {
+      if (!svc.slots[b.k]) t.push({ id: 'tiBlk-' + b.k, label: tiN(b.n) + ' · ' + b.title });
+      else if (!svc.arr[b.k]) t.push({ id: 'tiBlk-' + b.k, label: 'Urutan · ' + b.title });
+    }
+  });
+  return t;
+}
+
+/* ---------- data ---------- */
+
+function tiEnter() {
+  if (!tiState.loaded && !tiState.loading) tiLoad();
+  tiRender();
+}
+
+function tiLoad() {
+  tiState.loading = true;
+  google.script.run
+    .withSuccessHandler(function (data) {
+      tiState.loading = false;
+      tiState.loaded = true;
+      tiState.services = data.services || [];
+      tiState.schedule = data.schedule || [];
+      tiSetSongs(data.songs || []);
+      tiRender();
+    })
+    .withFailureHandler(function (err) {
+      tiState.loading = false;
+      tiState.loadError = err && err.message ? err.message : String(err);
+      tiRender();
+    })
+    .getTataIbadahData();
+}
+
+function tiSetSongs(songs) {
+  tiState.songs = songs;
+  tiState.songById = {};
+  songs.forEach(function (s) { tiState.songById[s.id] = s; });
+}
+
+function tiQueueSave() {
+  tiState.pending = tiState.cur;
+  tiState.saveLabel = 'Menyimpan…';
+  tiState.saveError = false;
+  tiRenderSaveLabel();
+  clearTimeout(tiState.saveTimer);
+  tiState.saveTimer = setTimeout(tiFlushSave, 700);
+}
+
+/* Saves the service waiting in tiState.pending; a save requested while one is in flight runs when it returns. */
+function tiFlushSave() {
+  clearTimeout(tiState.saveTimer);
+  var svc = tiState.pending;
+  if (!svc || tiState.saving) return;
+  tiState.pending = null;
+  tiState.saving = true;
+  var payload = {
+    id: svc.id, date: svc.date, season: svc.season, series: svc.series, sub: svc.sub, pf: svc.pf, kp: svc.kp,
+    baBook: svc.baBook, baCh: svc.baCh, baVs: String(svc.baVs || '').trim(), pk: svc.pk, status: svc.status,
+    slots: svc.slots, arr: svc.arr, variants: svc.variants, enabled: svc.enabled, lyrics: svc.lyrics
+  };
+  google.script.run
+    .withSuccessHandler(function (res) {
+      tiState.saving = false;
+      if (res.success) {
+        svc.id = res.id;
+        tiState.saveLabel = 'Tersimpan otomatis · ' + res.savedAt;
+        tiState.saveError = false;
+      } else {
+        tiState.saveLabel = res.message;
+        tiState.saveError = true;
+      }
+      tiRenderSaveLabel();
+      if (tiState.pending) tiFlushSave();
+    })
+    .withFailureHandler(function (err) {
+      tiState.saving = false;
+      tiState.saveLabel = 'Gagal menyimpan: ' + (err && err.message ? err.message : err);
+      tiState.saveError = true;
+      tiRenderSaveLabel();
+    })
+    .saveTataIbadah(payload);
+}
+
+/* ---------- navigation inside Tata Ibadah ---------- */
+
+function tiNextEmptySunday() {
+  var d = startOfToday();
+  d = shiftDays(d, (7 - d.getDay()) % 7);
+  for (var i = 0; i < 104; i++) {
+    var s = iso(shiftDays(d, i * 7));
+    if (!tiByDate(s)) return s;
+  }
+  return iso(d);
+}
+
+function tiNewService(date, duplicate) {
+  date = date || tiNextEmptySunday();
+  var probe = { date: date };
+  var prev = tiPrevService(probe) || tiSortedServices()[0];
+  var sched = tiScheduleOn(date);
+  var next = tiByDate(tiAddDays(date, 7));
+  var svc = {
+    id: null, date: date, season: tiSeason(date), series: prev ? prev.series : '', sub: '', pf: prev ? prev.pf : '', kp: '',
+    baBook: '', baCh: '', baVs: '', pk: false, status: 'Draft',
+    slots: {}, arr: {}, variants: {}, enabled: { b15: !!(next && next.pk), b22: false }, lyrics: {}
+  };
+  TI_VARIANT_KEYS.forEach(function (k) { svc.variants[k] = (prev && prev.variants[k]) || TI_VARIANT_DEFAULT[k]; });
+  if (duplicate && prev) {
+    svc.slots = JSON.parse(JSON.stringify(prev.slots));
+    svc.arr = JSON.parse(JSON.stringify(prev.arr));
+    svc.lyrics = JSON.parse(JSON.stringify(prev.lyrics || {}));
+    svc.enabled.b22 = !!prev.enabled.b22;
+  }
+  if (sched) tiApplySchedule(svc, sched);
+  tiState.services.push(svc);
+  tiOpenService(svc);
+  tiState.pending = svc;
+  tiFlushSave();
+}
+
+function tiApplySchedule(svc, sched) {
+  var theme = String(sched.theme || '');
+  var i = theme.indexOf(':');
+  if (i !== -1) { svc.series = theme.slice(0, i).trim(); svc.sub = theme.slice(i + 1).trim(); }
+  else if (theme) svc.sub = theme.trim();
+  if (sched.pastor) svc.pf = sched.pastor;
+}
+
+function tiOpenService(svc) {
+  tiState.cur = svc;
+  tiState.screen = 'builder';
+  tiState.open = {};
+  tiState.lastJump = null;
+  tiState.saveLabel = svc.id ? 'Tersimpan' : '';
+  tiState.saveError = false;
+  tiState.dl.error = '';
+  tiRender();
+  window.scrollTo(0, 0);
+}
+
+function tiGoList() {
+  if (tiState.pending) tiFlushSave();
+  tiState.screen = 'list';
+  tiState.cur = null;
+  tiRender();
+  window.scrollTo(0, 0);
+}
+
+function tiDeleteCurrent() {
+  var svc = tiState.cur;
+  if (!svc || !window.confirm('Hapus tata ibadah ' + tiDateLong(svc.date) + '? Ini tidak bisa dibatalkan.')) return;
+  if (tiState.pending === svc) { clearTimeout(tiState.saveTimer); tiState.pending = null; }
+  var drop = function () {
+    tiState.services = tiState.services.filter(function (s) { return s !== svc; });
+    tiState.cur = null;
+    tiState.screen = 'list';
+    tiRender();
+  };
+  if (!svc.id) { drop(); return; }
+  google.script.run
+    .withSuccessHandler(function (res) {
+      if (!res.success) { flash(res.message); return; }
+      drop();
+      flash(res.message);
+    })
+    .withFailureHandler(function (err) { flash('Gagal menghapus: ' + (err && err.message ? err.message : err)); })
+    .deleteTataIbadah(svc.id);
+}
+
+function tiJumpTo(id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 110, behavior: 'smooth' });
+  if (el.matches('input,select')) setTimeout(function () { el.focus({ preventScroll: true }); }, 350);
+  tiState.lastJump = id;
+  var card = el.querySelector('[data-ring]') || el;
+  card.animate([{ boxShadow: '0 0 0 4px #fbd9bc' }, { boxShadow: '0 0 0 4px rgba(251,217,188,0)' }], { duration: 1600, easing: 'ease-out' });
+  tiRenderAside();
+}
+
+/* ---------- render: shared ---------- */
+
+function tiRender() {
+  var root = document.getElementById('viewTata');
+  if (tiState.screen === 'builder' && tiState.cur) root.innerHTML = tiBuilderHtml();
+  else root.innerHTML = tiListHtml();
+  tiRenderModal();
+}
+
+function tiHeader(eyebrow, title, right) {
+  return '<header class="page-pad" style="background:#F3E9CE; border-bottom:1px solid #e7d9b3; padding:22px 32px 20px;">' +
+    '<div style="max-width:1320px; margin:0 auto; display:flex; align-items:flex-end; justify-content:space-between; gap:24px; flex-wrap:wrap;">' +
+      '<div style="display:flex; flex-direction:column; gap:4px; min-width:0;">' +
+        '<span class="ti-eyebrow" style="line-height:1.4;">' + eyebrow + '</span>' +
+        '<h1 style="margin:0; font-weight:800; letter-spacing:-.025em; font-size:34px; line-height:1.15; color:#3a2a15; text-wrap:pretty;">' + title + '</h1>' +
+      '</div>' + right +
+    '</div>' +
+  '</header>';
+}
+
+function tiStatusPill(status) {
+  var c = TI_ST_COLORS[status] || TI_ST_COLORS.Draft;
+  return '<span class="ti-pill" style="background:' + c[0] + '; color:' + c[1] + ';">' + esc(status) + '</span>';
+}
+
+/* ---------- render: list ---------- */
+
+function tiListHtml() {
+  var s = tiState;
+  var html = tiHeader('Tata Ibadah · Pemuda GKI Kota Wisata', 'Ibadah Minggu',
+    '<button data-ti="new" class="ti-btn-orange" style="height:44px; padding:0 20px; font-size:15px;">+ Buat ibadah baru</button>');
+
+  html += '<main class="page-pad" style="flex:1; padding:26px 32px 60px;"><div style="max-width:1320px; margin:0 auto; display:flex; flex-direction:column; gap:20px;">';
+
+  if (!s.loaded) {
+    html += '<div style="text-align:center; color:#b3a37c; font-size:14px; padding:30px 0;">' + (s.loadError ? 'Gagal memuat tata ibadah: ' + esc(s.loadError) : 'Memuat tata ibadah…') + '</div>';
+    return html + '</div></main>';
+  }
+
+  var first = startOfToday();
+  first = shiftDays(first, (7 - first.getDay()) % 7);
+  var sundays = [];
+  for (var i = 0; i < 6; i++) sundays.push(iso(shiftDays(first, i * 7)));
+  var nextEmpty = sundays.filter(function (d) { return !tiByDate(d); })[0];
+
+  if (nextEmpty) {
+    var sched = tiScheduleOn(nextEmpty);
+    html += '<div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; background:#fdf0e6; border:1px solid #f6cfb3; border-radius:16px; padding:14px 18px; font-size:14px;">' +
+      '<span style="line-height:1.5;"><strong style="font-weight:800; color:#a3420e;">Belum ada tata ibadah untuk ' + esc(tiShort(nextEmpty)) + '.</strong> ' +
+        (sched ? 'Di jadwal: ' + esc(sched.theme || 'tanpa tema') + (sched.pastor ? ' · ' + esc(sched.pastor) : '') : '') +
+        '</span>' +
+      '<span style="display:flex; gap:8px;">' +
+        (s.services.length ? '<button data-ti="duplicate" data-date="' + nextEmpty + '" class="ti-btn-outline">Duplikat minggu lalu</button>' : '') +
+        '<button data-ti="new" data-date="' + nextEmpty + '" class="ti-btn-outline" style="background:#6E2621; color:#fff; border-color:#6E2621;">Buat untuk ' + esc(tiShort(nextEmpty)) + '</button>' +
+      '</span></div>';
+  }
+
+  html += '<section style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:10px;">' + sundays.map(function (d) {
+    var svc = tiByDate(d);
+    var dt = fromIso(d);
+    var st = svc ? tiStatusPill(svc.status) : '<span class="ti-pill" style="background:' + (d === nextEmpty ? '#fbdcc9' : '#F3E9CE') + '; color:' + (d === nextEmpty ? '#a3420e' : '#9a8763') + ';">Belum ada</span>';
+    return '<button data-ti="' + (svc ? 'open' : 'new') + '" data-date="' + d + '" class="ti-tile" style="text-align:left; cursor:pointer; background:#fff; border:1px solid ' + (d === nextEmpty ? '#f6cfb3' : '#ece0c2') + '; border-radius:16px; padding:12px 14px; display:flex; flex-direction:column; gap:6px; min-height:100px;">' +
+      '<span class="ti-eyebrow" style="font-size:11px;">' + TI_MON[dt.getMonth()] + '</span>' +
+      '<span style="font-family:\'Bricolage Grotesque\',sans-serif; font-weight:800; font-size:30px; line-height:1; color:#6E2621;">' + dt.getDate() + '</span>' +
+      '<span style="display:flex; gap:4px; flex-wrap:wrap; margin-top:auto;">' + (svc && svc.pk ? '<span class="ti-pill" style="background:#6E2621; color:#fff;">Perjamuan Kudus</span>' : '') + st + '</span>' +
+    '</button>';
+  }).join('') + '</section>';
+
+  var months = {};
+  s.services.forEach(function (svc) { if (svc.date) months[svc.date.slice(0, 7)] = true; });
+  var monthOpts = Object.keys(months).sort().reverse();
+  html += '<div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">' +
+    '<select data-tisel="monthF" style="padding:10px 34px 10px 14px; border:1px solid #e6d8b6; border-radius:11px; background:#fff; font-size:13.5px; font-weight:700; color:#6E2621; -webkit-appearance:none; appearance:none; background-image:linear-gradient(45deg, transparent 50%, #8a7952 50%), linear-gradient(135deg, #8a7952 50%, transparent 50%); background-position:calc(100% - 17px) 50%, calc(100% - 12px) 50%; background-size:5px 5px; background-repeat:no-repeat;">' +
+      '<option value="all"' + (s.monthF === 'all' ? ' selected' : '') + '>Semua bulan</option>' +
+      monthOpts.map(function (m) { return '<option value="' + m + '"' + (s.monthF === m ? ' selected' : '') + '>' + TI_MONTHS[Number(m.slice(5)) - 1] + ' ' + m.slice(0, 4) + '</option>'; }).join('') +
+    '</select>' +
+    '<div style="display:flex; gap:6px; flex-wrap:wrap;">' + ['Semua', 'Draft', 'Review', 'Published'].map(function (l) {
+      return '<button data-ti="statusF" data-v="' + l + '" class="pill-btn' + (s.statusF === l ? ' on' : '') + '">' + l + '</button>';
+    }).join('') + '</div>' +
+    '<span style="font-size:13px; color:#9a8763; font-weight:600;">' + s.services.length + ' ibadah tersimpan</span>' +
+  '</div>';
+
+  var rows = tiSortedServices().filter(function (svc) {
+    return (s.monthF === 'all' || (svc.date || '').slice(0, 7) === s.monthF) && (s.statusF === 'Semua' || svc.status === s.statusF);
+  });
+  html += '<section style="display:flex; flex-direction:column; gap:10px;">' + rows.map(function (svc) {
+    var p = parts(svc.date);
+    var chk = svc.status === 'Published' ? null : tiChecks(svc);
+    var warn = chk && (chk.reds.length || chk.ambers.length) ? chk.reds.length + ' pemblokir · ' + chk.ambers.length + ' peringatan' : '';
+    return '<button data-ti="openSvc" data-idx="' + s.services.indexOf(svc) + '" class="ti-row" style="text-align:left; cursor:pointer; display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:16px; align-items:center; padding:12px 16px; background:#fff; border:1px solid #ece0c2; border-radius:16px;">' +
+      '<span style="background:#F3E9CE; border-radius:12px; padding:7px 10px; display:flex; flex-direction:column; align-items:center; line-height:1.02; min-width:58px;">' +
+        '<span style="font-weight:800; font-size:24px; color:#6E2621; font-family:\'Bricolage Grotesque\',sans-serif;">' + p.day + '</span>' +
+        '<span style="font-size:11px; font-weight:700; letter-spacing:.07em; color:#8a7952;">' + (svc.date ? TI_MON[fromIso(svc.date).getMonth()].toUpperCase() : '') + '</span>' +
+      '</span>' +
+      '<span style="min-width:0; display:flex; flex-direction:column; gap:3px;">' +
+        '<span style="font-weight:700; font-size:15.5px; color:#3a2a15; text-wrap:pretty;">' + esc(tiTheme(svc)) + '</span>' +
+        '<span style="font-size:13px; color:#8a7952; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + esc(svc.pf || 'PF belum dipilih') + (svc.season ? ' · ' + esc(svc.season) : '') + '</span>' +
+      '</span>' +
+      '<span style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">' + tiStatusPill(svc.status) +
+        (warn ? '<span style="font-size:12px; font-weight:600; color:' + (chk.reds.length ? TI_RED : '#a3420e') + '; white-space:nowrap;">' + warn + '</span>' : '') +
+      '</span>' +
+    '</button>';
+  }).join('') + '</section>';
+
+  if (!rows.length) {
+    html += '<div style="text-align:center; color:#b3a37c; font-size:14px; padding:6px 0;">' + (s.services.length ? 'Tidak ada ibadah untuk filter ini.' : 'Belum ada tata ibadah. Mulai dengan “Buat ibadah baru”.') + '</div>';
+  }
+  return html + '</div></main>';
+}
+
+/* ---------- render: builder ---------- */
+
+function tiDatalist(id, values) {
+  var seen = {};
+  return '<datalist id="' + id + '">' + values.filter(function (v) { v = String(v || '').trim(); if (!v || seen[v]) return false; seen[v] = true; return true; })
+    .map(function (v) { return '<option value="' + esc(v) + '"></option>'; }).join('') + '</datalist>';
+}
+
+function tiBuilderHtml() {
+  var svc = tiState.cur;
+  var right = '<span id="tiSaveLabel" style="font-size:13px; font-weight:600; padding-bottom:6px;"></span>';
+  var html = '<header class="page-pad" style="background:#F3E9CE; border-bottom:1px solid #e7d9b3; padding:18px 32px 20px;">' +
+    '<div style="max-width:1320px; margin:0 auto; display:flex; flex-direction:column; gap:12px;">' +
+      '<div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">' +
+        '<button data-ti="back" style="color:#6E2621; font-size:13.5px; font-weight:700; cursor:pointer; padding:0;">← Daftar ibadah</button>' + right +
+      '</div>' +
+      '<div style="display:flex; flex-direction:column; gap:4px; min-width:0;">' +
+        '<span id="tiEyebrow" class="ti-eyebrow" style="line-height:1.4;"></span>' +
+        '<h1 id="tiTitle" style="margin:0; font-weight:800; letter-spacing:-.025em; font-size:32px; line-height:1.15; color:#3a2a15; text-wrap:pretty;"></h1>' +
+        '<span style="font-size:12.5px; color:#8a7952; font-weight:600;">Judul seperti tercetak di sampul, kata pembuka dan khotbah</span>' +
+      '</div>' +
+    '</div>' +
+  '</header>';
+
+  html += '<main class="page-pad" style="flex:1; padding:24px 32px 80px;"><div style="max-width:1320px; margin:0 auto; display:flex; flex-direction:column; gap:22px;">';
+
+  var field = function (key, label, attrs) {
+    return '<label class="ti-label"><span>' + label + '</span><input id="tiF-' + key + '" data-tif="' + key + '" class="ti-field" value="' + esc(svc[key]) + '" ' + (attrs || '') + '></label>';
+  };
+  html += '<section class="ti-card" style="padding:22px 24px; display:flex; flex-direction:column; gap:16px;">' +
+    '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:14px;">' +
+      field('date', 'Tanggal', 'type="date"') +
+      field('season', 'Masa · kalender gerejawi') +
+      field('series', 'Seri', 'list="tiSeriesList" placeholder="Pilih atau tulis seri"') +
+      field('sub', 'Sub-tema', 'placeholder="Tulis sub-tema"') +
+      field('pf', 'Pelayan Firman', 'list="tiPfList" placeholder="Nama PF"') +
+      field('kp', 'Nas kata pembuka', 'placeholder="Kitab pasal:ayat"') +
+    '</div>' +
+    tiDatalist('tiSeriesList', tiState.services.map(function (s) { return s.series; }).concat(tiState.schedule.map(function (e) { return e.theme.indexOf(':') !== -1 ? e.theme.split(':')[0] : ''; }))) +
+    tiDatalist('tiPfList', tiState.services.map(function (s) { return s.pf; }).concat(tiState.schedule.map(function (e) { return e.pastor; }))) +
+    '<div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; border-top:1px solid #f1e7cd; padding-top:14px;">' +
+      '<label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:14px; font-weight:700; color:#3a2a15;">' +
+        '<input type="checkbox" data-tif="pk"' + (svc.pk ? ' checked' : '') + ' style="width:18px; height:18px; accent-color:#6E2621;">Minggu ini Perjamuan Kudus</label>' +
+      '<span id="tiSchedHint"></span>' +
+    '</div>' +
+  '</section>';
+
+  html += '<div style="display:flex; gap:22px; flex-wrap:wrap; align-items:flex-start;">' +
+    '<section style="flex:1 1 600px; min-width:0; display:flex; flex-direction:column; gap:26px;">' +
+    TI_TPL.map(function (sec) {
+      var slotN = sec.blocks.filter(function (b) { return b.kind !== 'fixed'; }).length;
+      return '<div style="display:flex; flex-direction:column; gap:7px;">' +
+        '<div style="display:flex; align-items:baseline; justify-content:space-between; gap:10px; padding:0 2px 8px; border-bottom:1px solid #e7d9b3; margin-bottom:3px;">' +
+          '<h2 style="margin:0; font-weight:800; font-size:20px; letter-spacing:-.015em; color:#3a2a15;">' + esc(sec.name) + '</h2>' +
+          '<span style="font-size:12px; font-weight:600; color:#9a8763;">' + slotN + ' diisi · ' + (sec.blocks.length - slotN) + ' tetap</span>' +
+        '</div>' +
+        sec.blocks.map(function (b) { return '<div id="tiBlk-' + b.k + '">' + tiBlockHtml(b) + '</div>'; }).join('') +
+      '</div>';
+    }).join('') +
+    '</section>' +
+    '<aside id="tiAside" style="flex:1 1 320px; max-width:420px; min-width:0; position:sticky; top:20px; display:flex; flex-direction:column; gap:14px;"></aside>' +
+  '</div>';
+
+  html += '</div></main>';
+  setTimeout(tiRenderDynamic, 0);
+  return html;
+}
+
+var TI_LOCK_SVG = '<svg width="12" height="14" viewBox="0 0 12 14" fill="none"><rect x="1" y="6" width="10" height="7" rx="1.5" fill="#c9b88f"></rect><path d="M3.5 6V4.2a2.5 2.5 0 0 1 5 0V6" stroke="#c9b88f" stroke-width="1.5"></path></svg>';
+
+function tiBlockHtml(b) {
+  var svc = tiState.cur;
+  var n = tiN(b.n);
+  if (b.kind === 'fixed') {
+    var open = !!tiState.open[b.k];
+    return '<div style="background:#F3E9CE; border-radius:12px;">' +
+      '<button data-ti="expand" data-k="' + b.k + '" style="width:100%; cursor:pointer; display:grid; grid-template-columns:24px 14px minmax(0,1fr) auto; gap:10px; align-items:center; padding:10px 14px; text-align:left;">' +
+        '<span style="font-size:12px; font-weight:700; color:#b3a37c; font-variant-numeric:tabular-nums;">' + n + '</span>' + TI_LOCK_SVG +
+        '<span style="font-size:14px; font-weight:600; color:#6b5a38;">' + esc(b.title) + '</span>' +
+        '<span class="ti-posture">' + esc(b.posture) + '</span>' +
+      '</button>' +
+      (open ? '<div style="padding:0 16px 14px 62px; font-size:14px; line-height:1.6; color:#6b5a38; white-space:pre-line;">' + esc(b.body) + '</div>' : '') +
+    '</div>';
+  }
+
+  var on = tiIsOn(svc, b);
+  var isSong = b.kind === 'song';
+  var song = isSong ? tiState.songById[svc.slots[b.k]] : null;
+  var hasToggle = !!(b.optional || b.kind === 'optional');
+  var typeLabel = b.kind === 'variant' ? (b.verse ? 'Slot + variasi' : 'Variasi') : hasToggle ? 'Opsional' : b.kind === 'auto' ? 'Otomatis' : 'Slot';
+  var border = !on ? '1px solid #f1e7cd' : (isSong && !song) ? '1px dashed #E85511' : '1px solid #ece0c2';
+  var pad = 'padding-left:34px;';
+
+  var h = '<div data-ring style="background:' + (on ? '#fff' : '#FEFBF2') + '; border:' + border + '; border-radius:14px; padding:12px 14px 14px; display:flex; flex-direction:column; gap:10px;">' +
+    '<div style="display:grid; grid-template-columns:24px minmax(0,1fr) auto; gap:10px; align-items:center;">' +
+      '<span style="font-size:12px; font-weight:800; color:#E85511; font-variant-numeric:tabular-nums;">' + n + '</span>' +
+      '<span style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; min-width:0;">' +
+        '<span style="font-size:14.5px; font-weight:700; color:#3a2a15;">' + esc(b.title) + '</span>' +
+        '<span style="font-size:10.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:#E85511;">' + typeLabel + '</span>' +
+      '</span>' +
+      '<span style="display:flex; align-items:center; gap:8px;">' +
+        (hasToggle ? '<button data-ti="toggle" data-k="' + b.k + '" aria-label="Aktifkan blok" style="width:36px; height:21px; border-radius:20px; background:' + (on ? '#E85511' : '#d9c79b') + '; position:relative; cursor:pointer; padding:0; flex-shrink:0;"><span style="position:absolute; top:2.5px; left:' + (on ? '17px' : '3px') + '; width:16px; height:16px; border-radius:50%; background:#fff; transition:left .15s;"></span></button>' : '') +
+        '<span class="ti-posture">' + esc(b.posture) + '</span>' +
+      '</span>' +
+    '</div>';
+
+  if (isSong && on && song) {
+    var u = tiSongUsage(song.id, svc);
+    var recent = u && u.weeks <= TI_RECENT_WEEKS;
+    var arr = svc.arr[b.k] || '';
+    h += '<div style="display:flex; gap:12px; align-items:flex-start; flex-wrap:wrap; ' + pad + '">' +
+      '<div style="flex:1 1 260px; min-width:0; display:flex; flex-direction:column; gap:4px;">' +
+        '<div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">' +
+          (tiSongCode(song) ? '<span style="font-size:12px; font-weight:700; background:#F3E9CE; color:#6E2621; padding:2px 7px; border-radius:6px;">' + esc(tiSongCode(song)) + '</span>' : '') +
+          '<span style="font-family:\'Bricolage Grotesque\',sans-serif; font-size:17px; font-weight:700; color:#3a2a15;">' + esc(song.title) + '</span>' +
+          (recent ? '<span class="ti-pill" style="background:#fdf0e6; color:#a3420e; font-weight:600;">Dipakai ' + esc(tiShort(u.date)) + '</span>' : '') +
+        '</div>' +
+        (song.credits ? '<span style="font-size:12.5px; color:#8a7952;">' + esc(song.credits) + '</span>' : '') +
+        '<div style="display:flex; gap:10px; align-items:baseline; flex-wrap:wrap; margin-top:2px;">' +
+          (arr ? '<span style="font-size:12.5px; font-weight:600; color:#6b5a38;">' + esc(arr) + '</span>' : '<span style="font-size:12.5px; font-weight:600; color:#a3420e;">Urutan belum diisi</span>') +
+          '<span data-ti="pick" data-k="' + b.k + '" class="ti-link">Ubah urutan</span>' +
+        '</div>' +
+        (b.cue ? '<span style="font-size:13px; font-style:italic; font-weight:600; color:#31536f; margin-top:2px;">' + esc(b.cue) + '</span>' : '') +
+      '</div>' +
+      '<button data-ti="pick" data-k="' + b.k + '" class="ti-btn-outline">Ganti lagu</button>' +
+    '</div>';
+  } else if (isSong && on) {
+    h += '<div style="' + pad + '"><button data-ti="pick" data-k="' + b.k + '" style="width:100%; border:1px dashed #E85511; background:#fdf0e6; color:#a3420e; font-size:13.5px; font-weight:700; padding:12px; border-radius:10px; cursor:pointer; text-align:left;">+ Pilih lagu</button></div>';
+  } else if (isSong) {
+    h += '<span style="' + pad + ' font-size:13px; color:#9a8763; font-weight:600;">Tidak dipakai minggu ini</span>';
+  }
+
+  if (b.verse) {
+    var vs = String(svc.baVs || '').trim();
+    h += '<div style="' + pad + ' display:flex; flex-direction:column; gap:8px;">' +
+      '<div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">' +
+        '<span style="font-size:12.5px; font-weight:700; color:#8a7952;">Nas</span>' +
+        '<select id="tiF-baBook" data-tif="baBook" class="ti-field" style="flex:1 1 170px; width:auto; padding:9px 12px; font-size:14px;">' +
+          '<option value="">Pilih kitab</option>' + TI_BOOKS.map(function (bk) { return '<option' + (svc.baBook === bk ? ' selected' : '') + '>' + bk + '</option>'; }).join('') +
+        '</select>' +
+        '<input data-tif="baCh" type="number" min="1" value="' + esc(svc.baCh) + '" placeholder="Pasal" class="ti-field" style="width:84px; padding:9px 12px; font-size:14px;">' +
+        '<span style="color:#8a7952; font-weight:700;">:</span>' +
+        '<input data-tif="baVs" value="' + esc(svc.baVs) + '" placeholder="Ayat, mis. 1-2" class="ti-field" style="width:130px; padding:9px 12px; font-size:14px;">' +
+        '<span style="font-size:11px; font-weight:700; padding:3px 7px; border:1px solid #e6d8b6; border-radius:6px; color:#8a7952;">TB2</span>' +
+      '</div>' +
+      '<span id="tiBaMsg">' + tiBaMsgHtml() + '</span>' +
+    '</div>';
+  }
+
+  if (b.kind === 'variant') {
+    h += '<div style="' + pad + ' display:flex; flex-direction:column; gap:6px; align-items:flex-start;">' +
+      '<div class="ti-seg">' + b.opts.map(function (o) {
+        return '<button data-ti="variant" data-k="' + b.k + '" data-v="' + esc(o[0]) + '" class="' + (svc.variants[b.k] === o[0] ? 'on' : '') + '">' + esc(o[1]) + '</button>';
+      }).join('') + '</div>' +
+      '<span style="font-size:12.5px; color:#8a7952;">' + esc(b.notes[svc.variants[b.k]] || '') + '</span>' +
+    '</div>';
+  }
+
+  if (b.kind === 'auto' || b.kind === 'optional') {
+    var theme = tiTheme(svc), main = theme, note = '';
+    if (b.k === 'b0') note = tiDateLong(svc.date) + ' · ' + (svc.season || 'masa belum diisi') + ' · ' + (svc.pf || 'PF belum dipilih');
+    if (b.k === 'b4') note = 'Nas: ' + (svc.kp || 'belum diisi') + ' · diambil dari detail ibadah';
+    if (b.k === 'b12') note = 'Judul khotbah otomatis dari tema · ' + (svc.pf || 'PF belum dipilih');
+    if (b.k === 'b15') {
+      var nextPk = svc.date ? tiByDate(tiAddDays(svc.date, 7)) : null;
+      nextPk = nextPk && nextPk.pk ? nextPk : null;
+      main = on ? 'Dipakai minggu ini' : 'Tidak dipakai minggu ini';
+      note = nextPk ? 'Minggu depan (' + tiShort(nextPk.date) + ') Perjamuan Kudus' : 'Nyalakan bila Minggu depan Perjamuan Kudus';
+    }
+    h += '<div style="' + pad + ' display:flex; flex-direction:column; gap:2px;">' +
+      '<span style="font-family:\'Bricolage Grotesque\',sans-serif; font-size:16px; font-weight:700; color:' + (on ? '#3a2a15' : '#9a8763') + ';">' + esc(main) + '</span>' +
+      '<span style="font-size:12px; color:#8a7952;">' + esc(note) + '</span>' +
+    '</div>';
+  }
+  return h + '</div>';
+}
+
+function tiBaMsgHtml() {
+  var svc = tiState.cur, vs = String(svc.baVs || '').trim();
+  if (vs && !TI_VS_RE.test(vs)) return '<span style="font-size:12.5px; font-weight:600; color:#a3420e;">Format ayat: 1, 1-3, atau 1,4</span>';
+  var ba = tiBa(svc);
+  return ba ? '<span class="ti-pill" style="background:#F3E9CE; color:#6E2621;">' + esc(ba) + ' · Alkitab TB2</span>' : '';
+}
+
+function tiRenderBlock(k) {
+  var el = document.getElementById('tiBlk-' + k);
+  if (el) el.innerHTML = tiBlockHtml(TI_BLOCK[k]);
+}
+
+function tiRenderSaveLabel() {
+  var el = document.getElementById('tiSaveLabel');
+  if (!el) return;
+  el.textContent = tiState.saveLabel;
+  el.style.color = tiState.saveError ? TI_RED : '#8a7952';
+}
+
+/* Everything in the builder that derives from the form, minus the inputs themselves. */
+function tiRenderDynamic() {
+  var svc = tiState.cur;
+  if (!svc || !document.getElementById('tiTitle')) return;
+  document.getElementById('tiEyebrow').textContent = tiDateLong(svc.date) + (svc.season ? ' · ' + svc.season : '');
+  document.getElementById('tiTitle').innerHTML = esc(svc.series ? svc.series + ': ' : '') + '<span style="color:#6E2621;">' + esc(svc.sub || '…') + '</span>';
+  var sched = tiScheduleOn(svc.date);
+  var hint = document.getElementById('tiSchedHint');
+  var schedTheme = sched ? (sched.theme || '') : '';
+  var differs = sched && (schedTheme !== tiTheme(svc) || (sched.pastor && sched.pastor !== svc.pf));
+  hint.innerHTML = sched ? '<span style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:13px; color:#8a7952; font-weight:600;">Di jadwal: ' + esc(schedTheme || 'tanpa tema') + (sched.pastor ? ' · ' + esc(sched.pastor) : '') +
+    (differs ? '<span data-ti="useSchedule" class="ti-link">Pakai dari jadwal</span>' : '') + '</span>' : '';
+  TI_BLOCKS.forEach(function (b) { if (b.k !== 'b8' && b.kind !== 'fixed') tiRenderBlock(b.k); });
+  var baMsg = document.getElementById('tiBaMsg');
+  if (baMsg) baMsg.innerHTML = tiBaMsgHtml();
+  tiRenderAside();
+  tiRenderSaveLabel();
+}
+
+function tiRenderAside() {
+  var svc = tiState.cur, el = document.getElementById('tiAside');
+  if (!svc || !el) return;
+  var chk = tiChecks(svc);
+  var redN = chk.reds.length, ambN = chk.ambers.length;
+  var todos = tiTodos(svc);
+  var li = -1;
+  todos.forEach(function (t, i) { if (t.id === tiState.lastJump) li = i; });
+  var nextT = todos.length ? todos[(li + 1) % todos.length] : null;
+
+  var checks = chk.reds.map(function (c) { c.color = TI_RED; c.icon = '!'; return c; })
+    .concat(chk.ambers.map(function (c) { c.color = TI_AMBER; c.icon = '!'; return c; }))
+    .concat(chk.greens.map(function (c) { c.color = TI_GREEN; c.icon = '✓'; return c; }));
+
+  var statusNote = redN ? 'Selesaikan ' + redN + ' pemblokir merah untuk menerbitkan.' : svc.status === 'Published' ? 'Sudah diterbitkan.' : 'Siap diterbitkan.';
+  var card = 'class="ti-card" style="padding:16px 18px; display:flex; flex-direction:column; gap:12px;"';
+
+  el.innerHTML =
+    '<div ' + card + '>' +
+      '<div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;"><span class="ti-eyebrow">Perlu diisi</span><span style="font-size:12.5px; font-weight:600; color:#8a7952;">' + (todos.length ? todos.length + ' tersisa' : 'Lengkap') + '</span></div>' +
+      '<span style="font-size:13.5px; font-weight:600; color:#3a2a15;">' + (nextT ? 'Berikutnya: ' + esc(nextT.label) : 'Semua kolom dan slot sudah terisi.') + '</span>' +
+      (nextT ? '<button data-ti="jump" data-to="' + nextT.id + '" class="ti-btn-orange">Isi berikutnya ↓</button>'
+             : '<span style="background:#e3ebdc; color:#24401F; font-weight:700; font-size:14px; padding:12px 14px; border-radius:12px; text-align:center;">Semua terisi ✓</span>') +
+    '</div>' +
+    '<div ' + card + '>' +
+      '<span class="ti-eyebrow">Status</span>' +
+      '<div class="ti-seg" style="display:grid; grid-template-columns:repeat(3, 1fr);">' + ['Draft', 'Review', 'Published'].map(function (v) {
+        var blocked = v === 'Published' && redN > 0;
+        return '<button data-ti="status" data-v="' + v + '" class="' + (svc.status === v ? 'on' : '') + '"' + (blocked ? ' disabled' : '') + '>' + v + '</button>';
+      }).join('') + '</div>' +
+      '<span style="font-size:12.5px; color:#8a7952;">' + statusNote + '</span>' +
+    '</div>' +
+    '<div ' + card + '>' +
+      '<div style="display:flex; justify-content:space-between; align-items:baseline;"><span class="ti-eyebrow">Pemeriksaan</span><span style="font-size:12.5px; font-weight:600; color:#8a7952;">' + redN + ' merah · ' + ambN + ' kuning</span></div>' +
+      '<div style="display:flex; flex-direction:column; gap:4px;">' + checks.map(function (c) {
+        return '<button ' + (c.to ? 'data-ti="jump" data-to="' + c.to + '" class="ti-hover"' : '') + ' style="text-align:left; cursor:' + (c.to ? 'pointer' : 'default') + '; display:grid; grid-template-columns:18px minmax(0,1fr) auto; gap:9px; align-items:start; font-size:13.5px; line-height:1.4; padding:5px 7px; margin:0 -7px; border-radius:9px;">' +
+          '<span style="width:17px; height:17px; border-radius:50%; background:' + c.color + '; color:#fff; font-size:10px; display:flex; align-items:center; justify-content:center; margin-top:1px; font-weight:800;">' + c.icon + '</span>' +
+          '<span style="display:flex; flex-direction:column; gap:1px; min-width:0;"><span style="color:#3a2a15; font-weight:600;">' + esc(c.text) + '</span>' + (c.sub ? '<span style="font-size:12px; color:#8a7952;">' + esc(c.sub) + '</span>' : '') + '</span>' +
+          '<span style="font-size:12px; color:#c6b58c;">' + (c.to ? '→' : '') + '</span>' +
+        '</button>';
+      }).join('') + '</div>' +
+    '</div>' +
+    '<div ' + card + '>' + tiOutputHtml(svc, redN) + '</div>' +
+    '<button data-ti="delete" style="align-self:flex-start; color:' + TI_RED + '; font-size:13px; font-weight:700; cursor:pointer; padding:2px 4px;">Hapus tata ibadah ini</button>';
+}
+
+/* ---------- liturgy download (.docx / .pdf) ---------- */
+
+function tiOutputHtml(svc, redN) {
+  var busy = tiState.dl.busy, err = tiState.dl.error;
+  var btn = function (fmt, label, primary) {
+    var dis = !svc.id || busy;
+    return '<button data-ti="download" data-v="' + fmt + '" class="' + (primary ? 'ti-btn-orange' : 'ti-btn-outline') + '" style="flex:1;' + (dis ? ' opacity:.5; cursor:not-allowed;' : '') + '"' + (dis ? ' disabled' : '') + '>' +
+      (busy === fmt ? 'Menyiapkan…' : label) + '</button>';
+  };
+  return '<div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;"><span class="ti-eyebrow">Liturgi</span>' +
+      '<span style="font-size:12px; font-weight:600; color:#9a8763;">A5 · format Pemuda</span></div>' +
+    '<div style="display:flex; gap:8px;">' + btn('pdf', 'Unduh PDF', true) + btn('docx', 'Unduh .docx', false) + '</div>' +
+    btn('gdoc', 'Buat Google Doc', false).replace('flex:1;', 'width:100%;') +
+    (svc.doc ? '<div style="display:flex; justify-content:space-between; align-items:center; gap:10px; padding-top:10px; border-top:1px solid #f1e7cd;">' +
+      '<span style="display:flex; flex-direction:column; gap:1px;"><span style="font-size:14px; font-weight:700; color:#3a2a15;">Google Doc</span>' +
+      '<span style="font-size:12px; color:#8a7952;">Dibuat ' + esc(svc.doc.at) + ' · Drive › Tata Ibadah</span></span>' +
+      '<a href="' + esc(svc.doc.url) + '" target="_blank" style="font-size:13px; font-weight:700; color:#E85511; white-space:nowrap;">Buka ↗</a></div>' : '') +
+    '<span style="font-size:12px; color:#8a7952; line-height:1.5;">Dokumen lengkap dari tata ibadah ini: sampul, liturgi dan lirik lagu. Google Doc bisa diedit lalu diunduh dari Docs. Butuh beberapa detik.</span>' +
+    (err ? '<span style="font-size:12.5px; font-weight:600; color:' + TI_RED + '; line-height:1.5;">' + esc(err) + '</span>' : '');
+}
+
+/* Builds the liturgy on the server (after any pending autosave): saves .pdf/.docx in the browser, or makes a Google Doc. */
+function tiDownload(fmt) {
+  var svc = tiState.cur, dl = tiState.dl;
+  var reds = tiChecks(svc).reds.length;
+  if (reds && !window.confirm('Masih ada ' + reds + ' pemblokir merah. Tetap buat liturgi?')) return;
+  dl.busy = fmt; dl.error = '';
+  tiRenderAside();
+  if (tiState.pending) tiFlushSave();
+  var go = function () {
+    if (tiState.saving || tiState.pending) { setTimeout(go, 300); return; }
+    google.script.run
+      .withSuccessHandler(function (res) {
+        dl.busy = '';
+        if (!res.success) { dl.error = res.message; tiRenderAside(); return; }
+        if (fmt === 'gdoc') { svc.doc = res.doc; flash(res.message); tiRenderAside(); return; }
+        var bin = atob(res.base64), bytes = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        var url = URL.createObjectURL(new Blob([bytes], { type: res.mimeType }));
+        var a = document.createElement('a');
+        a.href = url; a.download = res.filename;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+        flash(res.filename + ' diunduh');
+        tiRenderAside();
+      })
+      .withFailureHandler(function (err) { dl.busy = ''; dl.error = err && err.message ? err.message : String(err); tiRenderAside(); })
+      [fmt === 'gdoc' ? 'createLiturgyDoc' : 'downloadLiturgy'](svc.id, fmt);
+  };
+  go();
+}
+
+/* ---------- song picker ---------- */
+
+function tiOpenPicker(k) {
+  var svc = tiState.cur, id = svc.slots[k];
+  var song = tiState.songById[id];
+  tiState.picker = { k: k, q: '', h: 'Semua', sel: song ? id : null, seq: song ? (tiArr(svc, k).length ? tiArr(svc, k) : song.arr.split(' → ')) : [], chipSel: null, addMenu: false, secOpen: {}, secEdit: {}, dragI: null, lyrics: {},
+    online: { key: '', loading: false, results: [], error: '', importing: '', variants: {} } };
+  tiRenderModal();
+  var q = document.getElementById('tiPkQ');
+  if (q) q.focus();
+}
+
+function tiSelectSong(id) {
+  var pk = tiState.picker, svc = tiState.cur, song = tiState.songById[id];
+  if (!song) return;
+  pk.sel = id;
+  pk.seq = id === svc.slots[pk.k] && svc.arr[pk.k] ? svc.arr[pk.k].split(' → ') : (song.arr ? song.arr.split(' → ') : song.sections.map(function (s) { return s.label; }));
+  pk.chipSel = null; pk.addMenu = false; pk.secOpen = {}; pk.secEdit = {};
+  tiRenderPickerParts();
+}
+
+function tiConfirmPick() {
+  var pk = tiState.picker, svc = tiState.cur, song = tiState.songById[pk && pk.sel];
+  if (!song) return;
+  svc.slots[pk.k] = song.id;
+  svc.arr[pk.k] = (pk.seq.length ? pk.seq : song.arr.split(' → ')).join(' → ');
+  for (var key in pk.lyrics) svc.lyrics[key] = pk.lyrics[key];
+  tiState.picker = null;
+  tiRenderModal();
+  tiRenderDynamic();
+  tiQueueSave();
+}
+
+function tiLyric(song, label) {
+  var key = song.id + '|' + label, pk = tiState.picker;
+  if (pk && pk.lyrics[key] != null) return pk.lyrics[key];
+  if (tiState.cur.lyrics[key] != null) return tiState.cur.lyrics[key];
+  var sec = song.sections.filter(function (s) { return s.label === label; })[0];
+  return sec ? sec.text : '';
+}
+
+function tiPickerMatches() {
+  var pk = tiState.picker, q = pk.q.trim().toLowerCase();
+  var matchQ = function (s) {
+    if (!q) return true;
+    var first = s.sections.length ? String(s.sections[0].text || '').split('\n')[0] : '';
+    return (tiSongCode(s) + ' ' + s.number + ' ' + s.title + ' ' + first).toLowerCase().indexOf(q) !== -1;
+  };
+  var matchH = function (s, h) { return h === 'Semua' || (h === 'Kontemporer' ? !s.hymnal : s.hymnal === h); };
+  return { matchQ: matchQ, matchH: matchH, results: tiState.songs.filter(function (s) { return matchH(s, pk.h) && matchQ(s); }).sort(function (a, b) { return a.title.localeCompare(b.title); }) };
+}
+
+function tiRenderModal() {
+  var host = document.getElementById('tiModal');
+  if (!host) {
+    host = document.createElement('div');
+    host.id = 'tiModal';
+    document.body.appendChild(host);
+  }
+  var pk = tiState.picker;
+  if (!pk && !tiState.songForm) { host.innerHTML = ''; document.body.style.overflow = ''; return; }
+  document.body.style.overflow = 'hidden';
+  var html = '';
+  if (pk) {
+    var b = TI_BLOCK[pk.k];
+    html += '<div style="position:fixed; inset:0; z-index:90; display:flex; align-items:center; justify-content:center; padding:20px;">' +
+      '<div data-ti="closePicker" style="position:absolute; inset:0; background:rgba(58,42,21,.45);"></div>' +
+      '<div style="position:relative; background:#FBF6E7; border-radius:22px; width:100%; max-width:1080px; height:calc(100vh - 40px); display:flex; flex-direction:column; overflow:hidden; box-shadow:0 30px 70px rgba(58,42,21,.4);">' +
+        '<div style="flex-shrink:0; background:#F3E9CE; border-bottom:1px solid #e7d9b3; padding:16px 22px; display:flex; justify-content:space-between; align-items:center; gap:12px;">' +
+          '<div style="display:flex; flex-direction:column; gap:2px; min-width:0;"><span class="ti-eyebrow">' + tiN(b.n) + ' · ' + esc(b.title) + '</span>' +
+          '<h2 style="margin:0; font-weight:800; font-size:22px; letter-spacing:-.02em;">Pilih lagu</h2></div>' +
+          '<button data-ti="closePicker" class="icon-btn" aria-label="Tutup" style="width:36px; height:36px; border-radius:11px; background:rgba(58,42,21,.08); font-size:17px; cursor:pointer;">✕</button>' +
+        '</div>' +
+        '<div style="display:flex; flex-wrap:wrap; min-height:0; flex:1; overflow:auto;">' +
+          '<div style="flex:1 1 340px; min-width:0; padding:16px 20px; display:flex; flex-direction:column; gap:12px; border-right:1px solid #ece0c2; overflow:auto; max-height:100%;">' +
+            '<div style="display:flex; flex-direction:column; gap:5px;">' +
+              '<input id="tiPkQ" data-tipk="q" value="' + esc(pk.q) + '" placeholder="Cari judul, nomor atau baris pertama" autocomplete="off" class="ti-field">' +
+              '<span style="font-size:11.5px; color:#b3a37c; font-weight:600;">↑ ↓ untuk memilih · Enter untuk memakai · Esc untuk menutup</span>' +
+            '</div>' +
+            '<div id="tiPkChips" style="display:flex; gap:6px; flex-wrap:wrap;"></div>' +
+            '<div id="tiPkResults" style="display:flex; flex-direction:column; gap:4px;"></div>' +
+            '<div id="tiPkOnline" style="display:flex; flex-direction:column; gap:6px; border-top:1px solid #ece0c2; padding-top:12px;"></div>' +
+            '<span data-ti="newSong" class="ti-link" style="font-size:13px;">+ Tambah lagu baru ke perpustakaan</span>' +
+          '</div>' +
+          '<div id="tiPkDetail" style="flex:1.3 1 420px; min-width:0; padding:18px 22px; display:flex; flex-direction:column; gap:22px; background:#fff; overflow:auto; max-height:100%;"></div>' +
+        '</div>' +
+        '<div id="tiPkFoot" style="flex-shrink:0; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; padding:14px 22px; border-top:1px solid #e7d9b3; background:#F3E9CE;"></div>' +
+      '</div>' +
+    '</div>';
+  }
+  if (tiState.songForm) html += tiSongFormHtml();
+  host.innerHTML = html;
+  if (pk) tiRenderPickerParts();
+}
+
+function tiRenderPickerParts() {
+  var pk = tiState.picker, svc = tiState.cur;
+  if (!pk || !document.getElementById('tiPkResults')) return;
+  var m = tiPickerMatches();
+
+  document.getElementById('tiPkChips').innerHTML = TI_HYMNALS.map(function (h) {
+    var on = pk.h === h;
+    var count = tiState.songs.filter(function (s) { return m.matchH(s, h) && m.matchQ(s); }).length;
+    return '<button data-ti="hymnal" data-v="' + h + '" class="pill-btn' + (on ? ' on' : '') + '" style="display:flex; gap:6px; align-items:baseline; border-radius:20px; padding:6px 11px; font-size:12.5px;">' + h +
+      '<span style="font-size:11px; opacity:.7;">' + count + '</span></button>';
+  }).join('');
+
+  document.getElementById('tiPkResults').innerHTML = m.results.map(function (s) {
+    var on = pk.sel === s.id, u = tiSongUsage(s.id, svc), recent = u && u.weeks <= TI_RECENT_WEEKS;
+    var last = recent ? 'Dipakai ' + u.weeks + ' minggu lalu' : u ? 'Terakhir ' + tiShort(u.date) : 'Belum pernah';
+    return '<button data-ti="selSong" data-id="' + esc(s.id) + '" id="tiPkRow-' + esc(s.id) + '" class="' + (on ? '' : 'ti-hover') + '" style="text-align:left; cursor:pointer; display:grid; grid-template-columns:58px minmax(0,1fr); gap:10px; align-items:center; padding:9px 10px; border-radius:11px; background:' + (on ? '#fdf0e6' : 'transparent') + '; border:1px solid ' + (on ? '#E85511' : 'transparent') + ';">' +
+      '<span style="font-size:12px; font-weight:700; color:#6E2621;">' + esc(tiSongCode(s)) + '</span>' +
+      '<span style="display:flex; flex-direction:column; gap:1px; min-width:0;"><span style="font-size:14px; font-weight:700; color:#3a2a15;">' + esc(s.title) + '</span>' +
+        (s.credits ? '<span style="font-size:12px; color:#8a7952; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + esc(s.credits) + '</span>' : '') +
+        '<span style="display:flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600; color:' + (recent ? '#a3420e' : '#9a8763') + ';">' +
+          (recent ? '<span style="width:6px; height:6px; border-radius:50%; background:' + TI_AMBER + ';"></span>' : '') + last + '</span></span>' +
+    '</button>';
+  }).join('') + (m.results.length ? '' : '<span style="font-size:13px; color:#9a8763; padding:10px;">Lagu tidak ditemukan.</span>');
+
+  tiRenderOnline();
+
+  var song = tiState.songById[pk.sel];
+  var detail = document.getElementById('tiPkDetail');
+  if (!song) {
+    detail.innerHTML = '<span style="font-size:13.5px; color:#8a7952; font-weight:600;">Pilih lagu di kiri untuk melihat urutan dan liriknya.</span>';
+  } else {
+    var defSeq = song.arr ? song.arr.split(' → ') : [];
+    var cs = pk.chipSel;
+    detail.innerHTML =
+      '<div style="display:flex; flex-direction:column; gap:4px;">' +
+        '<span style="font-size:12px; font-weight:700; color:#8a7952;">' + esc(tiSongCode(song) || 'Kontemporer') + (song.language ? ' · ' + esc(song.language) : '') + ' · <span data-ti="editSong" class="ti-link" style="font-size:12px;">Edit di perpustakaan</span></span>' +
+        '<span style="font-family:\'Bricolage Grotesque\',sans-serif; font-size:24px; font-weight:800; line-height:1.2; color:#3a2a15;">' + esc(song.title) + '</span>' +
+        (song.credits ? '<span style="font-size:13px; color:#8a7952;">' + esc(song.credits) + '</span>' : '') +
+      '</div>' +
+      '<div style="display:flex; flex-direction:column; gap:10px;">' +
+        '<div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px; flex-wrap:wrap;">' +
+          '<span class="ti-eyebrow">Urutan · ' + pk.seq.length + ' bagian</span>' +
+          '<span style="display:flex; gap:14px; align-items:baseline;">' +
+            (pk.seq.join('|') !== defSeq.join('|') ? '<span data-ti="seqReset" class="ti-link" style="color:#8a7952;">Kembali ke default</span>' : '') +
+            '<span data-ti="seqRepeat" class="ti-link" style="color:#31536f;">Ulangi semua ×2</span>' +
+          '</span>' +
+        '</div>' +
+        '<div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">' + pk.seq.map(function (label, i) {
+          var sel = cs === i;
+          return '<div draggable="true" data-ti-seq="' + i + '" data-ti="chip" data-i="' + i + '" class="ti-seq-chip" style="border:1px solid ' + (sel ? '#E85511' : '#ecd2bd') + '; background:' + (sel ? '#fdf0e6' : '#fff') + '; opacity:' + (pk.dragI === i ? 0.4 : 1) + ';">' +
+            '<span style="font-size:11px; font-weight:800; color:#E85511;">' + (i + 1) + '</span>' + esc(label) +
+            '<button data-ti="chipRemove" data-i="' + i + '" aria-label="Hapus" class="icon-btn" style="color:#b3a37c; cursor:pointer; width:22px; height:22px; padding:0; font-size:13px; border-radius:6px;">✕</button>' +
+          '</div>';
+        }).join('') +
+        '<button data-ti="addMenu" style="border:1px dashed #d9c79b; background:#fff; color:#6E2621; font-size:13px; font-weight:700; padding:7px 11px; border-radius:10px; cursor:pointer; white-space:nowrap;">+ Bagian</button></div>' +
+        (pk.addMenu ? '<div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; background:#FBF6E7; border:1px solid #ece0c2; border-radius:11px; padding:8px 10px;">' +
+          '<span style="font-size:12px; font-weight:600; color:#8a7952;">Tambahkan:</span>' +
+          song.sections.map(function (s) { return '<button data-ti="seqAdd" data-v="' + esc(s.label) + '" class="ti-btn-outline" style="padding:5px 10px; font-size:12.5px;">' + esc(s.label) + '</button>'; }).join('') +
+        '</div>' : '') +
+        (cs != null && cs < pk.seq.length ? '<div style="display:flex; gap:5px; flex-wrap:wrap; align-items:center; font-size:12.5px;">' +
+          '<span style="color:#8a7952; font-weight:600; margin-right:6px;">Bagian ' + (cs + 1) + ' · ' + esc(pk.seq[cs]) + '</span>' +
+          '<button data-ti="chipLeft" class="ti-btn-outline" style="padding:5px 9px; font-size:12.5px;"' + (cs === 0 ? ' disabled' : '') + '>← Geser</button>' +
+          '<button data-ti="chipRight" class="ti-btn-outline" style="padding:5px 9px; font-size:12.5px;"' + (cs === pk.seq.length - 1 ? ' disabled' : '') + '>Geser →</button>' +
+          '<button data-ti="chipDup" class="ti-btn-outline" style="padding:5px 9px; font-size:12.5px;">Ulangi bagian ini</button>' +
+          '<button data-ti="chipRemove" data-i="' + cs + '" class="ti-btn-outline" style="padding:5px 9px; font-size:12.5px; color:' + TI_RED + ';">Hapus</button>' +
+        '</div>' : '') +
+        (pk.seq.length ? '' : '<span style="font-size:13px; font-weight:600; color:#a3420e; background:#fdf0e6; padding:8px 10px; border-radius:9px;">Urutan kosong. Tambahkan bagian dengan + Bagian.</span>') +
+        '<span style="font-size:11.5px; color:#b3a37c; font-weight:600;">Seret untuk mengubah urutan · klik bagian untuk opsi lain</span>' +
+      '</div>' +
+      '<div style="display:flex; flex-direction:column;">' +
+        '<div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px; flex-wrap:wrap; padding-bottom:6px;"><span class="ti-eyebrow">Lirik</span><span style="font-size:12px; color:#8a7952;">Perubahan berlaku untuk ibadah ini</span></div>' +
+        song.sections.map(function (sx) {
+          var text = tiLyric(song, sx.label), open = !!pk.secOpen[sx.label], editing = !!pk.secEdit[sx.label];
+          return '<div style="border-top:1px solid #f1e7cd;">' +
+            '<button data-ti="secToggle" data-v="' + esc(sx.label) + '" style="width:100%; cursor:pointer; display:grid; grid-template-columns:80px minmax(0,1fr) 20px; gap:10px; align-items:baseline; padding:10px 2px; text-align:left;">' +
+              '<span style="font-size:13.5px; font-weight:700; color:#3a2a15;">' + esc(sx.label) + '</span>' +
+              '<span style="font-size:14px; color:#8a7952; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + (open ? '' : esc(text.split('\n')[0] || 'Lirik belum diisi')) + '</span>' +
+              '<span style="font-size:15px; color:#b3a37c; text-align:right;">' + (open ? '−' : '+') + '</span>' +
+            '</button>' +
+            (open && !editing ? '<div style="padding:0 2px 12px 92px; display:flex; flex-direction:column; gap:6px;"><span style="font-size:14.5px; line-height:1.6; color:' + (text ? '#3a2a15' : '#b3a37c') + '; white-space:pre-line;">' + esc(text || 'Lirik belum diisi') + '</span><span data-ti="secEdit" data-v="' + esc(sx.label) + '" class="ti-link" style="align-self:flex-start;">Edit lirik</span></div>' : '') +
+            (open && editing ? '<div style="padding:0 2px 12px 92px; display:flex; flex-direction:column; gap:6px;"><textarea data-tipk="lyric" data-v="' + esc(sx.label) + '" rows="' + Math.max(3, text.split('\n').length) + '" class="ti-field" style="resize:vertical; line-height:1.5; font-family:inherit;">' + esc(text) + '</textarea><span data-ti="secDone" data-v="' + esc(sx.label) + '" class="ti-link" style="align-self:flex-start;">Selesai</span></div>' : '') +
+          '</div>';
+        }).join('') +
+      '</div>';
+  }
+
+  var otherIds = Object.keys(svc.slots).filter(function (k) { return k !== pk.k && svc.slots[k] && tiIsOn(svc, TI_BLOCK[k]); }).map(function (k) { return svc.slots[k]; });
+  var u = song && tiSongUsage(song.id, svc);
+  document.getElementById('tiPkFoot').innerHTML =
+    '<div style="display:flex; flex-direction:column; gap:2px; min-width:0;">' +
+      '<span style="font-size:13.5px; font-weight:700; color:#3a2a15;">' + (song ? esc((tiSongCode(song) ? tiSongCode(song) + ' · ' : '') + song.title) + ' · ' + pk.seq.length + ' bagian' : 'Belum ada lagu dipilih') + '</span>' +
+      (u && u.weeks <= TI_RECENT_WEEKS ? '<span style="font-size:12px; font-weight:600; color:#a3420e;">Dipakai ' + u.weeks + ' minggu lalu (' + tiShort(u.date) + ') · tetap bisa dipilih</span>' : '') +
+      (song && otherIds.indexOf(song.id) !== -1 ? '<span style="font-size:12px; font-weight:600; color:' + TI_RED + ';">Sudah dipakai di slot lain ibadah ini</span>' : '') +
+    '</div>' +
+    '<div style="display:flex; gap:8px;">' +
+      '<button data-ti="closePicker" class="ti-btn-outline" style="padding:11px 16px; font-size:14px;">Batal</button>' +
+      '<button data-ti="confirmPick" class="ti-btn-orange"' + (song ? '' : ' disabled style="opacity:.5; cursor:not-allowed;"') + '>' + (song && song.id === svc.slots[pk.k] ? 'Simpan perubahan' : 'Gunakan lagu') + '</button>' +
+    '</div>';
+}
+
+/* ---------- online hymnal search (KJ, KK, PKJ, NKB from alkitab.mobi) ---------- */
+
+var TI_ONLINE_BOOKS = ['KJ', 'KK', 'PKJ', 'NKB'];
+
+function tiOnlineSearchSoon() {
+  var pk = tiState.picker, q = pk.q.trim();
+  var book = TI_ONLINE_BOOKS.indexOf(pk.h) !== -1 ? pk.h : '';
+  var key = book + '|' + q.toLowerCase();
+  clearTimeout(tiState.onlineTimer);
+  if (key === pk.online.key) return;
+  pk.online = { key: key, loading: q.length >= 2 || /^\d/.test(q), results: [], error: '', importing: '', variants: {} };
+  tiRenderOnline();
+  if (!pk.online.loading) return;
+  tiState.onlineTimer = setTimeout(function () {
+    google.script.run
+      .withSuccessHandler(function (res) {
+        if (tiState.picker !== pk || pk.online.key !== key) return;
+        pk.online.loading = false;
+        pk.online.results = res.results || [];
+        tiRenderOnline();
+      })
+      .withFailureHandler(function (err) {
+        if (tiState.picker !== pk || pk.online.key !== key) return;
+        pk.online.loading = false;
+        pk.online.error = err && err.message ? err.message : String(err);
+        tiRenderOnline();
+      })
+      .searchHymnalOnline(q, book);
+  }, 450);
+}
+
+function tiOnlineImport(hymnal, number, rowKey) {
+  var pk = tiState.picker, on = pk.online;
+  on.importing = hymnal + '|' + number;
+  on.error = '';
+  tiRenderOnline();
+  google.script.run
+    .withSuccessHandler(function (res) {
+      if (tiState.picker !== pk) return;
+      on.importing = '';
+      if (res.variants) { on.variants[rowKey] = res.variants; tiRenderOnline(); return; }
+      if (!res.success) { on.error = res.message; tiRenderOnline(); return; }
+      tiSetSongs(tiState.songs.filter(function (s) { return s.id !== res.song.id; }).concat([res.song]));
+      on.results.forEach(function (r) { if (r.hymnal === hymnal && r.number === number) r.songId = res.song.id; });
+      tiSelectSong(res.song.id);
+      flash(res.message);
+    })
+    .withFailureHandler(function (err) {
+      if (tiState.picker !== pk) return;
+      on.importing = '';
+      on.error = err && err.message ? err.message : String(err);
+      tiRenderOnline();
+    })
+    .importHymnalSong(hymnal, number);
+}
+
+function tiHasLyrics(song) { return !!song && song.sections.some(function (s) { return String(s.text || '').trim(); }); }
+
+function tiOnlineButton(hymnal, number, rowKey) {
+  var on = tiState.picker.online, key = hymnal + '|' + number;
+  var have = tiState.songs.filter(function (s) { return s.hymnal === hymnal && s.number.toLowerCase() === number.toLowerCase(); })[0];
+  if (have && tiHasLyrics(have)) return '<button data-ti="selSong" data-id="' + esc(have.id) + '" class="ti-btn-outline" style="padding:5px 10px; font-size:12px; color:#24401F;">Di perpustakaan</button>';
+  if (on.importing === key) return '<span style="font-size:12px; font-weight:700; color:#9a8763; white-space:nowrap;">Mengimpor…</span>';
+  return '<button data-ti="onlineImport" data-h="' + hymnal + '" data-n="' + esc(number) + '" data-row="' + esc(rowKey) + '" class="ti-btn-outline" style="padding:5px 10px; font-size:12px;"' + (on.importing ? ' disabled' : '') + '>Impor</button>';
+}
+
+function tiRenderOnline() {
+  var pk = tiState.picker, el = document.getElementById('tiPkOnline');
+  if (!pk || !el) return;
+  var on = pk.online, q = pk.q.trim();
+  var head = '<div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px; flex-wrap:wrap;">' +
+    '<span class="ti-eyebrow">Online · KJ, KK, PKJ, NKB</span>' +
+    '<span style="font-size:11px; font-weight:600; color:#b3a37c;">Sumber: Alkitab Mobile SABDA</span></div>';
+  var body;
+  if (!q) body = '<span style="font-size:12.5px; color:#9a8763;">Ketik judul atau nomor (mis. “KJ 392”) untuk mencari dan mengimpor lagu.</span>';
+  else if (on.loading) body = '<span style="font-size:12.5px; color:#9a8763;">Mencari…</span>';
+  else if (!on.results.length) body = '<span style="font-size:12.5px; color:#9a8763; line-height:1.5;">Tidak ditemukan di KJ, KK, PKJ atau NKB. ' +
+    (tiTypedTitle(q) ? '<span data-ti="newSong" class="ti-link">Tambah “' + esc(tiTypedTitle(q)) + '” sebagai lagu baru</span> lalu tempel liriknya.' : '') + '</span>';
+  else body = on.results.map(function (r) {
+    var rowKey = r.hymnal + '|' + r.number;
+    var vars = on.variants[rowKey];
+    return '<div style="display:flex; flex-direction:column; gap:6px; padding:7px 10px; border-radius:11px; background:#fff; border:1px solid #f1e7cd;">' +
+      '<div style="display:grid; grid-template-columns:58px minmax(0,1fr) auto; gap:10px; align-items:center;">' +
+        '<span style="font-size:12px; font-weight:700; color:#6E2621;">' + esc(r.hymnal + ' ' + r.number) + '</span>' +
+        '<span style="font-size:13.5px; font-weight:600; color:#3a2a15;">' + esc(r.title) + '</span>' +
+        (vars ? '<span style="font-size:11.5px; font-weight:700; color:#9a8763;">' + vars.length + ' versi</span>' : tiOnlineButton(r.hymnal, r.number, rowKey)) +
+      '</div>' +
+      (vars ? vars.map(function (v) {
+        return '<div style="display:grid; grid-template-columns:58px minmax(0,1fr) auto; gap:10px; align-items:center; padding-top:6px; border-top:1px dashed #ece0c2;">' +
+          '<span style="font-size:12px; font-weight:700; color:#E85511;">' + esc(r.hymnal + ' ' + v.number) + '</span>' +
+          '<span style="display:flex; flex-direction:column; min-width:0;"><span style="font-size:12.5px; color:#3a2a15;">' + esc(v.preview) + '</span>' +
+            (v.credits ? '<span style="font-size:11.5px; color:#8a7952;">' + esc(v.credits) + '</span>' : '') + '</span>' +
+          tiOnlineButton(r.hymnal, v.number, rowKey) +
+        '</div>';
+      }).join('') : '') +
+    '</div>';
+  }).join('');
+  el.innerHTML = head + body + (on.error ? '<span style="font-size:12.5px; font-weight:600; color:' + TI_RED + ';">' + esc(on.error) + '</span>' : '');
+}
+
+function tiSeqMove(from, to) {
+  var pk = tiState.picker, a = pk.seq.slice();
+  var item = a.splice(from, 1)[0];
+  a.splice(to, 0, item);
+  pk.seq = a; pk.chipSel = to; pk.dragI = null;
+  tiRenderPickerParts();
+}
+
+/* ---------- pasted lyrics → sections ---------- */
+
+var TI_HEADING_RE = /^[\[\(]?\s*(bait|verse|ayat|v|reff?|refrain|chorus|korus|bridge|jembatan|pre[\s-]?chorus|pre[\s-]?reff?|tag|coda|ending|outro|intro|interlude|ad[\s-]?lib)\s*(\d+)?\s*[\]\)]?\s*[:.]?\s*(.*)$/i;
+var TI_CHORD_RE = /\[[A-G][#b]?(m|maj|min|sus|dim|aug|add)?\d*(\/[A-G][#b]?)?\]/g;
+var TI_FOOTER_RE = /^(ccli|©|\(c\)|copyright|for use solely|note: reproduction|all rights reserved|admin\.? by|lisensi)/i;
+var TI_FOOTER_SKIP_RE = /^(ccli (song|license)|for use solely|note: reproduction)/i;
+var TI_REPEAT_RE = /\s*[\(\[]?\s*(?:x\s*(\d)|(\d)\s*x)\s*[\)\]]?\s*$/i;
+
+/* Canonical label for a heading word: verses become "Bait N", the rest keep a tidy English/Indonesian name. */
+function tiHeadingLabel(word, num, counters) {
+  var w = word.toLowerCase().replace(/[\s-]/g, '');
+  if (w === 'bait' || w === 'verse' || w === 'ayat' || w === 'v') {
+    var n = num ? Number(num) : (counters.verse + 1);
+    counters.verse = Math.max(counters.verse, n);
+    return 'Bait ' + n;
+  }
+  var names = { ref: 'Ref', reff: 'Ref', refrain: 'Ref', chorus: 'Chorus', korus: 'Chorus', bridge: 'Bridge', jembatan: 'Bridge',
+    prechorus: 'Pre-Chorus', preref: 'Pre-Ref', prereff: 'Pre-Ref', tag: 'Tag', coda: 'Coda', ending: 'Ending', outro: 'Outro',
+    intro: 'Intro', interlude: 'Interlude', adlib: 'Ad lib' };
+  return (names[w] || word) + (num ? ' ' + num : '');
+}
+
+/*
+ * Turns pasted lyrics into { title, credits, sections:[{label,text}], arr }.
+ * Understands section headings ("Verse 1", "Reff:", "[Chorus]", "1."),
+ * ChordPro ({title:}, {soc}, [G] chords), SongSelect text exports (title
+ * line + CCLI footer) and "(2x)" repeats. Without headings, blank-line
+ * paragraphs become verses and a paragraph that repeats becomes the Ref.
+ */
+function tiParseLyrics(raw) {
+  var lines = String(raw || '').replace(/\r\n?/g, '\n').split('\n');
+  var title = '', credits = [], blocks = [], cur = null, counters = { verse: 0 }, sawHeading = false, footer = false;
+
+  var start = function (label) { cur = { label: label, lines: [], repeat: 1 }; blocks.push(cur); };
+  var push = function (text) {
+    if (!cur) start(null);
+    var rep = text.match(TI_REPEAT_RE);
+    if (rep) { cur.repeat = Number(rep[1] || rep[2]); text = text.replace(rep[0], ''); }
+    if (text.trim()) cur.lines.push(text);
+  };
+
+  lines.forEach(function (line) {
+    var t = line.replace(TI_CHORD_RE, '').replace(/\s+$/, '');
+    var trimmed = t.trim();
+    var dir = trimmed.match(/^\{\s*([a-z_]+)\s*(?::\s*(.*?))?\s*\}$/i);
+    if (dir) {
+      var key = dir[1].toLowerCase(), val = (dir[2] || '').trim();
+      if (key === 'title' || key === 't') title = val;
+      else if (/^(subtitle|st|artist|composer|lyricist|copyright)$/.test(key)) { if (val) credits.push(val); }
+      else if (key === 'soc' || key === 'start_of_chorus') { sawHeading = true; start(tiHeadingLabel(val || 'Chorus', '', counters)); }
+      else if (key === 'sov' || key === 'start_of_verse') { sawHeading = true; start(tiHeadingLabel('Verse', (val.match(/\d+/) || [''])[0], counters)); }
+      else if (key === 'sob' || key === 'start_of_bridge') { sawHeading = true; start('Bridge'); }
+      else if (/^(c|comment|ci|comment_italic)$/.test(key)) {
+        var hm = val.match(TI_HEADING_RE);
+        if (hm && !hm[3]) { sawHeading = true; start(tiHeadingLabel(hm[1], hm[2], counters)); }
+      } else if (/^(eoc|end_of_chorus|eov|end_of_verse|eob|end_of_bridge)$/.test(key)) cur = null;
+      return;
+    }
+    if (TI_FOOTER_RE.test(trimmed) || (footer && trimmed)) {
+      footer = true;
+      if (!TI_FOOTER_SKIP_RE.test(trimmed)) credits.push(trimmed.replace(/^(©|\(c\))\s*/i, '© ').replace(/\s*\|\s*/g, ', '));
+      return;
+    }
+    if (!trimmed) { if (cur && cur.lines.length) cur = null; return; }
+
+    var num = trimmed.match(/^(\d+)\s*[.)]\s*(.*)$/);
+    if (num && Number(num[1]) < 30) {
+      sawHeading = true;
+      start(tiHeadingLabel('Bait', num[1], counters));
+      if (num[2]) push(num[2]);
+      return;
+    }
+    var repM = trimmed.match(TI_REPEAT_RE);
+    var head = repM ? trimmed.replace(repM[0], '').trim() : trimmed;
+    var hm2 = head.length <= 40 || /[:\]]/.test(head) ? head.match(TI_HEADING_RE) : null;
+    if (hm2 && (!hm2[3] || /^[\[\(]?\s*\w[\w\s-]*\d*\s*[\]\):]/.test(head))) {
+      sawHeading = true;
+      start(tiHeadingLabel(hm2[1], hm2[2], counters));
+      if (repM) cur.repeat = Number(repM[1] || repM[2]);
+      if (hm2[3]) push(hm2[3].trim());
+      return;
+    }
+    push(trimmed);
+  });
+
+  /* SongSelect / slide exports put the title alone on the first line. */
+  if (!title && blocks.length > 1 && !blocks[0].label && blocks[0].lines.length === 1 && blocks[0].lines[0].length <= 60 && (footer || sawHeading)) {
+    title = blocks.shift().lines[0];
+  }
+
+  var sections = [], order = [], textByLabel = {}, labelByText = {};
+  if (!sawHeading) {
+    var count = {};
+    blocks.forEach(function (b) { var k = b.lines.join('\n'); count[k] = (count[k] || 0) + 1; });
+    var refText = Object.keys(count).filter(function (k) { return count[k] > 1; }).sort(function (a, b) { return count[b] - count[a]; })[0];
+    var v = 0;
+    blocks.forEach(function (b) {
+      var k = b.lines.join('\n');
+      b.label = k === refText ? 'Ref' : labelByText[k] || 'Bait ' + (++v);
+      labelByText[k] = b.label;
+    });
+  }
+
+  var unnamed = 0;
+  blocks.forEach(function (b) {
+    var text = b.lines.join('\n').trim();
+    var label = b.label || (sections.length ? 'Bagian ' + (++unnamed + 1) : 'Bait 1');
+    if (!text) {
+      if (textByLabel[label] != null) for (var r = 0; r < b.repeat; r++) order.push(label);
+      return;
+    }
+    if (textByLabel[label] != null && textByLabel[label] !== text) {
+      for (var n = 2; textByLabel[label + ' ' + n] != null && textByLabel[label + ' ' + n] !== text; n++);
+      label = label + ' ' + n;
+    }
+    if (textByLabel[label] == null) { textByLabel[label] = text; sections.push({ label: label, text: text }); }
+    for (var i = 0; i < b.repeat; i++) order.push(label);
+  });
+
+  return { title: title, credits: credits.join(' · '), sections: sections, arr: order.join(' → ') };
+}
+
+
+/* ---------- song library form ---------- */
+
+function tiOpenSongForm(song) {
+  tiState.songForm = song
+    ? { id: song.id, hymnal: song.hymnal, number: song.number, title: song.title, credits: song.credits, language: song.language, arr: song.arr, sections: song.sections.map(function (s) { return { label: s.label, text: s.text }; }), error: '', saving: false, paste: '', pasteOpen: !tiHasLyrics(song), pasteNote: '' }
+    : { id: null, hymnal: '', number: '', title: tiTypedTitle(tiState.picker ? tiState.picker.q : ''), credits: '', language: 'Indonesia', arr: '', sections: [{ label: 'Bait 1', text: '' }, { label: 'Ref', text: '' }], error: '', saving: false, paste: '', pasteOpen: true, pasteNote: '' };
+  tiRenderModal();
+}
+
+/* "sampai akhir hidupku" typed in search → "Sampai Akhir Hidupku"; text with any capitals is kept as typed. */
+function tiTypedTitle(q) {
+  q = String(q || '').trim();
+  if (/^(kj|kk|pkj|nkb)\s*\d/i.test(q)) return '';
+  return q === q.toLowerCase() ? q.replace(/(^|\s)(\S)/g, function (m, pre, ch) { return pre + ch.toUpperCase(); }) : q;
+}
+
+function tiParsePaste() {
+  var f = tiState.songForm, r = tiParseLyrics(f.paste);
+  if (!r.sections.length) { f.error = 'Tidak ada lirik yang terbaca dari teks yang ditempel.'; f.pasteNote = ''; tiRenderModal(); return; }
+  f.sections = r.sections;
+  f.arr = r.arr;
+  if (r.title && !f.title.trim()) f.title = r.title;
+  if (r.credits && !f.credits.trim()) f.credits = r.credits;
+  f.error = '';
+  f.pasteNote = r.sections.length + ' bagian terbaca · urutan: ' + r.arr;
+  tiRenderModal();
+}
+
+function tiSongFormHtml() {
+  var f = tiState.songForm;
+  var input = function (key, label, attrs) {
+    return '<label class="ti-label"><span>' + label + '</span><input data-tisf="' + key + '" value="' + esc(f[key]) + '" class="ti-field" ' + (attrs || '') + '></label>';
+  };
+  return '<div style="position:fixed; inset:0; z-index:100; display:flex; justify-content:flex-end;">' +
+    '<div data-ti="closeSongForm" style="position:absolute; inset:0; background:rgba(58,42,21,.38);"></div>' +
+    '<section style="position:relative; width:520px; max-width:100%; height:100%; background:#FBF6E7; box-shadow:-24px 0 60px rgba(74,59,23,.3); display:flex; flex-direction:column;">' +
+      '<div style="flex-shrink:0; background:#F3E9CE; border-bottom:1px solid #e7d9b3; padding:22px 26px 20px; display:flex; align-items:flex-start; justify-content:space-between; gap:16px;">' +
+        '<div style="display:flex; flex-direction:column; gap:3px;"><span class="ti-eyebrow">Perpustakaan lagu</span><h2 style="margin:0; font-weight:800; font-size:24px; letter-spacing:-.02em;">' + (f.id ? 'Edit lagu' : 'Lagu baru') + '</h2></div>' +
+        '<button data-ti="closeSongForm" class="icon-btn" style="width:36px; height:36px; border-radius:11px; background:rgba(58,42,21,.08); font-size:17px; cursor:pointer;">✕</button>' +
+      '</div>' +
+      '<div style="flex:1; overflow-y:auto; padding:22px 26px 28px; display:flex; flex-direction:column; gap:16px;">' +
+        (f.pasteOpen
+          ? '<div class="ti-card" style="border-radius:16px; padding:14px; display:flex; flex-direction:column; gap:9px; background:#FEFBF2;">' +
+              '<span style="font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;">Tempel lirik</span>' +
+              '<span style="font-size:12.5px; color:#8a7952; line-height:1.5;">Dari website, slide, atau file TXT/ChordPro SongSelect. Judul bagian seperti Verse 1, Reff, Chorus, Bridge, (2x) dan kunci gitar dikenali otomatis.</span>' +
+              '<textarea data-tisf="paste" rows="8" placeholder="Tempel seluruh lirik di sini" class="ti-field" style="resize:vertical; line-height:1.5; font-family:inherit; padding:10px 12px;">' + esc(f.paste) + '</textarea>' +
+              '<div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">' +
+                '<button data-ti="sfParse" class="ti-btn-outline" style="background:#6E2621; color:#fff; border-color:#6E2621;">Pisahkan jadi bagian</button>' +
+                (f.pasteNote ? '<span style="font-size:12.5px; font-weight:600; color:#24401F;">✓ ' + esc(f.pasteNote) + '</span>' : '') +
+              '</div>' +
+            '</div>'
+          : '<span data-ti="sfPasteOpen" class="ti-link" style="align-self:flex-start;">Tempel ulang lirik dari teks</span>') +
+        '<div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">' +
+          '<label class="ti-label"><span>Buku</span><select data-tisf="hymnal" class="ti-field">' + [['', 'Kontemporer'], ['KK', 'KK'], ['KJ', 'KJ'], ['NKB', 'NKB'], ['PKJ', 'PKJ']].map(function (o) {
+            return '<option value="' + o[0] + '"' + (f.hymnal === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
+          }).join('') + '</select></label>' +
+          input('number', 'Nomor', 'placeholder="mis. 392"') +
+        '</div>' +
+        input('title', 'Judul', 'placeholder="Judul lagu"') +
+        input('credits', 'Pencipta / penerjemah', 'placeholder="Opsional"') +
+        input('language', 'Bahasa', 'list="tiLangList"') +
+        '<datalist id="tiLangList"><option value="Indonesia"></option><option value="Inggris"></option><option value="Jawa"></option></datalist>' +
+        input('arr', 'Urutan default', 'placeholder="Kosongkan untuk mengikuti urutan bagian di bawah"') +
+        '<div style="display:flex; flex-direction:column; gap:10px;">' +
+          '<span style="font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;">Bagian & lirik</span>' +
+          f.sections.map(function (s, i) {
+            return '<div class="ti-card" style="border-radius:14px; padding:12px; display:flex; flex-direction:column; gap:8px;">' +
+              '<div style="display:flex; gap:8px; align-items:center;"><input data-tisf="label" data-i="' + i + '" value="' + esc(s.label) + '" placeholder="mis. Bait 1, Ref, Chorus" class="ti-field" style="padding:9px 12px; font-weight:700;">' +
+              '<button data-ti="sfRemove" data-i="' + i + '" class="icon-btn" aria-label="Hapus bagian" style="width:34px; height:34px; border-radius:10px; color:#b3a37c; cursor:pointer; flex-shrink:0;">✕</button></div>' +
+              '<textarea data-tisf="text" data-i="' + i + '" rows="4" placeholder="Lirik" class="ti-field" style="resize:vertical; line-height:1.5; font-family:inherit; padding:9px 12px;">' + esc(s.text) + '</textarea>' +
+            '</div>';
+          }).join('') +
+          '<button data-ti="sfAdd" style="border:1px dashed #d9c79b; background:#fff; color:#6E2621; font-size:13.5px; font-weight:700; padding:11px; border-radius:12px; cursor:pointer;">+ Tambah bagian</button>' +
+        '</div>' +
+        (f.error ? '<div style="background:#fbe6e2; border:1px solid #f0c8c1; color:#8c2b20; font-size:13px; font-weight:600; padding:11px 14px; border-radius:12px;">' + esc(f.error) + '</div>' : '') +
+      '</div>' +
+      '<div style="flex-shrink:0; border-top:1px solid #e7d9b3; background:#F3E9CE; padding:16px 26px;">' +
+        '<button data-ti="sfSave" class="ti-btn-orange" style="width:100%; padding:15px; font-size:15.5px;"' + (f.saving ? ' disabled' : '') + '>' + (f.saving ? 'Menyimpan…' : f.id ? 'Simpan lagu' : 'Tambah ke perpustakaan') + '</button>' +
+      '</div>' +
+    '</section>' +
+  '</div>';
+}
+
+function tiSaveSongForm() {
+  var f = tiState.songForm;
+  if (!f.title.trim()) { f.error = 'Judul lagu wajib diisi.'; tiRenderModal(); return; }
+  f.saving = true; f.error = '';
+  tiRenderModal();
+  google.script.run
+    .withSuccessHandler(function (res) {
+      f.saving = false;
+      if (!res.success) { f.error = res.message; tiRenderModal(); return; }
+      var songs = tiState.songs.filter(function (s) { return s.id !== res.song.id; }).concat([res.song]);
+      tiSetSongs(songs);
+      tiState.songForm = null;
+      tiRenderModal();
+      if (tiState.picker) tiSelectSong(res.song.id);
+      tiRenderDynamic();
+      flash(res.message);
+    })
+    .withFailureHandler(function (err) {
+      f.saving = false;
+      f.error = err && err.message ? err.message : String(err);
+      tiRenderModal();
+    })
+    .saveSong({ id: f.id, hymnal: f.hymnal, number: f.number, title: f.title, credits: f.credits, language: f.language, arr: f.arr, sections: f.sections });
+}
+
+/* ---------- events (delegated) ---------- */
+
+function tiOnClick(e) {
+  var el = e.target.closest && e.target.closest('[data-ti]');
+  if (!el) return;
+  var a = el.getAttribute('data-ti'), k = el.getAttribute('data-k'), v = el.getAttribute('data-v');
+  var svc = tiState.cur, pk = tiState.picker, sf = tiState.songForm;
+  var i = Number(el.getAttribute('data-i'));
+
+  switch (a) {
+    case 'new': tiNewService(el.getAttribute('data-date')); break;
+    case 'duplicate': tiNewService(el.getAttribute('data-date'), true); break;
+    case 'open': tiOpenService(tiByDate(el.getAttribute('data-date'))); break;
+    case 'openSvc': tiOpenService(tiState.services[Number(el.getAttribute('data-idx'))]); break;
+    case 'statusF': tiState.statusF = v; tiRender(); break;
+    case 'back': tiGoList(); break;
+    case 'delete': tiDeleteCurrent(); break;
+    case 'jump': tiJumpTo(el.getAttribute('data-to')); break;
+    case 'expand': tiState.open[k] = !tiState.open[k]; tiRenderBlock(k); break;
+    case 'toggle': svc.enabled[k] = !svc.enabled[k]; tiRenderDynamic(); tiQueueSave(); break;
+    case 'variant': svc.variants[k] = v; tiRenderBlock(k); tiRenderAside(); tiQueueSave(); break;
+    case 'status':
+      if (el.disabled) return;
+      svc.status = v; tiRenderAside(); tiQueueSave(); break;
+    case 'useSchedule':
+      tiApplySchedule(svc, tiScheduleOn(svc.date));
+      ['series', 'sub', 'pf'].forEach(function (f) { document.getElementById('tiF-' + f).value = svc[f]; });
+      tiRenderDynamic(); tiQueueSave(); break;
+    case 'pick': e.preventDefault(); tiOpenPicker(k); break;
+    case 'download': if (!el.disabled) tiDownload(v); break;
+
+    case 'closePicker': tiState.picker = null; tiRenderModal(); break;
+    case 'confirmPick': tiConfirmPick(); break;
+    case 'hymnal': pk.h = v; tiRenderPickerParts(); tiOnlineSearchSoon(); break;
+    case 'onlineImport': tiOnlineImport(el.getAttribute('data-h'), el.getAttribute('data-n'), el.getAttribute('data-row')); break;
+    case 'selSong': tiSelectSong(el.getAttribute('data-id')); break;
+    case 'seqReset': var song = tiState.songById[pk.sel]; pk.seq = song.arr ? song.arr.split(' → ') : []; pk.chipSel = null; tiRenderPickerParts(); break;
+    case 'seqRepeat': if (pk.seq.length) { pk.seq = pk.seq.concat(pk.seq); pk.chipSel = null; tiRenderPickerParts(); } break;
+    case 'addMenu': pk.addMenu = !pk.addMenu; tiRenderPickerParts(); break;
+    case 'seqAdd': pk.seq.push(v); tiRenderPickerParts(); break;
+    case 'chip': pk.chipSel = pk.chipSel === i ? null : i; tiRenderPickerParts(); break;
+    case 'chipRemove': e.stopPropagation(); pk.seq.splice(i, 1); pk.chipSel = null; tiRenderPickerParts(); break;
+    case 'chipLeft': if (pk.chipSel > 0) tiSeqMove(pk.chipSel, pk.chipSel - 1); break;
+    case 'chipRight': if (pk.chipSel < pk.seq.length - 1) tiSeqMove(pk.chipSel, pk.chipSel + 1); break;
+    case 'chipDup': pk.seq.splice(pk.chipSel + 1, 0, pk.seq[pk.chipSel]); pk.chipSel++; tiRenderPickerParts(); break;
+    case 'secToggle': pk.secOpen[v] = !pk.secOpen[v]; pk.secEdit[v] = false; tiRenderPickerParts(); break;
+    case 'secEdit': pk.secEdit[v] = true; tiRenderPickerParts(); break;
+    case 'secDone': pk.secEdit[v] = false; tiRenderPickerParts(); break;
+    case 'newSong': tiOpenSongForm(null); break;
+    case 'editSong': tiOpenSongForm(tiState.songById[pk.sel]); break;
+
+    case 'closeSongForm': tiState.songForm = null; tiRenderModal(); break;
+    case 'sfAdd': sf.sections.push({ label: '', text: '' }); tiRenderModal(); break;
+    case 'sfRemove': sf.sections.splice(i, 1); tiRenderModal(); break;
+    case 'sfSave': tiSaveSongForm(); break;
+    case 'sfParse': tiParsePaste(); break;
+    case 'sfPasteOpen': sf.pasteOpen = true; tiRenderModal(); break;
+  }
+}
+
+function tiOnInput(e) {
+  var t = e.target, svc = tiState.cur;
+  var f = t.getAttribute && t.getAttribute('data-tif');
+  if (f && svc) {
+    if (f === 'pk') svc.pk = t.checked;
+    else svc[f] = t.value;
+    if (f === 'date') {
+      svc.season = tiSeason(t.value) || svc.season;
+      document.getElementById('tiF-season').value = svc.season;
+    }
+    tiRenderDynamic();
+    tiQueueSave();
+    return;
+  }
+  var p = t.getAttribute && t.getAttribute('data-tipk');
+  if (p === 'q') { tiState.picker.q = t.value; tiRenderPickerParts(); tiOnlineSearchSoon(); return; }
+  if (p === 'lyric') { tiState.picker.lyrics[tiState.picker.sel + '|' + t.getAttribute('data-v')] = t.value; return; }
+  var sf = t.getAttribute && t.getAttribute('data-tisf');
+  if (sf) {
+    var i = t.getAttribute('data-i');
+    if (i != null) tiState.songForm.sections[Number(i)][sf] = t.value;
+    else tiState.songForm[sf] = t.value;
+    return;
+  }
+  var sel = t.getAttribute && t.getAttribute('data-tisel');
+  if (sel === 'monthF') { tiState.monthF = t.value; tiRender(); }
+}
+
+function tiOnKey(e) {
+  var pk = tiState.picker;
+  if (e.key === 'Escape') {
+    if (tiState.songForm) { tiState.songForm = null; tiRenderModal(); return; }
+    if (pk) { tiState.picker = null; tiRenderModal(); return; }
+  }
+  if (!pk || tiState.songForm || e.target.id !== 'tiPkQ') return;
+  if (e.key === 'Enter') { e.preventDefault(); tiConfirmPick(); return; }
+  if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+  e.preventDefault();
+  var ids = tiPickerMatches().results.map(function (s) { return s.id; });
+  if (!ids.length) return;
+  var i = ids.indexOf(pk.sel);
+  tiSelectSong(ids[e.key === 'ArrowDown' ? Math.min(i + 1, ids.length - 1) : Math.max(i - 1, 0)]);
+  var row = document.getElementById('tiPkRow-' + pk.sel);
+  if (row) row.scrollIntoView({ block: 'nearest' });
+}
+
+document.addEventListener('click', tiOnClick);
+document.addEventListener('input', tiOnInput);
+document.addEventListener('keydown', tiOnKey);
+document.addEventListener('dragstart', function (e) {
+  var el = e.target.closest && e.target.closest('[data-ti-seq]');
+  if (!el || !tiState.picker) return;
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', el.getAttribute('data-ti-seq'));
+  tiState.picker.dragI = Number(el.getAttribute('data-ti-seq'));
+  el.style.opacity = 0.4;
+});
+document.addEventListener('dragover', function (e) {
+  if (e.target.closest && e.target.closest('[data-ti-seq]')) e.preventDefault();
+});
+document.addEventListener('drop', function (e) {
+  var el = e.target.closest && e.target.closest('[data-ti-seq]');
+  var pk = tiState.picker;
+  if (!el || !pk) return;
+  e.preventDefault();
+  var to = Number(el.getAttribute('data-ti-seq'));
+  if (pk.dragI == null || pk.dragI === to) { pk.dragI = null; tiRenderPickerParts(); return; }
+  tiSeqMove(pk.dragI, to);
+});
+document.addEventListener('dragend', function () {
+  if (tiState.picker && tiState.picker.dragI != null) { tiState.picker.dragI = null; tiRenderPickerParts(); }
+});
+</script>

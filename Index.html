@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Plus+Jakarta+Sans:wght@400..800&display=swap">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; background: #FBF6E7; color: #3a2a15; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-font-smoothing: antialiased; }
+  h1, h2 { font-family: 'Bricolage Grotesque', sans-serif; }
+  a { color: #6E2621; text-decoration: none; }
+  a:hover { color: #E85511; }
+  input, select, textarea, button { font-family: inherit; font-size: inherit; color: inherit; }
+  input::placeholder, textarea::placeholder { color: #b3a37c; }
+  input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible { outline: 2px solid #E85511; outline-offset: 1px; }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-thumb { background: #e0d3ac; border-radius: 8px; }
+  button { border: none; background: none; }
+  .pill-btn { padding: 8px 13px; border-radius: 10px; white-space: nowrap; line-height: 1.1; font-size: 13px; cursor: pointer; font-family: inherit; border: 1px solid #e6d8b6; background: #fff; color: #8a7952; font-weight: 600; }
+  .pill-btn.on { border-color: #6E2621; background: #6E2621; color: #fff; font-weight: 700; }
+  .day-btn { height: 34px; border-radius: 9px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; border: 1px solid transparent; background: transparent; color: #8a7952; }
+  .row-hover:hover { background: #FEFBF2 !important; }
+  .icon-btn:hover { background: #F3E9CE; }
+
+  /* App shell: sidebar on wide screens, bottom bar on phones */
+  .app-shell { display: flex; min-height: 100vh; }
+  .side-nav { width: 232px; flex-shrink: 0; position: sticky; top: 0; height: 100vh; background: #F3E9CE; border-right: 1px solid #e7d9b3; display: flex; flex-direction: column; gap: 26px; padding: 22px 14px; }
+  .nav-link { display: flex; align-items: center; gap: 11px; width: 100%; padding: 9px 10px; border-radius: 12px; font-size: 14px; font-weight: 700; color: #6E2621; cursor: pointer; text-align: left; }
+  .nav-link:hover { background: #ecdfbd; }
+  .nav-link.on { background: #6E2621; color: #fff; }
+  .nav-ico { width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; background: rgba(110,38,33,.08); font-size: 15px; flex-shrink: 0; }
+  .nav-link.on .nav-ico { background: rgba(255,255,255,.14); }
+  .app-view { flex: 1; min-width: 0; min-height: 100vh; background: #FBF6E7; display: flex; flex-direction: column; }
+  .bottom-nav { display: none; }
+  .bottom-link { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 11.5px; font-weight: 700; color: #9a8763; cursor: pointer; }
+  .bottom-link .nav-ico { width: 34px; height: 26px; background: transparent; }
+  .bottom-link.on { color: #6E2621; }
+  .bottom-link.on .nav-ico { background: #F3E9CE; }
+  @media (max-width: 820px) {
+    .side-nav { display: none; }
+    .bottom-nav { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 70; height: 64px; background: #fff; border-top: 1px solid #ece0c2; box-shadow: 0 -10px 30px -18px rgba(74,59,23,.4); }
+    .app-view { padding-bottom: 64px; }
+    #toastEl { bottom: 84px !important; }
+    .page-pad { padding-left: 18px !important; padding-right: 18px !important; }
+  }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <nav class="side-nav">
+    <div style="display:flex; align-items:center; gap:10px; padding:0 6px;">
+      <span style="width:36px; height:36px; border-radius:11px; background:#6E2621; color:#fff; display:flex; align-items:center; justify-content:center; font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:17px;">P</span>
+      <span style="display:flex; flex-direction:column; line-height:1.2;">
+        <span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:15.5px; color:#3a2a15;">Pemuda</span>
+        <span style="font-size:11.5px; font-weight:600; color:#8a7952;">GKI Kota Wisata</span>
+      </span>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:4px;">
+      <span style="padding:0 10px 6px; font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:#9a8763;">Menu</span>
+      <button class="nav-link" data-view="events"><span class="nav-ico">▦</span>Event input</button>
+      <button class="nav-link" data-view="tata"><span class="nav-ico">✝</span>Tata Ibadah</button>
+    </div>
+  </nav>
+
+  <nav class="bottom-nav">
+    <button class="bottom-link" data-view="events"><span class="nav-ico">▦</span>Event input</button>
+    <button class="bottom-link" data-view="tata"><span class="nav-ico">✝</span>Tata Ibadah</button>
+  </nav>
+
+  <div id="viewTata" class="app-view" style="display:none;"></div>
+
+<div id="viewEvents" class="app-view">
+
+  <header class="page-pad" style="background:#F3E9CE; border-bottom:1px solid #e7d9b3; padding:22px 32px 20px;">
+    <div style="max-width:1320px; margin:0 auto; display:flex; align-items:flex-end; justify-content:space-between; gap:24px; flex-wrap:wrap;">
+      <div style="display:flex; flex-direction:column; gap:4px;">
+        <span style="color:#8a7952; font-size:12px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; line-height:1.4;">Service schedule</span>
+        <h1 style="margin:0; font-weight:800; letter-spacing:-.025em; font-size:34px; line-height:1.15; color:#3a2a15;">Event input</h1>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div style="display:flex; align-items:center; gap:8px; background:#fff; border:1px solid #e6d8b6; border-radius:12px; padding:0 14px; height:44px; min-width:240px;">
+          <span style="color:#b3a37c; font-size:14px;">⌕</span>
+          <input id="searchInput" placeholder="Search theme, pastor, tag" style="border:none; outline:none; background:transparent; width:100%; font-size:14px;">
+        </div>
+        <button id="newEventBtn" style="height:44px; padding:0 20px; border-radius:12px; background:#E85511; color:#fff; font-weight:700; font-size:15px; cursor:pointer; box-shadow:0 10px 24px -12px rgba(232,85,17,.6);">+ New event</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="page-pad" style="flex:1; padding:26px 32px 60px;">
+    <div style="max-width:1320px; margin:0 auto; display:flex; flex-direction:column; gap:20px;">
+
+      <div id="highlightCard"></div>
+
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div id="toolbarRow" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;"></div>
+        <div id="filtersPanel"></div>
+      </div>
+
+      <div id="calendarCard" style="display:none;"></div>
+
+      <div id="scheduleCard" style="background:#fff; border:1px solid #ece0c2; border-radius:20px; overflow:hidden;">
+        <div style="overflow-x:auto;">
+          <div id="tableHead" style="min-width:1320px; display:grid; grid-template-columns:180px minmax(220px,1.2fr) 150px 190px 170px minmax(160px,1fr) 44px; align-items:center; gap:0; background:#F3E9CE; border-bottom:1px solid #e7d9b3; padding:0 8px;">
+            <div style="padding:13px 12px; font-size:11.5px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:#8a7952;">Date</div>
+            <div style="padding:13px 12px; font-size:11.5px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:#8a7952;">Theme</div>
+            <div style="padding:13px 12px; font-size:11.5px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:#8a7952;">Tag</div>
+            <div style="padding:13px 12px; font-size:11.5px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:#8a7952;">PIC</div>
+            <div style="padding:13px 12px; font-size:11.5px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:#8a7952;">Pastor</div>
+            <div style="padding:13px 12px; font-size:11.5px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:#8a7952;">Notes</div>
+            <div></div>
+          </div>
+          <div id="tableBody"></div>
+          <div id="newRowTrigger" style="display:flex; align-items:center; gap:9px; padding:15px 20px; cursor:pointer; color:#8a7952; font-size:14px; font-weight:600;">
+            <span style="width:22px; height:22px; border-radius:7px; border:1px dashed #d9c79b; display:flex; align-items:center; justify-content:center; color:#E85511; font-weight:700;">+</span>
+            New event row
+          </div>
+        </div>
+      </div>
+
+      <div id="emptyState" style="display:none; text-align:center; color:#b3a37c; font-size:14px; padding:10px 0 0;">No events match this filter.</div>
+      <div id="loadingState" style="text-align:center; color:#b3a37c; font-size:14px; padding:30px 0;">Loading schedule…</div>
+    </div>
+  </main>
+
+  <div id="drawerOverlay" style="display:none; position:fixed; inset:0; z-index:80; justify-content:flex-end;">
+    <div id="drawerScrim" style="position:absolute; inset:0; background:rgba(58,42,21,.38);"></div>
+    <section style="position:relative; width:480px; max-width:100%; height:100%; background:#FBF6E7; box-shadow:-24px 0 60px rgba(74,59,23,.3); display:flex; flex-direction:column;">
+      <div style="flex-shrink:0; background:#F3E9CE; border-bottom:1px solid #e7d9b3; padding:22px 26px 20px; display:flex; align-items:flex-start; justify-content:space-between; gap:16px;">
+        <div style="display:flex; flex-direction:column; gap:3px;">
+          <span id="drawerEyebrow" style="color:#8a7952; font-size:11.5px; font-weight:700; letter-spacing:.07em; text-transform:uppercase;"></span>
+          <h2 id="drawerTitle" style="margin:0; font-weight:800; font-size:24px; letter-spacing:-.02em;"></h2>
+        </div>
+        <button id="drawerCloseBtn" class="icon-btn" style="width:36px; height:36px; border-radius:11px; background:rgba(58,42,21,.08); font-size:17px; cursor:pointer;">✕</button>
+      </div>
+
+      <div style="flex:1; overflow-y:auto; padding:22px 26px 28px; display:flex; flex-direction:column; gap:18px;">
+        <label style="display:flex; flex-direction:column; gap:7px;">
+          <span style="font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;">Date</span>
+          <input id="formDate" type="date" style="width:100%; padding:13px 14px; border-radius:12px; border:1px solid #e6d8b6; background:#fff; font-size:14.5px;">
+        </label>
+
+        <div style="display:flex; gap:12px;">
+          <label style="flex:1; display:flex; flex-direction:column; gap:7px;">
+            <span style="font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;">Time start</span>
+            <input id="formTimeStart" type="time" style="width:100%; padding:13px 14px; border-radius:12px; border:1px solid #e6d8b6; background:#fff; font-size:14.5px;">
+          </label>
+          <label style="flex:1; display:flex; flex-direction:column; gap:7px;">
+            <span style="font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;">Time end</span>
+            <input id="formTimeEnd" type="time" style="width:100%; padding:13px 14px; border-radius:12px; border:1px solid #e6d8b6; background:#fff; font-size:14.5px;">
+          </label>
+        </div>
+
+        <label style="display:flex; flex-direction:column; gap:7px;">
+          <span style="font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;">Theme</span>
+          <input id="formTheme" placeholder="e.g. A Prayer for Surrender" style="width:100%; padding:13px 14px; border-radius:12px; border:1px solid #e6d8b6; background:#fff; font-size:14.5px;">
+        </label>
+
+        <div style="display:flex; flex-direction:column; gap:9px;">
+          <span style="font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;">Tag</span>
+          <input id="formTag" placeholder="e.g. Service" style="width:100%; padding:13px 14px; border-radius:12px; border:1px solid #e6d8b6; background:#fff; font-size:14.5px;">
+          <div id="tagChips" style="display:flex; flex-wrap:wrap; gap:7px;"></div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:9px;">
+          <span style="font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;">PIC</span>
+          <div id="picChips" style="display:flex; flex-wrap:wrap; gap:7px;"></div>
+          <input id="formPicSearch" placeholder="Search or add a name" autocomplete="off" style="width:100%; padding:13px 14px; border-radius:12px; border:1px solid #e6d8b6; background:#fff; font-size:14.5px;">
+          <div id="picResults" style="display:flex; flex-direction:column; gap:6px;"></div>
+        </div>
+
+        <label style="display:flex; flex-direction:column; gap:7px;">
+          <span style="font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;">Pastor</span>
+          <input id="formPastor" placeholder="e.g. Pnt. Yuana, SFL, Pak Anto" style="width:100%; padding:13px 14px; border-radius:12px; border:1px solid #e6d8b6; background:#fff; font-size:14.5px;">
+        </label>
+
+        <label style="display:flex; flex-direction:column; gap:7px;">
+          <span style="font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;">Notes</span>
+          <textarea id="formNotes" rows="3" placeholder="Optional context — changes, reminders" style="width:100%; padding:13px 14px; border-radius:12px; border:1px solid #e6d8b6; background:#fff; font-size:14.5px; font-family:inherit; resize:vertical;"></textarea>
+        </label>
+
+        <div id="formError" style="display:none; margin:0; background:#fbe6e2; border:1px solid #f0c8c1; color:#8c2b20; font-size:13px; font-weight:600; padding:11px 14px; border-radius:12px;"></div>
+      </div>
+
+      <div style="flex-shrink:0; border-top:1px solid #e7d9b3; background:#F3E9CE; padding:16px 26px; display:flex; align-items:center; gap:10px;">
+        <button id="saveBtn" style="flex:1; padding:15px; border-radius:13px; background:#E85511; color:#fff; font-weight:700; font-size:15.5px; cursor:pointer; box-shadow:0 10px 24px -12px rgba(232,85,17,.6);"></button>
+        <button id="deleteBtn" style="display:none; padding:15px 18px; border:1px solid #e6c9c3; border-radius:13px; background:#fff; color:#8c2b20; font-weight:700; font-size:14px; cursor:pointer;">Delete</button>
+      </div>
+    </section>
+  </div>
+
+  <div id="toastEl" style="display:none; position:fixed; left:50%; bottom:32px; transform:translateX(-50%); z-index:120; background:#24401F; color:#fff; font-size:14px; font-weight:700; padding:13px 24px; border-radius:12px; box-shadow:0 12px 28px rgba(36,64,31,.35);"></div>
+</div>
+</div>
+
+<script>
+var TAG_COLORS = {
+  Service:   ['#24401F', '#ffffff'],
+  Fellowship:['#E85511', '#ffffff'],
+  Meeting:   ['#CFE4F7', '#31536f'],
+  Faithfuel: ['#fbdcc9', '#a3420e'],
+  Regular:   ['#CFE4F7', '#31536f'],
+  Focussed:  ['#f3d6d2', '#8c2b20'],
+  YM:        ['#6E2621', '#ffffff'],
+  OFF:       ['#F3E9CE', '#8a7952']
+};
+var TAG_QUICKPICKS = ['Service', 'Fellowship', 'Meeting', 'Faithfuel', 'Regular', 'Focussed', 'YM', 'OFF'];
+var FALLBACK_COLOR = ['#F3E9CE', '#8a7952'];
+
+var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+var DAYS_FULL = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+var MONTHS_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+var DOW_MINI = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+function tagColor(tag) { return TAG_COLORS[tag] || FALLBACK_COLOR; }
+function startOfToday() { var d = new Date(); d.setHours(0, 0, 0, 0); return d; }
+function shiftDays(d, n) { var x = new Date(d); x.setDate(x.getDate() + n); return x; }
+function iso(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function fromIso(s) { return s ? new Date(s + 'T00:00:00') : null; }
+function shortDate(s) {
+  var d = fromIso(s);
+  if (!d || isNaN(d)) return '';
+  return d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + String(d.getFullYear()).slice(2);
+}
+function parts(dateStr) {
+  var d = new Date((dateStr || '') + 'T00:00:00');
+  if (isNaN(d)) return { day: '--', mon: '', weekday: '', label: 'Undated', key: '9999-99', stamp: 9e15 };
+  return {
+    day: String(d.getDate()),
+    mon: MONTHS[d.getMonth()].toUpperCase(),
+    weekday: DAYS[d.getDay()],
+    label: MONTHS[d.getMonth()] + ' ' + d.getFullYear(),
+    key: d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'),
+    stamp: d.getTime()
+  };
+}
+
+var state = {
+  rows: [],
+  loaded: false,
+  query: '',
+  sortDir: 'asc',
+  filtersOpen: false,
+  fTag: [],
+  rangeFrom: iso(shiftDays(startOfToday(), -30)),
+  rangeTo: iso(shiftDays(startOfToday(), 60)),
+  calOpen: false,
+  calAnchor: null,
+  pendingStart: null,
+  viewMode: 'calendar',
+  calMonth: iso(new Date(startOfToday().getFullYear(), startOfToday().getMonth(), 1)),
+  calMonthInitialized: false,
+  drawerOpen: false,
+  editingId: null,
+  form: null,
+  picQuery: '',
+  memberDirectory: [],
+  error: '',
+  toast: '',
+  saving: false
+};
+
+function blankForm() { return { date: '', theme: '', tag: '', pastor: '', notes: '', pic: [], timeStart: '', timeEnd: '' }; }
+
+function flash(msg) {
+  state.toast = msg;
+  renderToast();
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(function () { state.toast = ''; renderToast(); }, 2400);
+}
+
+function renderToast() {
+  var el = document.getElementById('toastEl');
+  if (state.toast) { el.textContent = state.toast; el.style.display = 'block'; }
+  else { el.style.display = 'none'; }
+}
+
+function defaultRange() {
+  return { rangeFrom: iso(shiftDays(startOfToday(), -30)), rangeTo: iso(shiftDays(startOfToday(), 60)), pendingStart: null };
+}
+
+function visibleRows() {
+  var q = state.query.trim().toLowerCase();
+  var loD = fromIso(state.rangeFrom), hiD = fromIso(state.rangeTo);
+  var lo = loD ? loD.getTime() : -Infinity;
+  var hi = hiD ? hiD.getTime() : Infinity;
+
+  return state.rows.filter(function (r) {
+    var t = parts(r.date).stamp;
+    if (t < lo || t > hi) return false;
+    if (state.fTag.length && state.fTag.indexOf(r.tag) === -1) return false;
+    if (!q) return true;
+    return (r.theme + ' ' + r.pastor + ' ' + r.tag).toLowerCase().indexOf(q) !== -1;
+  });
+}
+
+function nearestEvent() {
+  var now = new Date(); now.setHours(0, 0, 0, 0);
+  var today = now.getTime();
+  var withStamp = state.rows.map(function (r) { return { r: r, t: parts(r.date).stamp }; }).filter(function (x) { return isFinite(x.t); });
+  var future = withStamp.filter(function (x) { return x.t >= today; }).sort(function (a, b) { return a.t - b.t; });
+  var pastEv = withStamp.filter(function (x) { return x.t < today; }).sort(function (a, b) { return b.t - a.t; });
+  return (future[0] || pastEv[0] || {}).r;
+}
+
+function countdownLabel(dateStr) {
+  var d = fromIso(dateStr);
+  if (!d || isNaN(d)) return 'Upcoming';
+  var diffDays = Math.round((d.getTime() - startOfToday().getTime()) / 86400000);
+  if (diffDays < 0) return 'Past event';
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Tomorrow';
+  if (diffDays <= 7) return 'This ' + DAYS_FULL[d.getDay()];
+  if (diffDays <= 14) return 'Next week';
+  if (diffDays <= 30) return 'Next month';
+  return 'In ' + Math.round(diffDays / 30) + ' months';
+}
+
+/* The event right after the highlighted one, in date order — gives the
+   highlight card a "then" line for context without a second big card. */
+function nearestThenLabel(nearest) {
+  var withStamp = state.rows.map(function (r) { return { r: r, t: parts(r.date).stamp }; }).filter(function (x) { return isFinite(x.t); });
+  withStamp.sort(function (a, b) { return a.t - b.t; });
+  var idx = -1;
+  for (var i = 0; i < withStamp.length; i++) { if (withStamp[i].r.id === nearest.id) { idx = i; break; } }
+  if (idx === -1 || idx + 1 >= withStamp.length) return '';
+  var next = withStamp[idx + 1].r;
+  return 'Then ' + shortDate(next.date) + ' — ' + esc(next.theme || 'Untitled event');
+}
+
+function renderHighlightCard() {
+  var container = document.getElementById('highlightCard');
+  var nearest = nearestEvent();
+  if (!nearest || !state.loaded) { container.innerHTML = ''; return; }
+
+  var p = parts(nearest.date);
+  var tc = tagColor(nearest.tag);
+  var timeLabel = nearest.timeStart ? (esc(nearest.timeStart) + (nearest.timeEnd ? '–' + esc(nearest.timeEnd) : '')) : '';
+  var picHtml = (nearest.pic && nearest.pic.length)
+    ? '<span style="display:flex; gap:5px;">' + nearest.pic.map(function (m) {
+        return '<span style="width:26px; height:26px; border-radius:50%; background:' + picColor(m.id) + '; color:#fff; font-size:10.5px; font-weight:700; display:flex; align-items:center; justify-content:center; border:2px solid #6E2621; flex-shrink:0;">' + esc(picInitials(m.name)) + '</span>';
+      }).join('') + '</span><span style="font-size:12.5px; font-weight:600; color:#f0d8d3;">' + esc(nearest.pic.map(function (m) { return m.name; }).join(', ')) + '</span>'
+    : '';
+  var thenLabel = nearestThenLabel(nearest);
+
+  container.innerHTML =
+    '<div style="background:#6E2621; color:#fff; border-radius:20px; padding:22px 26px; display:flex; align-items:center; gap:26px; flex-wrap:wrap; box-shadow:0 18px 40px -26px rgba(110,38,33,.8);">' +
+      '<div style="display:flex; flex-direction:column; align-items:center; gap:2px; background:rgba(255,255,255,.1); border-radius:16px; padding:12px 18px; min-width:96px;">' +
+        '<span style="font-size:11px; font-weight:700; letter-spacing:.08em; color:#e0b5af;">' + esc(p.weekday.toUpperCase()) + '</span>' +
+        '<span style="font-weight:800; font-size:40px; line-height:1;">' + esc(p.day) + '</span>' +
+        '<span style="font-size:11.5px; font-weight:700; letter-spacing:.08em; color:#e0b5af;">' + esc(p.mon) + '</span>' +
+      '</div>' +
+      '<div style="flex:1; min-width:240px; display:flex; flex-direction:column; gap:7px;">' +
+        '<span style="display:flex; align-items:center; gap:9px; flex-wrap:wrap;">' +
+          '<span style="background:#E85511; color:#fff; font-size:10.5px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; padding:4px 10px; border-radius:6px;">Next up · ' + esc(countdownLabel(nearest.date)) + '</span>' +
+          (nearest.tag ? '<span style="background:' + tc[0] + '; color:' + tc[1] + '; font-size:10.5px; font-weight:700; padding:4px 10px; border-radius:6px;">' + esc(nearest.tag) + '</span>' : '') +
+        '</span>' +
+        '<h2 style="margin:0; font-weight:800; font-size:26px; letter-spacing:-.025em; line-height:1.15; text-wrap:pretty;">' + esc(nearest.theme || 'Untitled event') + '</h2>' +
+        '<span style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">' +
+          (timeLabel ? '<span style="font-size:13px; font-weight:700; color:#fff;">' + timeLabel + '</span>' : '') +
+          (nearest.pastor ? '<span style="font-size:13px; font-weight:600; color:#e0b5af;">' + esc(nearest.pastor) + '</span>' : '') +
+        '</span>' +
+        (picHtml ? '<span style="display:flex; align-items:center; gap:9px; flex-wrap:wrap;">' + picHtml + '</span>' : '') +
+        (nearest.notes ? '<p style="margin:2px 0 0; font-size:13px; color:#f0d8d3; line-height:1.5; max-width:60ch;">' + esc(nearest.notes) + '</p>' : '') +
+        (thenLabel ? '<span style="font-size:12px; color:#e0b5af; font-weight:600; margin-top:4px;">' + thenLabel + '</span>' : '') +
+      '</div>' +
+      '<div style="display:flex; flex-direction:column; gap:8px;">' +
+        '<button id="highlightOpenBtn" style="padding:13px 20px; border-radius:12px; background:#E85511; color:#fff; font-weight:700; font-size:14.5px; cursor:pointer; white-space:nowrap;">Open event</button>' +
+        '<button id="highlightCalBtn" style="padding:13px 20px; border-radius:12px; border:1px solid rgba(255,255,255,.35); background:transparent; color:#fff; font-size:13.5px; font-weight:700; cursor:pointer; white-space:nowrap;">Show on calendar</button>' +
+      '</div>' +
+    '</div>';
+
+  document.getElementById('highlightOpenBtn').onclick = function () { openEdit(nearest.id); };
+  document.getElementById('highlightCalBtn').onclick = function () { showOnCalendar(nearest); };
+}
+
+/* ---------- calendar view ---------- */
+
+function calendarFilteredRows() {
+  var q = state.query.trim().toLowerCase();
+  return state.rows.filter(function (r) {
+    if (state.fTag.length && state.fTag.indexOf(r.tag) === -1) return false;
+    if (!q) return true;
+    return (r.theme + ' ' + r.pastor + ' ' + r.tag).toLowerCase().indexOf(q) !== -1;
+  });
+}
+
+function eventsByDateMap(rows) {
+  var map = {};
+  rows.forEach(function (r) { if (!r.date) return; (map[r.date] = map[r.date] || []).push(r); });
+  return map;
+}
+
+function showOnCalendar(row) {
+  var d = fromIso(row.date);
+  if (!d) return;
+  state.viewMode = 'calendar';
+  state.calMonth = iso(new Date(d.getFullYear(), d.getMonth(), 1));
+  renderAll();
+  setTimeout(function () {
+    var el = document.getElementById('cal-' + row.date);
+    if (!el) return;
+    var box = el.getBoundingClientRect();
+    window.scrollTo({ top: window.scrollY + box.top - window.innerHeight / 2 + box.height / 2, behavior: 'smooth' });
+    el.animate([{ background: '#fbd9bc' }, { background: '#ffffff' }], { duration: 1100, easing: 'ease-out' });
+  }, 60);
+}
+
+function goToTodayCalendar() {
+  var t = startOfToday();
+  state.calMonth = iso(new Date(t.getFullYear(), t.getMonth(), 1));
+  renderAll();
+}
+
+function shiftCalMonth(n) {
+  var a = fromIso(state.calMonth) || startOfToday();
+  state.calMonth = iso(new Date(a.getFullYear(), a.getMonth() + n, 1));
+  renderAll();
+}
+
+function renderCalendarGrid() {
+  var card = document.getElementById('calendarCard');
+  var anchor = fromIso(state.calMonth) || startOfToday();
+  var y = anchor.getFullYear(), m = anchor.getMonth();
+  var first = new Date(y, m, 1);
+  var pad = first.getDay();
+  var daysInMonth = new Date(y, m + 1, 0).getDate();
+  var daysInPrev = new Date(y, m, 0).getDate();
+  var todayIso = iso(startOfToday());
+  var map = eventsByDateMap(calendarFilteredRows());
+
+  var cells = [];
+  for (var i = 0; i < pad; i++) {
+    var pd = daysInPrev - pad + 1 + i;
+    cells.push({ inMonth: false, day: pd, iso: iso(new Date(y, m - 1, pd)) });
+  }
+  for (var day = 1; day <= daysInMonth; day++) cells.push({ inMonth: true, day: day, iso: iso(new Date(y, m, day)) });
+  var nd = 1;
+  while (cells.length % 7 !== 0) { cells.push({ inMonth: false, day: nd, iso: iso(new Date(y, m + 1, nd)) }); nd++; }
+
+  var dowHtml = DAYS.map(function (d) { return '<span style="padding:11px 10px; font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:#8a7952;">' + d.toUpperCase() + '</span>'; }).join('');
+
+  var cellsHtml = cells.map(function (c) {
+    var evts = (map[c.iso] || []).slice().sort(function (a, b) { return (a.timeStart || '').localeCompare(b.timeStart || ''); });
+    var shown = evts.slice(0, 3);
+    var extra = evts.length - shown.length;
+    var isToday = c.iso === todayIso;
+    var dayNumHtml = '<span style="display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:8px; font-size:12.5px; font-weight:700; ' +
+      (isToday ? 'background:#E85511; color:#fff;' : 'color:' + (c.inMonth ? '#3a2a15' : '#d9c79b') + ';') + '">' + c.day + '</span>';
+    var pillsHtml = shown.map(function (r) {
+      var tc = tagColor(r.tag);
+      return '<button class="cal-evt-pill" data-id="' + esc(r.id) + '" style="display:block; width:100%; text-align:left; cursor:pointer; background:' + tc[0] + '; color:' + tc[1] + '; border-radius:6px; padding:3px 6px; margin-top:3px; font-size:11px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' +
+        (r.timeStart ? '<span style="opacity:.85;">' + esc(r.timeStart) + '</span> ' : '') + esc(r.theme || 'Untitled') + '</button>';
+    }).join('');
+    var moreHtml = extra > 0 ? '<button class="cal-more-btn" data-iso="' + c.iso + '" style="cursor:pointer; text-align:left; width:100%; background:transparent; color:#8a7952; font-size:10.5px; font-weight:700; margin-top:3px;">+' + extra + ' more</button>' : '';
+    return '<div id="cal-' + c.iso + '" style="min-height:104px; background:#fff; padding:8px 7px; display:flex; flex-direction:column;' + (c.inMonth ? '' : 'opacity:.45;') + '">' + dayNumHtml + pillsHtml + moreHtml + '</div>';
+  }).join('');
+
+  card.innerHTML = '<div style="background:#fff; border:1px solid #ece0c2; border-radius:20px; overflow:hidden;">' +
+    '<div style="display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); background:#F3E9CE; border-bottom:1px solid #e7d9b3;">' + dowHtml + '</div>' +
+    '<div style="display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:1px; background:#f1e7cd;">' + cellsHtml + '</div>' +
+    '</div>' +
+    (calendarFilteredRows().length === 0 ? '<p style="text-align:center; color:#b3a37c; font-size:14px; padding:14px 0 0;">No events match this filter.</p>' : '');
+
+  Array.prototype.forEach.call(card.querySelectorAll('.cal-evt-pill'), function (btn) {
+    var id = btn.getAttribute('data-id');
+    btn.onclick = function () { openEdit(id); };
+  });
+  Array.prototype.forEach.call(card.querySelectorAll('.cal-more-btn'), function (btn) {
+    var dISO = btn.getAttribute('data-iso');
+    btn.onclick = function () {
+      state.viewMode = 'list';
+      state.rangeFrom = dISO; state.rangeTo = dISO; state.pendingStart = null;
+      renderAll();
+    };
+  });
+}
+
+function distinctTags() {
+  var set = {};
+  state.rows.forEach(function (r) { if (r.tag) set[r.tag] = true; });
+  TAG_QUICKPICKS.forEach(function (t) { set[t] = true; });
+  return Object.keys(set);
+}
+
+function memberPool() {
+  var map = {};
+  state.memberDirectory.forEach(function (m) { map[m.id] = m; });
+  state.rows.forEach(function (r) { (r.pic || []).forEach(function (m) { if (m && m.id && !map[m.id]) map[m.id] = m; }); });
+  return Object.keys(map).map(function (id) { return map[id]; }).sort(function (a, b) { return a.name.localeCompare(b.name); });
+}
+
+var PIC_AVATAR_COLORS = ['#E85511', '#6E2621', '#24401F', '#31536f', '#8a4b9e', '#0f766e'];
+function hashStr_(s) {
+  var h = 0;
+  for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return h;
+}
+function picColor(key) { return PIC_AVATAR_COLORS[hashStr_(String(key)) % PIC_AVATAR_COLORS.length]; }
+function picInitials(name) {
+  var parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return '?';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+}
+
+/* ---------- toolbar + filters ---------- */
+
+function renderToolbar() {
+  var s = state;
+  var filterCount = s.fTag.length;
+  var isCal = s.viewMode === 'calendar';
+  var html = '';
+
+  html += '<div style="display:flex; gap:3px; background:#fff; border:1px solid #e6d8b6; border-radius:12px; padding:4px;">' +
+    '<button id="viewCalBtn" style="padding:9px 16px; border-radius:9px; font-size:13px; font-weight:700; cursor:pointer; ' + (isCal ? 'background:#6E2621; color:#fff;' : 'background:transparent; color:#6E2621;') + '">Calendar</button>' +
+    '<button id="viewListBtn" style="padding:9px 16px; border-radius:9px; font-size:13px; font-weight:700; cursor:pointer; ' + (!isCal ? 'background:#6E2621; color:#fff;' : 'background:transparent; color:#6E2621;') + '">List</button>' +
+    '</div>';
+
+  if (!isCal) {
+    html += '<button id="sortBtn" style="display:flex; align-items:center; gap:8px; padding:11px 16px; border:1px solid #e6d8b6; border-radius:11px; background:#fff; font-size:13.5px; font-weight:700; color:#6E2621; cursor:pointer; white-space:nowrap; line-height:1.1;">' +
+      '<span style="font-size:13px;">' + (s.sortDir === 'asc' ? '↑' : '↓') + '</span>Date · ' + (s.sortDir === 'asc' ? 'oldest first' : 'newest first') + '</button>';
+  }
+
+  html += '<button id="filtersBtn" style="display:flex; align-items:center; gap:8px; height:40px; padding:0 16px; border-radius:11px; cursor:pointer; font-size:13.5px; font-weight:700; border:1px solid ' +
+    (filterCount || s.filtersOpen ? '#6E2621' : '#e6d8b6') + '; background:' + (filterCount ? '#6E2621' : '#fff') + '; color:' + (filterCount ? '#fff' : '#6E2621') + ';">' +
+    '<span style="font-size:13px;">⛃</span>Filters' +
+    (filterCount ? '<span style="background:#E85511; color:#fff; font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px;">' + filterCount + '</span>' : '') +
+    '</button>';
+
+  html += '<button id="todayBtn" style="display:flex; align-items:center; gap:7px; padding:11px 16px; border:1px solid #e6d8b6; border-radius:11px; background:#fff; font-size:13.5px; font-weight:700; color:#6E2621; cursor:pointer; white-space:nowrap; line-height:1.1;">' +
+    '<span style="width:7px; height:7px; border-radius:50%; background:#E85511;"></span>Go to today</button>';
+
+  if (isCal) {
+    var anchor = fromIso(s.calMonth) || startOfToday();
+    html += '<div style="display:flex; align-items:center; gap:2px; border:1px solid #e6d8b6; border-radius:11px; background:#fff; padding:3px;">' +
+      '<button id="calMonthPrevBtn" class="icon-btn" style="width:30px; height:32px; border-radius:8px; color:#8a7952; font-size:17px; cursor:pointer;">‹</button>' +
+      '<span style="min-width:142px; text-align:center; font-weight:800; font-size:14px; color:#6E2621;">' + MONTHS_FULL[anchor.getMonth()] + ' ' + anchor.getFullYear() + '</span>' +
+      '<button id="calMonthNextBtn" class="icon-btn" style="width:30px; height:32px; border-radius:8px; color:#8a7952; font-size:17px; cursor:pointer;">›</button>' +
+      '</div>';
+  } else {
+    var sorted = visibleRows();
+    var rangeLabel = (!s.rangeFrom && !s.rangeTo) ? 'All dates' : (shortDate(s.rangeFrom) || 'Any') + ' – ' + (shortDate(s.rangeTo) || 'Any');
+    html += '<div style="position:relative;">' +
+      '<div style="display:flex; align-items:center; gap:2px; border:1px solid #e6d8b6; border-radius:11px; background:#fff; padding:3px;">' +
+      '<button id="calPrevBtn" class="icon-btn" style="width:30px; height:32px; border-radius:8px; color:#8a7952; font-size:17px; cursor:pointer;">‹</button>' +
+      '<button id="calLabelBtn" class="icon-btn" style="display:flex; align-items:center; gap:8px; height:32px; padding:0 10px; border-radius:8px; font-size:13.5px; font-weight:700; color:#6E2621; cursor:pointer; white-space:nowrap;">' + esc(rangeLabel) + '<span style="font-size:13px; opacity:.7;">🗓</span></button>' +
+      '<button id="calNextBtn" class="icon-btn" style="width:30px; height:32px; border-radius:8px; color:#8a7952; font-size:17px; cursor:pointer;">›</button>' +
+      '</div>' +
+      '<div id="calPopover"></div>' +
+      '</div>';
+    html += '<span style="font-size:13px; color:#9a8763; font-weight:600;">' + sorted.length + ' of ' + s.rows.length + ' events</span>';
+  }
+
+  if (filterCount || s.query) {
+    html += '<button id="clearBtn" style="margin-left:auto; border:none; background:transparent; color:#E85511; font-size:13px; font-weight:700; cursor:pointer; text-decoration:underline;">Clear all</button>';
+  }
+
+  document.getElementById('toolbarRow').innerHTML = html;
+
+  document.getElementById('viewCalBtn').onclick = function () { s.viewMode = 'calendar'; renderAll(); };
+  document.getElementById('viewListBtn').onclick = function () { s.viewMode = 'list'; renderAll(); };
+  document.getElementById('filtersBtn').onclick = function () { s.filtersOpen = !s.filtersOpen; renderAll(); };
+  document.getElementById('todayBtn').onclick = isCal ? goToTodayCalendar : goToToday;
+
+  if (isCal) {
+    document.getElementById('calMonthPrevBtn').onclick = function () { shiftCalMonth(-1); };
+    document.getElementById('calMonthNextBtn').onclick = function () { shiftCalMonth(1); };
+  } else {
+    var sortBtn = document.getElementById('sortBtn');
+    if (sortBtn) sortBtn.onclick = function () { s.sortDir = s.sortDir === 'asc' ? 'desc' : 'asc'; renderAll(); };
+    document.getElementById('calPrevBtn').onclick = function () { shiftWindow(-1); };
+    document.getElementById('calNextBtn').onclick = function () { shiftWindow(1); };
+    document.getElementById('calLabelBtn').onclick = function () { s.calOpen = !s.calOpen; s.pendingStart = null; renderAll(); };
+    renderCalendar();
+  }
+
+  var clearBtn = document.getElementById('clearBtn');
+  if (clearBtn) clearBtn.onclick = function () {
+    s.fTag = []; s.query = '';
+    document.getElementById('searchInput').value = '';
+    Object.assign(s, defaultRange());
+    renderAll();
+  };
+}
+
+function shiftWindow(dir) {
+  var a = fromIso(state.rangeFrom), b = fromIso(state.rangeTo);
+  if (!a || !b) return;
+  var span = Math.max(1, Math.round((b - a) / 86400000) + 1);
+  state.rangeFrom = iso(shiftDays(a, dir * span));
+  state.rangeTo = iso(shiftDays(b, dir * span));
+  state.pendingStart = null;
+  renderAll();
+}
+
+function moveCal(n) {
+  var a = state.calAnchor ? fromIso(state.calAnchor) : (fromIso(state.rangeFrom) || startOfToday());
+  var d = new Date(a.getFullYear(), a.getMonth() + n, 1);
+  state.calAnchor = iso(d);
+  renderCalendar();
+}
+
+function pickDay(d) {
+  if (!state.pendingStart) {
+    state.pendingStart = iso(d); state.rangeFrom = iso(d); state.rangeTo = iso(d);
+    renderCalendar();
+    return;
+  }
+  var a = fromIso(state.pendingStart);
+  var lo = d < a ? d : a, hi = d < a ? a : d;
+  state.rangeFrom = iso(lo); state.rangeTo = iso(hi); state.pendingStart = null; state.calOpen = false;
+  renderAll();
+}
+
+function buildMonthHtml(anchor, lo, hi, today) {
+  var y = anchor.getFullYear(), m = anchor.getMonth();
+  var first = new Date(y, m, 1);
+  var pad = first.getDay();
+  var days = new Date(y, m + 1, 0).getDate();
+  var cells = [];
+  for (var i = 0; i < pad; i++) cells.push('<span></span>');
+  for (var day = 1; day <= days; day++) {
+    var d = new Date(y, m, day);
+    var t = d.getTime();
+    var isEdge = t === lo || t === hi;
+    var inRange = t > lo && t < hi;
+    var isToday = t === today;
+    var style = 'height:34px; border-radius:9px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; border:1px solid transparent;';
+    if (isEdge) style += 'background:#6E2621; color:#fff;';
+    else if (inRange) style += 'background:#F3E9CE; color:#6E2621; font-weight:600;';
+    else style += 'background:transparent; color:#8a7952; font-weight:600;';
+    if (isToday && !isEdge) style += 'border-color:#E85511; color:#E85511;';
+    cells.push('<button class="cal-day" data-t="' + t + '" style="' + style + '">' + day + '</button>');
+  }
+  var dowHtml = DOW_MINI.map(function (d) { return '<span style="text-align:center; font-size:11px; font-weight:700; color:#b3a37c; padding:4px 0;">' + d + '</span>'; }).join('');
+  return '<div style="display:flex; flex-direction:column; gap:4px;">' +
+    '<div style="display:grid; grid-template-columns:repeat(7, 1fr); gap:2px;">' + dowHtml + '</div>' +
+    '<div style="display:grid; grid-template-columns:repeat(7, 1fr); gap:2px;">' + cells.join('') + '</div>' +
+    '</div>';
+}
+
+function buildPresetsHtml() {
+  var t = startOfToday();
+  var som = new Date(t.getFullYear(), t.getMonth(), 1);
+  var list = [
+    ['−30 / +60 days', iso(shiftDays(t, -30)), iso(shiftDays(t, 60))],
+    ['Today', iso(t), iso(t)],
+    ['Next 7D', iso(t), iso(shiftDays(t, 7))],
+    ['This month', iso(som), iso(new Date(t.getFullYear(), t.getMonth() + 1, 0))],
+    ['Prev month', iso(new Date(t.getFullYear(), t.getMonth() - 1, 1)), iso(new Date(t.getFullYear(), t.getMonth(), 0))],
+    ['Next 30D', iso(t), iso(shiftDays(t, 30))],
+    ['Next 90D', iso(t), iso(shiftDays(t, 90))],
+    ['Past events', '', iso(shiftDays(t, -1))],
+    ['All dates', '', '']
+  ];
+  return list.map(function (p) {
+    var on = state.rangeFrom === p[1] && state.rangeTo === p[2];
+    var style = 'padding:8px 13px; border-radius:20px; white-space:nowrap; line-height:1.1; font-size:12.5px; cursor:pointer; font-family:inherit; border:1px solid ' +
+      (on ? '#E85511' : '#e6d8b6') + '; background:' + (on ? '#fdf0e6' : '#fff') + '; color:' + (on ? '#E85511' : '#8a7952') + '; font-weight:' + (on ? 700 : 600) + ';';
+    return '<button class="preset-btn" data-from="' + p[1] + '" data-to="' + p[2] + '" style="' + style + '">' + p[0] + '</button>';
+  }).join('');
+}
+
+function renderCalendar() {
+  var pop = document.getElementById('calPopover');
+  if (!state.calOpen) { pop.innerHTML = ''; return; }
+
+  var anchor = state.calAnchor ? fromIso(state.calAnchor) : (fromIso(state.rangeFrom) || startOfToday());
+  var anchorB = new Date(anchor.getFullYear(), anchor.getMonth() + 1, 1);
+  var now = new Date(); now.setHours(0, 0, 0, 0);
+  var today = now.getTime();
+  var loD = fromIso(state.rangeFrom), hiD = fromIso(state.rangeTo);
+  var lo = loD ? loD.getTime() : -Infinity;
+  var hi = hiD ? hiD.getTime() : Infinity;
+
+  pop.innerHTML = '<div style="position:absolute; top:calc(100% + 8px); right:0; left:auto; z-index:90; width:min(620px, calc(100vw - 56px)); background:#fff; border:1px solid #ece0c2; border-radius:18px; box-shadow:0 20px 44px rgba(74,59,23,.24); padding:18px 20px 16px;">' +
+    '<div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px;">' +
+    '<span style="display:flex; align-items:center; gap:4px;">' +
+    '<button id="calPrevYear" class="icon-btn" style="width:28px; height:28px; border-radius:8px; color:#9a8763; cursor:pointer; font-size:13px;">«</button>' +
+    '<button id="calPrevM" class="icon-btn" style="width:28px; height:28px; border-radius:8px; color:#9a8763; cursor:pointer; font-size:15px;">‹</button>' +
+    '<span style="font-weight:800; font-size:15px; color:#3a2a15; margin-left:4px;">' + MONTHS_FULL[anchor.getMonth()] + ' ' + anchor.getFullYear() + '</span>' +
+    '</span>' +
+    '<span style="display:flex; align-items:center; gap:4px;">' +
+    '<span style="font-weight:800; font-size:15px; color:#3a2a15; margin-right:4px;">' + MONTHS_FULL[anchorB.getMonth()] + ' ' + anchorB.getFullYear() + '</span>' +
+    '<button id="calNextM" class="icon-btn" style="width:28px; height:28px; border-radius:8px; color:#9a8763; cursor:pointer; font-size:15px;">›</button>' +
+    '<button id="calNextYear" class="icon-btn" style="width:28px; height:28px; border-radius:8px; color:#9a8763; cursor:pointer; font-size:13px;">»</button>' +
+    '</span>' +
+    '</div>' +
+    '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:22px;">' +
+    buildMonthHtml(anchor, lo, hi, today) + buildMonthHtml(anchorB, lo, hi, today) +
+    '</div>' +
+    '<div style="display:flex; flex-wrap:wrap; gap:7px; margin-top:16px; padding-top:14px; border-top:1px solid #f1e7cd;">' +
+    buildPresetsHtml() +
+    '</div>' +
+    '</div>';
+
+  document.getElementById('calPrevYear').onclick = function () { moveCal(-12); };
+  document.getElementById('calPrevM').onclick = function () { moveCal(-1); };
+  document.getElementById('calNextM').onclick = function () { moveCal(1); };
+  document.getElementById('calNextYear').onclick = function () { moveCal(12); };
+  Array.prototype.forEach.call(pop.querySelectorAll('.cal-day'), function (btn) {
+    var t = Number(btn.getAttribute('data-t'));
+    btn.onclick = function () { pickDay(new Date(t)); };
+  });
+  Array.prototype.forEach.call(pop.querySelectorAll('.preset-btn'), function (btn) {
+    btn.onclick = function () {
+      state.rangeFrom = btn.getAttribute('data-from');
+      state.rangeTo = btn.getAttribute('data-to');
+      state.pendingStart = null;
+      state.calOpen = false;
+      renderAll();
+    };
+  });
+}
+
+function goToToday() {
+  var nearest = nearestEvent();
+  if (!nearest) return;
+  var loD = fromIso(state.rangeFrom), hiD = fromIso(state.rangeTo);
+  var lo = loD ? loD.getTime() : -Infinity;
+  var hi = hiD ? hiD.getTime() : Infinity;
+  var t = parts(nearest.date).stamp;
+  var jump = function () {
+    var el = document.getElementById('evt-' + nearest.id);
+    if (!el) return;
+    var box = el.getBoundingClientRect();
+    window.scrollTo({ top: window.scrollY + box.top - window.innerHeight / 2 + box.height / 2, behavior: 'smooth' });
+    el.animate([{ background: '#fbd9bc' }, { background: '#FEF3E6' }], { duration: 1100, easing: 'ease-out' });
+  };
+  if (t < lo || t > hi) {
+    state.rangeFrom = ''; state.rangeTo = ''; state.calOpen = false;
+    renderAll();
+    setTimeout(jump, 60);
+  } else {
+    jump();
+  }
+}
+
+function renderFiltersPanel() {
+  var panel = document.getElementById('filtersPanel');
+  if (!state.filtersOpen) { panel.innerHTML = ''; return; }
+  var tags = distinctTags();
+  var chips = tags.map(function (t) {
+    var on = state.fTag.indexOf(t) !== -1;
+    var c = tagColor(t);
+    var style = on
+      ? 'padding:8px 13px; border-radius:10px; white-space:nowrap; line-height:1.1; border:1px solid ' + c[0] + '; background:' + c[0] + '; color:' + c[1] + '; font-size:13px; font-weight:700; cursor:pointer;'
+      : 'padding:8px 13px; border-radius:10px; white-space:nowrap; line-height:1.1; border:1px solid #e6d8b6; background:#fff; color:#8a7952; font-size:13px; font-weight:600; cursor:pointer;';
+    return '<button class="tag-filter-chip" data-tag="' + esc(t) + '" style="' + style + '">' + esc(t) + '</button>';
+  }).join('');
+
+  panel.innerHTML = '<div style="background:#fff; border:1px solid #ece0c2; border-radius:16px; padding:18px 20px; display:flex; flex-direction:column; gap:9px;">' +
+    '<span style="font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:#8a7952;">Tag</span>' +
+    '<div style="display:flex; flex-wrap:wrap; gap:7px;">' + chips + '</div>' +
+    '</div>';
+
+  Array.prototype.forEach.call(panel.querySelectorAll('.tag-filter-chip'), function (btn) {
+    var t = btn.getAttribute('data-tag');
+    btn.onclick = function () {
+      var i = state.fTag.indexOf(t);
+      if (i === -1) state.fTag.push(t); else state.fTag.splice(i, 1);
+      renderAll();
+    };
+  });
+}
+
+/* ---------- table ---------- */
+
+function renderTable() {
+  var sorted = visibleRows();
+  var dir = state.sortDir === 'asc' ? 1 : -1;
+  sorted.sort(function (a, b) { return (parts(a.date).stamp - parts(b.date).stamp) * dir; });
+
+  var nearest = nearestEvent();
+  document.getElementById('emptyState').style.display = sorted.length === 0 && state.loaded ? 'block' : 'none';
+  document.getElementById('loadingState').style.display = state.loaded ? 'none' : 'block';
+  document.getElementById('scheduleCard').style.display = state.loaded ? 'block' : 'none';
+
+  var byMonth = [];
+  sorted.forEach(function (r) {
+    var p = parts(r.date);
+    var g = byMonth.filter(function (x) { return x.key === p.key; })[0];
+    if (!g) { g = { key: p.key, label: p.label, rows: [] }; byMonth.push(g); }
+    g.rows.push({ row: r, p: p });
+  });
+
+  var html = byMonth.map(function (g) {
+    var rowsHtml = g.rows.map(function (item) {
+      var row = item.row, p = item.p;
+      var isNext = nearest && row.id === nearest.id;
+      var tc = tagColor(row.tag);
+      var timeLabel = row.timeStart ? (esc(row.timeStart) + (row.timeEnd ? '–' + esc(row.timeEnd) : '')) : '';
+      return '<div class="row-hover" data-id="' + esc(row.id) + '" id="evt-' + esc(row.id) + '" style="min-width:1320px; display:grid; grid-template-columns:180px minmax(220px,1.2fr) 150px 190px 170px minmax(160px,1fr) 44px; align-items:center; border-bottom:1px solid #f4ecd8; padding:0 8px; cursor:pointer; background:' +
+        (isNext ? '#FEF3E6' : '#fff') + (isNext ? '; box-shadow:inset 4px 0 0 #E85511;' : ';') + '">' +
+        '<div style="padding:14px 12px; display:flex; align-items:center; gap:11px;">' +
+        '<span style="background:#F3E9CE; border-radius:12px; padding:7px 10px; display:flex; flex-direction:column; align-items:center; line-height:1.02; min-width:56px;">' +
+        '<span style="font-weight:800; font-size:24px; color:#6E2621;">' + p.day + '</span>' +
+        '<span style="font-size:11px; font-weight:700; letter-spacing:.07em; color:#8a7952;">' + p.mon + '</span>' +
+        '</span>' +
+        '<span style="font-size:16px; color:#8a7952; font-weight:700;">' + p.weekday + '</span>' +
+        '</div>' +
+        '<div style="padding:14px 12px; display:flex; flex-direction:column; gap:2px; min-width:0;">' +
+        '<span style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">' +
+        '<span style="font-weight:700; font-size:15.5px; color:#3a2a15; text-wrap:pretty;">' + esc(row.theme || 'Untitled event') + '</span>' +
+        (isNext ? '<span style="background:#E85511; color:#fff; font-size:10px; font-weight:700; letter-spacing:.07em; padding:3px 8px; border-radius:6px;">NEXT UP</span>' : '') +
+        '</span>' +
+        (timeLabel ? '<span style="font-size:12.5px; color:#8a7952; font-weight:600;">' + timeLabel + '</span>' : '') +
+        '</div>' +
+        '<div style="padding:14px 12px;">' +
+        (row.tag ? '<span style="display:inline-flex; align-items:center; background:' + tc[0] + '; color:' + tc[1] + '; font-size:11.5px; font-weight:700; padding:4px 10px; border-radius:7px; white-space:nowrap;">' + esc(row.tag) + '</span>' : '<span style="font-size:13px; color:#c0ad82;">—</span>') +
+        '</div>' +
+        '<div style="padding:14px 12px; display:flex; flex-direction:column; gap:6px;">' +
+        (row.pic && row.pic.length ? row.pic.map(function (m) {
+          return '<span style="display:flex; align-items:center; gap:8px; min-width:0;">' +
+            '<span style="width:24px; height:24px; border-radius:50%; background:' + picColor(m.id) + '; color:#fff; font-size:10.5px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">' + esc(picInitials(m.name)) + '</span>' +
+            '<span style="font-size:13px; font-weight:600; color:#3a2a15; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + esc(m.name) + '</span>' +
+            '</span>';
+        }).join('') : '<span style="font-size:13px; color:#c0ad82;">—</span>') +
+        '</div>' +
+        '<div style="padding:14px 12px;">' +
+        (row.pastor ? '<span style="display:inline-flex; align-items:center; background:#F3E9CE; color:#6E2621; font-size:11.5px; font-weight:700; padding:4px 10px; border-radius:7px; white-space:nowrap;">' + esc(row.pastor) + '</span>' : '<span style="font-size:13px; color:#c0ad82;">—</span>') +
+        '</div>' +
+        '<div style="padding:14px 12px; font-size:13px; color:#6b5a38; line-height:1.4;">' +
+        (row.notes ? esc(row.notes) : '<span style="color:#c0ad82;">—</span>') +
+        '</div>' +
+        '<div style="padding:14px 4px; text-align:center; color:#c6b58c; font-size:16px;">›</div>' +
+        '</div>';
+    }).join('');
+
+    return '<div style="display:flex; flex-direction:column;">' +
+      '<div style="min-width:1320px; display:flex; align-items:center; gap:10px; padding:11px 20px; background:#FBF6E7; border-bottom:1px solid #f1e7cd;">' +
+      '<span style="font-weight:800; font-size:13px; letter-spacing:.04em; text-transform:uppercase; color:#6E2621;">' + esc(g.label) + '</span>' +
+      '<span style="background:#CFE4F7; color:#3f5a72; font-size:11px; font-weight:700; padding:2px 9px; border-radius:20px;">' + g.rows.length + '</span>' +
+      '</div>' + rowsHtml + '</div>';
+  }).join('');
+
+  var tableBody = document.getElementById('tableBody');
+  tableBody.innerHTML = html;
+  Array.prototype.forEach.call(tableBody.querySelectorAll('[data-id]'), function (el) {
+    var id = el.getAttribute('data-id');
+    el.onclick = function () { openEdit(id); };
+  });
+}
+
+/* ---------- drawer ---------- */
+
+function openNew() {
+  state.drawerOpen = true;
+  state.editingId = null;
+  state.form = blankForm();
+  state.picQuery = '';
+  state.error = '';
+  renderDrawer();
+}
+
+function openEdit(id) {
+  var row = state.rows.filter(function (r) { return r.id === id; })[0];
+  if (!row) return;
+  state.drawerOpen = true;
+  state.editingId = id;
+  state.form = { date: row.date, theme: row.theme, tag: row.tag, pastor: row.pastor, notes: row.notes || '', pic: (row.pic || []).slice(), timeStart: row.timeStart || '', timeEnd: row.timeEnd || '' };
+  state.picQuery = '';
+  state.error = '';
+  renderDrawer();
+}
+
+function closeDrawer() {
+  state.drawerOpen = false;
+  renderDrawer();
+}
+
+function renderDrawer() {
+  var overlay = document.getElementById('drawerOverlay');
+  overlay.style.display = state.drawerOpen ? 'flex' : 'none';
+  if (!state.drawerOpen) return;
+
+  var form = state.form || blankForm();
+  document.getElementById('drawerEyebrow').textContent = state.editingId ? 'Edit entry' : 'Schedule sheet';
+  document.getElementById('drawerTitle').textContent = state.editingId ? 'Edit event' : 'New event';
+  document.getElementById('formDate').value = form.date || '';
+  document.getElementById('formTimeStart').value = form.timeStart || '';
+  document.getElementById('formTimeEnd').value = form.timeEnd || '';
+  document.getElementById('formTheme').value = form.theme || '';
+  document.getElementById('formTag').value = form.tag || '';
+  document.getElementById('formPastor').value = form.pastor || '';
+  document.getElementById('formNotes').value = form.notes || '';
+  document.getElementById('formPicSearch').value = state.picQuery || '';
+  document.getElementById('saveBtn').textContent = state.saving ? 'Saving…' : (state.editingId ? 'Save changes' : 'Add to schedule');
+  document.getElementById('saveBtn').disabled = state.saving;
+  document.getElementById('deleteBtn').style.display = state.editingId ? 'block' : 'none';
+  var errEl = document.getElementById('formError');
+  if (state.error) { errEl.textContent = state.error; errEl.style.display = 'block'; }
+  else { errEl.style.display = 'none'; }
+
+  renderTagChips();
+  renderPicField();
+}
+
+/* ---------- PIC (person in charge) ---------- */
+
+function renderPicField() {
+  var form = state.form || blankForm();
+  var pic = form.pic || [];
+
+  var chipsHtml = pic.map(function (m) {
+    return '<span class="pill-btn on" style="display:inline-flex; align-items:center; gap:6px;">' + esc(m.name) +
+      '<button type="button" data-remove-pic="' + esc(m.id) + '" style="cursor:pointer; color:inherit; font-weight:700; line-height:1;">✕</button></span>';
+  }).join('');
+  var chipsEl = document.getElementById('picChips');
+  chipsEl.innerHTML = chipsHtml;
+  Array.prototype.forEach.call(chipsEl.querySelectorAll('[data-remove-pic]'), function (btn) {
+    var id = btn.getAttribute('data-remove-pic');
+    btn.onclick = function () { removePic(id); };
+  });
+
+  var q = (state.picQuery || '').trim();
+  var pool = memberPool().filter(function (m) { return !pic.some(function (p) { return p.id === m.id; }); });
+  var matches = q ? pool.filter(function (m) { return m.name.toLowerCase().indexOf(q.toLowerCase()) !== -1; }) : pool;
+
+  var resultsHtml = matches.map(function (m) {
+    return '<div class="row-hover" data-add-pic="' + esc(m.id) + '" style="cursor:pointer; padding:10px 12px; border-radius:10px; border:1px solid #e6d8b6; background:#fff; font-size:13.5px; font-weight:600;">' + esc(m.name) + '</div>';
+  }).join('');
+
+  var exactMatch = q && pic.concat(pool).some(function (m) { return m.name.toLowerCase() === q.toLowerCase(); });
+  if (q && !exactMatch) {
+    resultsHtml += '<div class="row-hover" data-add-new-pic="' + esc(q) + '" style="cursor:pointer; padding:10px 12px; border-radius:10px; border:1px dashed #E85511; color:#E85511; font-size:13.5px; font-weight:700;">+ Add "' + esc(q) + '" to the member pool</div>';
+  }
+
+  var resultsEl = document.getElementById('picResults');
+  resultsEl.innerHTML = q ? resultsHtml : '';
+  Array.prototype.forEach.call(resultsEl.querySelectorAll('[data-add-pic]'), function (el) {
+    var id = el.getAttribute('data-add-pic');
+    el.onclick = function () { addPic(id); };
+  });
+  var addNewEl = resultsEl.querySelector('[data-add-new-pic]');
+  if (addNewEl) addNewEl.onclick = function () { addPicNew(addNewEl.getAttribute('data-add-new-pic')); };
+}
+
+function addPic(id) {
+  var m = memberPool().filter(function (p) { return p.id === id; })[0];
+  if (!m) return;
+  var form = state.form;
+  if (!form.pic.some(function (p) { return p.id === m.id; })) {
+    form.pic = form.pic.concat([m]);
+  }
+  state.picQuery = '';
+  document.getElementById('formPicSearch').value = '';
+  renderPicField();
+}
+
+/* No matching member: kept as a free-text PIC with no directory id, same as before this sheet had one. */
+function addPicNew(name) {
+  name = String(name || '').trim();
+  if (!name) return;
+  var form = state.form;
+  if (!form.pic.some(function (p) { return p.name.toLowerCase() === name.toLowerCase(); })) {
+    form.pic = form.pic.concat([{ id: name, name: name }]);
+  }
+  state.picQuery = '';
+  document.getElementById('formPicSearch').value = '';
+  renderPicField();
+}
+
+function removePic(id) {
+  state.form.pic = (state.form.pic || []).filter(function (p) { return p.id !== id; });
+  renderPicField();
+}
+
+function renderTagChips() {
+  var form = state.form || blankForm();
+  var chips = TAG_QUICKPICKS.map(function (t) {
+    var on = form.tag === t;
+    var c = tagColor(t);
+    return '<button class="tag-pick-chip pill-btn' + (on ? ' on' : '') + '" data-tag="' + esc(t) + '" style="' +
+      (on ? 'border-color:' + c[0] + '; background:' + c[0] + '; color:' + c[1] + ';' : '') + '">' + esc(t) + '</button>';
+  }).join('');
+  var container = document.getElementById('tagChips');
+  container.innerHTML = chips;
+  Array.prototype.forEach.call(container.querySelectorAll('.tag-pick-chip'), function (btn) {
+    var t = btn.getAttribute('data-tag');
+    btn.onclick = function () {
+      state.form.tag = t;
+      document.getElementById('formTag').value = t;
+      renderTagChips();
+    };
+  });
+}
+
+function saveEventClick() {
+  var form = state.form;
+  if (!form.date) { state.error = 'Pick a date for this event.'; renderDrawer(); return; }
+  if (!form.theme.trim()) { state.error = 'Give the event a theme or title.'; renderDrawer(); return; }
+
+  state.saving = true;
+  state.error = '';
+  renderDrawer();
+
+  var payload = {
+    id: state.editingId,
+    date: form.date,
+    theme: form.theme.trim(),
+    tag: form.tag.trim(),
+    pastor: form.pastor.trim(),
+    notes: (form.notes || '').trim(),
+    pic: (form.pic || []).map(function (m) { return m.id; }),
+    timeStart: form.timeStart || '',
+    timeEnd: form.timeEnd || ''
+  };
+
+  google.script.run
+    .withSuccessHandler(function (res) {
+      state.saving = false;
+      if (!res.success) { state.error = res.message; renderDrawer(); return; }
+      state.drawerOpen = false;
+      renderDrawer();
+      fetchSchedule(function () { flash(res.message); });
+    })
+    .withFailureHandler(function (err) {
+      state.saving = false;
+      state.error = err && err.message ? err.message : String(err);
+      renderDrawer();
+    })
+    .saveEvent(payload);
+}
+
+function deleteEventClick() {
+  if (!state.editingId) return;
+  var id = state.editingId;
+  state.saving = true;
+  renderDrawer();
+
+  google.script.run
+    .withSuccessHandler(function (res) {
+      state.saving = false;
+      if (!res.success) { state.error = res.message; renderDrawer(); return; }
+      state.drawerOpen = false;
+      renderDrawer();
+      fetchSchedule(function () { flash(res.message); });
+    })
+    .withFailureHandler(function (err) {
+      state.saving = false;
+      state.error = err && err.message ? err.message : String(err);
+      renderDrawer();
+    })
+    .deleteEvent(id);
+}
+
+/* ---------- data + boot ---------- */
+
+function fetchSchedule(done) {
+  google.script.run
+    .withSuccessHandler(function (rows) {
+      state.rows = rows || [];
+      state.loaded = true;
+      if (!state.calMonthInitialized) {
+        state.calMonthInitialized = true;
+        var nearest = nearestEvent();
+        if (nearest) {
+          var d = fromIso(nearest.date);
+          if (d) state.calMonth = iso(new Date(d.getFullYear(), d.getMonth(), 1));
+        }
+      }
+      renderAll();
+      if (done) done();
+    })
+    .withFailureHandler(function (err) {
+      state.loaded = true;
+      document.getElementById('loadingState').textContent = 'Failed to load schedule: ' + (err && err.message ? err.message : err);
+      renderAll();
+    })
+    .getSchedule();
+}
+
+function fetchMemberPool() {
+  google.script.run
+    .withSuccessHandler(function (members) {
+      state.memberDirectory = members || [];
+      if (state.drawerOpen) renderPicField();
+    })
+    .withFailureHandler(function () { /* Members sheet is optional; fall back to schedule-derived entries. */ })
+    .getMemberPool();
+}
+
+function renderAll() {
+  renderHighlightCard();
+  renderToolbar();
+  renderFiltersPanel();
+  if (state.viewMode === 'calendar') {
+    document.getElementById('scheduleCard').style.display = 'none';
+    document.getElementById('emptyState').style.display = 'none';
+    document.getElementById('loadingState').style.display = state.loaded ? 'none' : 'block';
+    document.getElementById('calendarCard').style.display = state.loaded ? 'block' : 'none';
+    if (state.loaded) renderCalendarGrid();
+  } else {
+    document.getElementById('calendarCard').style.display = 'none';
+    renderTable();
+  }
+}
+
+function boot() {
+  document.getElementById('newEventBtn').onclick = openNew;
+  document.getElementById('newRowTrigger').onclick = openNew;
+  document.getElementById('drawerCloseBtn').onclick = closeDrawer;
+  document.getElementById('drawerScrim').onclick = closeDrawer;
+  document.getElementById('saveBtn').onclick = saveEventClick;
+  document.getElementById('deleteBtn').onclick = deleteEventClick;
+
+  document.getElementById('searchInput').oninput = function (e) {
+    state.query = e.target.value;
+    renderToolbar();
+    if (state.viewMode === 'calendar') renderCalendarGrid(); else renderTable();
+  };
+  document.getElementById('formDate').onchange = function (e) { state.form.date = e.target.value; };
+  document.getElementById('formTimeStart').onchange = function (e) { state.form.timeStart = e.target.value; };
+  document.getElementById('formTimeEnd').onchange = function (e) { state.form.timeEnd = e.target.value; };
+  document.getElementById('formTheme').oninput = function (e) { state.form.theme = e.target.value; };
+  document.getElementById('formPastor').oninput = function (e) { state.form.pastor = e.target.value; };
+  document.getElementById('formTag').oninput = function (e) { state.form.tag = e.target.value; renderTagChips(); };
+  document.getElementById('formNotes').oninput = function (e) { state.form.notes = e.target.value; };
+  document.getElementById('formPicSearch').oninput = function (e) { state.picQuery = e.target.value; renderPicField(); };
+  document.getElementById('formPicSearch').onkeydown = function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); addPic(state.picQuery); }
+  };
+
+  document.addEventListener('click', function (e) {
+    if (!state.calOpen) return;
+    var pop = document.getElementById('calPopover');
+    if (pop && pop.contains(e.target)) return;
+    if (e.target.closest && e.target.closest('#calLabelBtn')) return;
+    state.calOpen = false;
+    renderCalendar();
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll('[data-view]'), function (btn) {
+    btn.onclick = function () { showView(btn.getAttribute('data-view')); };
+  });
+  google.script.url.getLocation(function (loc) { showView(loc.hash === 'tata-ibadah' ? 'tata' : 'events', true); });
+
+  renderAll();
+  fetchSchedule();
+  fetchMemberPool();
+}
+
+/* ---------- navigation ---------- */
+
+function showView(view, fromUrl) {
+  document.getElementById('viewEvents').style.display = view === 'events' ? '' : 'none';
+  document.getElementById('viewTata').style.display = view === 'tata' ? '' : 'none';
+  Array.prototype.forEach.call(document.querySelectorAll('[data-view]'), function (btn) {
+    btn.classList.toggle('on', btn.getAttribute('data-view') === view);
+  });
+  if (!fromUrl) {
+    google.script.history.replace(null, null, view === 'tata' ? 'tata-ibadah' : '');
+    window.scrollTo(0, 0);
+  }
+  if (view === 'tata') tiEnter();
+}
+</script>
+<?!= include('TataIbadahView'); ?>
+<script>boot();</script>
+</body>
+</html>
