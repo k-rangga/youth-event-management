@@ -15,6 +15,7 @@ function mkPara() {
     editAsText: () => ({ setAttributes: a => { p.runs.forEach(r => r.a = a); p.emptyAttrs = a; } }),
     appendInlineImage: blob => { const img = { w: 300, h: 100, key: blob.name }; p.runs.push({ img }); const o = { getWidth: () => img.w, getHeight: () => img.h, setWidth: v => { img.w = v; return o; }, setHeight: v => { img.h = v; return o; } }; return o; }
   });
+  p.setHeading = () => p;
   ['Alignment:align', 'IndentStart:start', 'IndentFirstLine:first', 'IndentEnd:end', 'SpacingBefore:before', 'SpacingAfter:after', 'LineSpacing:line'].forEach(x => {
     const [m, k] = x.split(':'); p['set' + m] = v => { p.props[k] = v; return p; };
   });
@@ -30,7 +31,7 @@ function mkCell() {
 const kids = [mkPara()];
 const INPLACE = process.argv.includes('--inplace');
 const body = {
-  clear: () => { kids.length = 0; kids.push(mkPara()); },
+  removeChild: c => { kids.splice(kids.indexOf(c), 1); },
   getChild: i => kids[i], getNumChildren: () => kids.length,
   appendParagraph: () => { const p = mkPara(); kids.push(p); return p; },
   appendPageBreak: () => { const p = mkPara(); p.type = 'break'; kids.push(p); return p; },
@@ -49,6 +50,7 @@ const footer = mkPara();
 let oldFooter = null;
 if (INPLACE) {
   kids.push(mkPara(), mkPara()); kids[0].runs = [{ t: 'old content', a: {} }];
+  body.appendTable([['', 'old table']]); kids.push(mkPara()); body.appendTable([['•', 'old bullet']]);
   oldFooter = { parts: ['[PAGE#]', '  |  PEMUDA KOTA WISATA – TATA IBADAH MINGGU, 18 OKTOBER 2026'] };
   oldFooter.getText = () => oldFooter.parts.join('');
   oldFooter.replaceText = (re, v) => { oldFooter.parts = oldFooter.parts.map(p => p === '[PAGE#]' ? p : p.replace(new RegExp(re), v)); };
@@ -67,9 +69,12 @@ const songs = {
 const svc = { id: '3', date: '2026-10-25', season: 'Bulan Keluarga', series: 'Glorious Purpose', sub: 'Body of Christ', pf: 'Sdr. Paul Sirait (GKP Tanjung Barat)', kp: '1 Korintus 12:12', baBook: 'Mazmur', baCh: '139', baVs: '23-24', pk: false,
   slots: { b2: 'kk34', b5: 'sahk', b7: 'kj410', b10: 'sahk', b18: 'kj410', b20: 'kk34', b22: null }, arr: {},
   variants: { b8: 'B', b9: '1×', b11: '767F', b21: 'ongko' }, enabled: { b15: true, b22: false }, lyrics: {}, texts: { call: 'Selamat pagi teman-teman, mari bersiap beribadah.', reading: 'Roma 12:1-8', baText: 'Selidikilah aku, ya Allah, dan kenallah hatiku.' } };
-if (INPLACE) body.clear();
+if (INPLACE) vm.runInContext('emptyBody_', ctx)(body);
 vm.runInContext('buildLiturgy_', ctx)(doc, svc, songs, INPLACE ? { inPlace: true } : undefined);
-if (INPLACE) console.log('in place: old content gone', !kids.some(k => k.type === 'p' && k.getText() === 'old content'), '| footer →', oldFooter.getText());
+if (INPLACE) {
+  const oldTables = kids.filter(k => k.type === 'table' && k.rows.some(r => r.some(c => /old (table|bullet)/.test(c.kids.map(x => x.getText()).join('')))));
+  console.log('in place: old paragraph gone', !kids.some(k => k.type === 'p' && k.getText() === 'old content'), '| old tables left', oldTables.length, '| footer →', oldFooter.getText());
+}
 
 // structural checks
 const tables = kids.filter(k => k.type === 'table');

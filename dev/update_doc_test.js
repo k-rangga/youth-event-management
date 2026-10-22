@@ -4,7 +4,7 @@ function run(opts) {
   const log = [];
   const ctx = { console, TZ: 'Asia/Jakarta', Utilities: { formatDate: () => '22 Okt, 17.00' },
     DriveApp: { getFileById: id => { if (opts.missing) throw new Error('not found'); return { isTrashed: () => !!opts.trashed }; } },
-    DocumentApp: { openById: id => ({ getBody: () => ({ clear: () => log.push('clear ' + id) }), setName: n => log.push('name ' + n), saveAndClose: () => log.push('save') }) } };
+    DocumentApp: { ParagraphHeading: { NORMAL: 'N' }, openById: id => ({ getBody: () => ({ appendParagraph: () => { log.push('empty ' + id); return { setHeading: () => {} }; }, getNumChildren: () => 1, getChild: () => null, removeChild: () => {} }), setName: n => log.push('name ' + n), saveAndClose: () => log.push('save') }) } };
   vm.createContext(ctx);
   vm.runInContext(fs.readFileSync('Liturgi.js', 'utf8'), ctx);
   const saved = [];

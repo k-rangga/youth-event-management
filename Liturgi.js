@@ -191,7 +191,7 @@ function updateLiturgyDoc(serviceId) {
     return { success: false, gone: true, message: 'Google Doc tidak ditemukan. Buat Google Doc baru.' };
   }
   var gdoc = DocumentApp.openById(doc.id);
-  gdoc.getBody().clear();
+  emptyBody_(gdoc.getBody());
   buildLiturgy_(gdoc, found.svc, liturgySongs_(), { inPlace: true });
   gdoc.setName('Liturgi Pemuda ' + idDate_(found.svc.date));
   gdoc.saveAndClose();
@@ -199,6 +199,17 @@ function updateLiturgyDoc(serviceId) {
   found.data.doc = doc;
   found.sheet.getRange(found.row, 11).setValue(JSON.stringify(found.data));
   return { success: true, message: 'Google Doc diperbarui', doc: doc };
+}
+
+/*
+ * Removes everything from a Doc's body, leaving one empty paragraph.
+ * Body.clear() is not used: it can leave tables (our bullet and speaker
+ * columns) behind, which then reappear after the rewritten content.
+ */
+function emptyBody_(body) {
+  var keep = body.appendParagraph('');
+  for (var i = body.getNumChildren() - 2; i >= 0; i--) body.removeChild(body.getChild(i));
+  keep.setHeading(DocumentApp.ParagraphHeading.NORMAL);
 }
 
 function yearFolder_(year) {
