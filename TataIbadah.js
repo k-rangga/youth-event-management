@@ -172,7 +172,10 @@ function saveTataIbadah(p) {
     var row = [newId, dateObj, p.season || '', p.series || '', p.sub || '', p.pf || '', p.kp || '', ba, !!p.pk, status, JSON.stringify(data), now];
     if (rowIndex !== -1) sheet.getRange(rowIndex + 2, 1, 1, row.length).setValues([row]);
     else sheet.appendRow(row);
-    return { success: true, id: newId, savedAt: Utilities.formatDate(now, TZ, 'HH.mm'), updatedAt: stamp_(now) };
+    var sync = null;
+    try { sync = pushServiceToSchedule_(date, p.series, p.sub, p.pf); } catch (e) { console.warn('Schedule sync skipped: ' + e.message); }
+    return { success: true, id: newId, savedAt: Utilities.formatDate(now, TZ, 'HH.mm'), updatedAt: stamp_(now),
+      schedule: sync ? sync.event : null, scheduleChanged: !!(sync && sync.changed) };
   } finally {
     lock.releaseLock();
   }
@@ -452,42 +455,6 @@ function pickScheduleEvent_(events) {
   return usable.filter(function (e) { return e.tag === 'Service'; })[0] || usable[0] || null;
 }
 
-/**
- * Copies a service's theme and Pelayan Firman to its Schedule row (adding a
- * "Service" row if that Sunday has none). Returns the refreshed schedule.
- */
-function syncScheduleFromService(serviceId) {
-  var found = findService_(serviceId);
-  if (!found) return { success: false, message: 'Simpan tata ibadah ini dulu.' };
-  var svc = found.svc;
-  var theme = (svc.series ? svc.series + ': ' : '') + svc.sub;
-  var lock = LockService.getScriptLock();
-  lock.waitLock(30000);
-  try {
-    var sheet = getScheduleSheet_();
-    var last = sheet.getLastRow();
-    var rows = last > 1 ? sheet.getRange(2, 1, last - 1, 5).getValues() : [];
-    var events = [], maxId = 0;
-    rows.forEach(function (r, i) {
-      var n = Number(r[0]);
-      if (!isNaN(n) && n > maxId) maxId = n;
-      if (r[0] !== '' && fmtDate_(r[1]) === svc.date) events.push({ row: i + 2, tag: String(r[4] || '') });
-    });
-    var ev = pickScheduleEvent_(events);
-    var message;
-    if (ev) {
-      sheet.getRange(ev.row, 3, 1, 2).setValues([[theme, svc.pf]]);
-      message = 'Jadwal ' + svc.date + ' diperbarui';
-    } else {
-      sheet.appendRow([maxId + 1, new Date(svc.date + 'T00:00:00'), theme, svc.pf, 'Service', '', '', '', '']);
-      message = 'Ibadah ' + svc.date + ' ditambahkan ke jadwal';
-    }
-  } finally {
-    lock.releaseLock();
-  }
-  return { success: true, message: message, schedule: getTataIbadahData().schedule };
-}
-
 /* ---------- song library ---------- */
 
 /**
@@ -563,6 +530,87 @@ function importHymnalIndex() {
     });
     if (rows.length) sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, SONG_HEADERS.length).setValues(rows);
     return { success: true, added: added, total: rows.length };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/* ---------- Tata Ibadah ↔ Schedule (theme and Pelayan Firman) ---------- */
+
+/* Schedule theme from a service: "Series: Sub-theme", or just the sub-theme. */
+function themeOf_(series, sub) {
+  series = String(series || '').trim(); sub = String(sub || '').trim();
+  return sub ? (series ? series + ': ' + sub : sub) : '';
+}
+
+/* The reverse of themeOf_. */
+function splitTheme_(theme) {
+  theme = String(theme || '').trim();
+  var i = theme.indexOf(':');
+  return i === -1 ? { series: '', sub: theme } : { series: theme.slice(0, i).trim(), sub: theme.slice(i + 1).trim() };
+}
+
+function scheduleEventsOn_(sheet, date) {
+  var last = sheet.getLastRow();
+  if (last < 2) return [];
+  var out = [];
+  sheet.getRange(2, 1, last - 1, 5).getValues().forEach(function (r, i) {
+    if (r[0] !== '' && r[0] !== null && fmtDate_(r[1]) === date) {
+      out.push({ row: i + 2, id: String(r[0]), date: date, theme: String(r[2] || ''), pastor: String(r[3] || ''), tag: String(r[4] || '') });
+    }
+  });
+  return out;
+}
+
+/*
+ * After a Tata Ibadah save (inside its lock): writes theme and PF to that
+ * Sunday's service row, adding a "Service" row if the day has none. Empty
+ * values never blank the Schedule. Returns { event, changed } or null.
+ */
+function pushServiceToSchedule_(date, series, sub, pf) {
+  var sheet = getScheduleSheet_();
+  var theme = themeOf_(series, sub);
+  pf = String(pf || '').trim();
+  var ev = pickScheduleEvent_(scheduleEventsOn_(sheet, date));
+  if (ev) {
+    var newTheme = theme || ev.theme, newPastor = pf || ev.pastor;
+    var changed = newTheme !== ev.theme || newPastor !== ev.pastor;
+    if (changed) sheet.getRange(ev.row, 3, 1, 2).setValues([[newTheme, newPastor]]);
+    return { event: { id: ev.id, date: date, theme: newTheme, pastor: newPastor, tag: ev.tag }, changed: changed };
+  }
+  if (!theme) return null;
+  var last = sheet.getLastRow(), maxId = 0;
+  if (last > 1) sheet.getRange(2, 1, last - 1, 1).getValues().forEach(function (r) { var n = Number(r[0]); if (!isNaN(n) && n > maxId) maxId = n; });
+  sheet.appendRow([maxId + 1, new Date(date + 'T00:00:00'), theme, pf, 'Service', '', '', '', '']);
+  return { event: { id: String(maxId + 1), date: date, theme: theme, pastor: pf, tag: 'Service' }, changed: true };
+}
+
+/*
+ * After an Event input save: if that row is the day's service row, the Tata
+ * Ibadah on that date takes its theme and Pastor (and its saved-at time moves
+ * on, so an open builder sees the change). Returns { id, changed } or null.
+ */
+function syncScheduleToService_(date, eventId) {
+  if (!date) return null;
+  var lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    var ev = pickScheduleEvent_(scheduleEventsOn_(getScheduleSheet_(), date));
+    if (!ev || ev.id !== String(eventId)) return null;
+    var sheet = getOrCreateSheet_(TI_SHEET, TI_HEADERS);
+    var last = sheet.getLastRow();
+    if (last < 2) return null;
+    var rows = sheet.getRange(2, 1, last - 1, 6).getValues();
+    for (var i = 0; i < rows.length; i++) {
+      if (rows[i][0] === '' || fmtDate_(rows[i][1]) !== date) continue;
+      var t = ev.theme.trim() ? splitTheme_(ev.theme) : { series: String(rows[i][3]), sub: String(rows[i][4]) };
+      var pf = ev.pastor.trim() || String(rows[i][5]);
+      if (t.series === String(rows[i][3]) && t.sub === String(rows[i][4]) && pf === String(rows[i][5])) return { id: String(rows[i][0]), changed: false };
+      sheet.getRange(i + 2, 4, 1, 3).setValues([[t.series, t.sub, pf]]);
+      sheet.getRange(i + 2, 12).setValue(new Date(Math.floor(Date.now() / 1000) * 1000));
+      return { id: String(rows[i][0]), changed: true };
+    }
+    return null;
   } finally {
     lock.releaseLock();
   }

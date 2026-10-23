@@ -36,9 +36,6 @@ if (require.main === module) {
   const d = r(`saveTataIbadah({id:'1', date:'2026-10-25', series:'GP', sub:'Forced', pf:'Paul', baseUpdatedAt:'2000-01-01T00:00:00', force:true, slots:{b2:'kj3'}, lyrics:{'kj3|Bait 1':'x'}})`);
   console.log('save', a.success, a.updatedAt, '| same-base resave', b.success, '| stale', c.conflict, c.latest && c.latest.sub, '| forced', d.success);
   console.log('texts round-trip', JSON.stringify(r(`getTataIbadahData().services[0].texts`)), '| liturgy keys', Object.keys(r('getTataIbadahData().liturgy.fixed')).join(','));
-  // schedule sync: skips Meeting, updates the Regular row
-  const sy = r(`syncScheduleFromService('1')`);
-  console.log('sync', sy.message, JSON.stringify(sy.schedule.filter(e => e.date === '2026-10-25')));
   // delete song in use: refused, then merged
   console.log('delete used', JSON.stringify(r(`deleteSong('kj3')`)));
   console.log('merge', JSON.stringify(r(`deleteSong('kj3', 'goodness')`)), JSON.stringify(r(`getTataIbadahData().services[0]`).slots), Object.keys(r(`getTataIbadahData().services[0]`).lyrics));
@@ -54,4 +51,26 @@ if (require.main === module && process.argv[3] === 'index') {
   console.log('sample', JSON.stringify(songs.filter(s => s.id === 'kj410' || s.id === 'kk767')));
   const imp = r(`importHymnalSong('KJ', '410')`);
   console.log('lazy fetch KJ 410 →', imp.message, imp.song && imp.song.sections.map(s => s.label).join(','), '| rows', r('readSongs_().length'));
+}
+if (require.main === module && process.argv[3] === 'sync') {
+  const { r, sheets } = module.exports;
+  const sched = () => JSON.stringify(sheets.Schedule.rows.slice(1).map(x => [x[0], x[2], x[3], x[4]]));
+  // 1. TI save pushes to the Regular row (Meeting skipped)
+  const a = r(`saveTataIbadah({date:'2026-10-25', series:'Glorious Purpose', sub:'Body of Christ', pf:'Sdr. Paul', status:'Draft', slots:{}})`);
+  console.log('1 TI→Schedule', a.scheduleChanged, JSON.stringify(a.schedule), sched());
+  // 2. empty PF does not blank the Schedule
+  const b = r(`saveTataIbadah({id:'1', date:'2026-10-25', series:'Glorious Purpose', sub:'Body of Christ', pf:'', baseUpdatedAt:${JSON.stringify(a.updatedAt)}, slots:{}})`);
+  console.log('2 empty PF keeps pastor', b.scheduleChanged, sched());
+  // 3. new Sunday without a row adds a Service row
+  const c = r(`saveTataIbadah({date:'2026-11-08', series:'', sub:'Rooted', pf:'Pdt. A', slots:{}})`);
+  console.log('3 adds row', c.scheduleChanged, JSON.stringify(c.schedule));
+  // 4. Event input edits the service row → TI follows; a Meeting edit on that day does not
+  const before = r(`getTataIbadahData().services.filter(function(s){return s.date==='2026-10-25'})[0]`);
+  const d = r(`saveEvent({id:'2', date:'2026-10-25', theme:'Glorious Purpose: Soul of The Calling', pastor:'Tpg. Siska', tag:'Regular'})`);
+  const after = r(`getTataIbadahData().services.filter(function(s){return s.date==='2026-10-25'})[0]`);
+  console.log('4 Schedule→TI', JSON.stringify(d.tataIbadah), after.series + ' | ' + after.sub + ' | ' + after.pf, '| updatedAt moved', before.updatedAt !== after.updatedAt || '(same second)');
+  const e = r(`saveEvent({id:'1', date:'2026-10-25', theme:'Rapat lain', pastor:'X', tag:'Meeting'})`);
+  console.log('5 Meeting ignored', JSON.stringify(e.tataIbadah), r(`getTataIbadahData().services.filter(function(s){return s.date==='2026-10-25'})[0].pf`));
+  const f = r(`saveEvent({id:'2', date:'2026-10-25', theme:'Glorious Purpose: Soul of The Calling', pastor:'Tpg. Siska', tag:'Regular'})`);
+  console.log('6 no-op', JSON.stringify(f.tataIbadah));
 }

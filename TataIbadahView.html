@@ -326,6 +326,10 @@ function tiLoad() {
       tiState.loaded = true;
       tiState.services = data.services || [];
       tiState.schedule = data.schedule || [];
+      if (tiState.cur && tiState.cur.id) {
+        var fresh = tiState.services.filter(function (s) { return s.id === tiState.cur.id; })[0];
+        if (fresh) tiState.cur = fresh;
+      }
       if (data.liturgy) tiState.liturgy = data.liturgy;
       tiSetSongs(data.songs || []);
       tiRender();
@@ -376,6 +380,11 @@ function tiFlushSave() {
         svc.forceSave = false;
         tiState.saveLabel = 'Tersimpan otomatis · ' + res.savedAt;
         tiState.saveError = false;
+        if (res.schedule) {
+          tiState.schedule = tiState.schedule.filter(function (e) { return e.id !== res.schedule.id; }).concat([res.schedule]);
+          tiRenderSchedHint();
+        }
+        if (res.scheduleChanged && typeof fetchSchedule === 'function') fetchSchedule();
       } else if (res.conflict) {
         tiState.conflict = { svc: svc, latest: res.latest };
         tiState.saveLabel = 'Belum tersimpan: ada versi lebih baru';
@@ -916,17 +925,7 @@ function tiRenderDynamic() {
   if (!svc || !document.getElementById('tiTitle')) return;
   document.getElementById('tiEyebrow').textContent = tiDateLong(svc.date) + (svc.season ? ' · ' + svc.season : '');
   document.getElementById('tiTitle').innerHTML = esc(svc.series ? svc.series + ': ' : '') + '<span style="color:#6E2621;">' + esc(svc.sub || '…') + '</span>';
-  var sched = tiScheduleOn(svc.date);
-  var hint = document.getElementById('tiSchedHint');
-  var schedTheme = sched ? (sched.theme || '') : '';
-  var differs = sched && (schedTheme !== tiTheme(svc) || (sched.pastor || '') !== (svc.pf || ''));
-  var row = function (inner) { return '<span style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:13px; color:#8a7952; font-weight:600;">' + inner + '</span>'; };
-  if (sched) {
-    hint.innerHTML = row('Di jadwal: ' + esc(schedTheme || 'tanpa tema') + (sched.pastor ? ' · ' + esc(sched.pastor) : '') +
-      (differs ? '<span data-ti="useSchedule" class="ti-link">Pakai dari jadwal</span><span data-ti="syncSchedule" class="ti-link">Perbarui jadwal</span>' : ' <span style="color:#24401F;">✓ sama</span>'));
-  } else {
-    hint.innerHTML = svc.id && svc.date ? row('Belum ada di jadwal <span data-ti="syncSchedule" class="ti-link">Tambahkan ke jadwal</span>') : '';
-  }
+  tiRenderSchedHint();
   TI_BLOCKS.forEach(function (b) { if (b.kind !== 'fixed') tiRenderBlock(b.k); });
   tiRenderBaFetch();
   tiRenderBanner();
@@ -934,6 +933,22 @@ function tiRenderDynamic() {
   if (baMsg) baMsg.innerHTML = tiBaMsgHtml();
   tiRenderAside();
   tiRenderSaveLabel();
+}
+
+/* Link to the Schedule row (Event input): theme and Pelayan Firman stay in sync on save. */
+function tiRenderSchedHint() {
+  var svc = tiState.cur, hint = document.getElementById('tiSchedHint');
+  if (!svc || !hint) return;
+  var sched = tiScheduleOn(svc.date);
+  var inner = sched
+    ? '<span style="color:#24401F;">🔗 Terhubung ke jadwal Event input</span> · ' + esc(sched.theme || 'tanpa tema') + (sched.pastor ? ' · ' + esc(sched.pastor) : '')
+    : (svc.sub ? 'Ditambahkan ke jadwal Event input saat disimpan' : 'Isi sub-tema untuk menambahkannya ke jadwal Event input');
+  hint.innerHTML = '<span style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; font-size:13px; color:#8a7952; font-weight:600;" title="Tema dan Pelayan Firman otomatis sama dengan jadwal Event input">' + inner + '</span>';
+}
+
+/* After Event input saves a row (it may have changed a service's theme or PF). */
+function tiAfterScheduleChange() {
+  if (tiState.loaded) tiAfterSave(tiLoad);
 }
 
 function tiRenderAside() {
@@ -1042,23 +1057,6 @@ function tiDownload(fmt, confirmed) {
       })
       .withFailureHandler(function (err) { dl.busy = ''; dl.error = err && err.message ? err.message : String(err); tiRenderAside(); })
       [{ gdoc: 'createLiturgyDoc', gdocUpdate: 'updateLiturgyDoc' }[fmt] || 'downloadLiturgy'](svc.id, fmt);
-  });
-}
-
-/* Copies theme and Pelayan Firman to the Schedule sheet (adds the Sunday if missing). */
-function tiSyncSchedule() {
-  var svc = tiState.cur;
-  tiAfterSave(function () {
-    google.script.run
-      .withSuccessHandler(function (res) {
-        if (!res.success) { flash(res.message); return; }
-        tiState.schedule = res.schedule;
-        tiRenderDynamic();
-        if (typeof fetchSchedule === 'function') fetchSchedule();
-        flash(res.message);
-      })
-      .withFailureHandler(function (err) { flash('Gagal memperbarui jadwal: ' + (err && err.message ? err.message : err)); })
-      .syncScheduleFromService(svc.id);
   });
 }
 
@@ -1949,7 +1947,7 @@ function tiOnClick(e) {
   var svc = tiState.cur, pk = tiState.picker, sf = tiState.songForm;
   var i = Number(el.getAttribute('data-i'));
 
-  var editing = { toggle: 1, variant: 1, pick: 1, useSchedule: 1, fetchBa: 1 };
+  var editing = { toggle: 1, variant: 1, pick: 1, fetchBa: 1 };
   if (editing[a] && svc && svc.status === 'Published' && tiState.screen === 'builder') { flash('Terkunci: ubah status ke Review untuk mengedit'); return; }
 
   switch (a) {
@@ -1979,7 +1977,6 @@ function tiOnClick(e) {
     case 'libVariant': tiLibFetchLyrics(tiState.lib.fetch.id, el.getAttribute('data-n')); break;
     case 'pickVariant': tiFetchLyrics(pk.fetch.id, el.getAttribute('data-n')); break;
     case 'retryLyrics': tiFetchLyrics(pk.fetch.id); break;
-    case 'syncSchedule': tiSyncSchedule(); break;
     case 'fetchBa': tiFetchBa(true); break;
     case 'conflictLoad':
       var latest = tiState.conflict && tiState.conflict.latest;
@@ -2011,10 +2008,6 @@ function tiOnClick(e) {
       if (was === 'Published' || v === 'Published') tiRender(); else tiRenderAside();
       tiQueueSave();
       break;
-    case 'useSchedule':
-      tiApplySchedule(svc, tiScheduleOn(svc.date));
-      ['series', 'sub', 'pf'].forEach(function (f) { document.getElementById('tiF-' + f).value = svc[f]; });
-      tiRenderDynamic(); tiQueueSave(); break;
     case 'pick': e.preventDefault(); tiOpenPicker(k); break;
     case 'download': if (!el.disabled) tiDownload(v); break;
 

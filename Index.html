@@ -1024,6 +1024,7 @@ function saveEventClick() {
       state.drawerOpen = false;
       renderDrawer();
       fetchSchedule(function () { flash(res.message); });
+      if (res.tataIbadah && res.tataIbadah.changed && typeof tiAfterScheduleChange === 'function') tiAfterScheduleChange();
     })
     .withFailureHandler(function (err) {
       state.saving = false;

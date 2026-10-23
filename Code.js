@@ -133,10 +133,20 @@ function getSchedule() {
 }
 
 /**
- * Creates a new row (auto-incrementing Event ID) or updates an existing one
- * in place. Never touches any other sheet.
+ * Saves a Schedule row. When it is a Sunday's service row, that day's Tata
+ * Ibadah gets the same theme and Pelayan Firman (syncScheduleToService_).
  */
 function saveEvent(payload) {
+  var res = saveEventRow_(payload);
+  if (res.success) {
+    try { res.tataIbadah = syncScheduleToService_(String(payload.date || '').trim(), res.id); }
+    catch (e) { console.warn('Tata Ibadah sync skipped: ' + e.message); }
+  }
+  return res;
+}
+
+/** Creates a new row (auto-incrementing Event ID) or updates an existing one in place. */
+function saveEventRow_(payload) {
   payload = payload || {};
   var date = String(payload.date || '').trim();
   var theme = String(payload.theme || '').trim();

@@ -22,11 +22,18 @@
   var api = {
     getSchedule: function () { return db.schedule.map(function (e, i) { return { id: String(i + 1), date: e.date, theme: e.theme, pastor: e.pastor, tag: e.tag, notes: '', pic: [], timeStart: '', timeEnd: '' }; }); },
     getMemberPool: function () { return []; },
+    saveEvent: function (p) {
+      var ev = db.schedule.filter(function (e, i) { return String(i + 1) === String(p.id); })[0];
+      if (ev) { ev.date = p.date; ev.theme = p.theme; ev.pastor = p.pastor; ev.tag = p.tag; }
+      var svc = db.services.filter(function (s) { return s.date === p.date; })[0], t = null;
+      if (svc && ev && ['Meeting', 'Fellowship', 'OFF'].indexOf(p.tag) === -1) {
+        var i = p.theme.indexOf(':'); svc.series = i === -1 ? '' : p.theme.slice(0, i).trim(); svc.sub = i === -1 ? p.theme : p.theme.slice(i + 1).trim();
+        svc.pf = p.pastor || svc.pf; db.stamp = (db.stamp || 0) + 1; svc.updatedAt = 'T' + db.stamp; t = { id: svc.id, changed: true };
+      }
+      return { success: true, message: 'Event updated', id: p.id, tataIbadah: t };
+    },
     getTataIbadahData: function () { return JSON.parse(JSON.stringify({ services: db.services, songs: db.songs, schedule: db.schedule, liturgy: getLiturgyText_() })); },
     fetchBibleText: function (book, ch, vs) { db.bibleCalls = (db.bibleCalls || 0) + 1; return book === 'Mazmur' ? { success: true, ref: book + ' ' + ch + ':' + vs, text: 'Selidikilah aku, ya Allah, dan kenallah hatiku (' + vs + ').' } : { success: false, message: 'Teks Alkitab tidak bisa diambil sekarang.' }; },
-    syncScheduleFromService: function (id) { var svc = db.services.filter(function (s) { return s.id === id; })[0]; var ev = db.schedule.filter(function (e) { return e.date === svc.date && e.tag !== 'Meeting'; })[0];
-      var theme = (svc.series ? svc.series + ': ' : '') + svc.sub; if (ev) { ev.theme = theme; ev.pastor = svc.pf; } else db.schedule.push({ id: 'n' + db.schedule.length, date: svc.date, theme: theme, pastor: svc.pf, tag: 'Service' });
-      return { success: true, message: ev ? 'Jadwal ' + svc.date + ' diperbarui' : 'Ibadah ' + svc.date + ' ditambahkan ke jadwal', schedule: JSON.parse(JSON.stringify(db.schedule)) }; },
     deleteSong: function (id, rep) { var used = db.services.filter(function (s) { return Object.keys(s.slots).some(function (k) { return s.slots[k] === id; }); });
       if (used.length && !rep) return { success: false, used: used.length, message: 'Lagu dipakai di ' + used.length + ' tata ibadah. Pilih lagu pengganti dulu.' };
       used.forEach(function (s) { Object.keys(s.slots).forEach(function (k) { if (s.slots[k] === id) s.slots[k] = rep; }); });
@@ -41,7 +48,11 @@
       copy.updatedAt = 'T' + db.stamp; delete copy.baseUpdatedAt; delete copy.force;
       if (p.id) { db.services = db.services.map(function (s) { return s.id === p.id ? copy : s; }); }
       else { copy.id = String(db.services.reduce(function (m, s) { return Math.max(m, Number(s.id)); }, 0) + 1); db.services.push(copy); }
-      return { success: true, id: copy.id, savedAt: '14.32', updatedAt: copy.updatedAt };
+      var theme = copy.sub ? (copy.series ? copy.series + ': ' + copy.sub : copy.sub) : '';
+      var ev = db.schedule.filter(function (e) { return e.date === copy.date && ['Meeting', 'Fellowship', 'OFF'].indexOf(e.tag) === -1; })[0], changed = false;
+      if (ev) { var nt = theme || ev.theme, np = copy.pf || ev.pastor; changed = nt !== ev.theme || np !== ev.pastor; ev.theme = nt; ev.pastor = np; }
+      else if (theme) { ev = { id: 's' + db.schedule.length, date: copy.date, theme: theme, pastor: copy.pf || '', tag: 'Service' }; db.schedule.push(ev); changed = true; }
+      return { success: true, id: copy.id, savedAt: '14.32', updatedAt: copy.updatedAt, schedule: ev ? JSON.parse(JSON.stringify(ev)) : null, scheduleChanged: changed };
     },
     deleteTataIbadah: function (id) { db.services = db.services.filter(function (s) { return s.id !== id; }); return { success: true, message: 'Tata ibadah dihapus' }; },
     updateLiturgyDoc: function (id) { var s = db.services.filter(function (x) { return x.id === id; })[0]; if (!s || !s.doc) return { success: false, message: 'Belum ada Google Doc. Buat dulu.' }; s.doc.updatedAt = '22 Okt, 16.50'; db.updates = (db.updates || 0) + 1; return { success: true, message: 'Google Doc diperbarui', doc: s.doc }; },
