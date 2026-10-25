@@ -12,17 +12,26 @@
   .ti-btn-orange:hover { background: #d44c0e; }
   .ti-link { color: #E85511; font-size: 12.5px; font-weight: 700; cursor: pointer; }
   .ti-link:hover { text-decoration: underline; }
-  .ti-combo { position: absolute; left: 0; right: 0; top: 100%; margin-top: 4px; z-index: 30; background: #fff; border: 1px solid #e6d8b6; border-radius: 12px; box-shadow: 0 12px 28px rgba(58,42,21,.14); max-height: 264px; overflow: auto; padding: 4px; }
+  select.ti-field, .ti-select { -webkit-appearance: none; appearance: none; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a7952' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 14px center / 16px 16px; padding-right: 42px !important; cursor: pointer; }
+  .ti-combo-input { padding-right: 42px !important; text-overflow: ellipsis; }
+  .ti-chev { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); display: flex; color: #8a7952; cursor: pointer; }
+  .ti-combo { position: absolute; left: 0; min-width: 100%; width: max-content; max-width: min(480px, calc(100vw - 32px)); top: 100%; margin-top: 4px; z-index: 30; background: #fff; border: 1px solid #e6d8b6; border-radius: 12px; box-shadow: 0 12px 28px rgba(58,42,21,.14); max-height: 264px; overflow: auto; padding: 4px; }
   .ti-combo[hidden] { display: none; }
-  .ti-combo-opt { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 9px 10px; border-radius: 8px; cursor: pointer; font-size: 14px; color: #3a2a15; }
+  .ti-combo-opt { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; padding: 9px 10px; border-radius: 8px; cursor: pointer; font-size: 14px; color: #3a2a15; }
   .ti-combo-opt.on { background: #F3E9CE; }
-  .ti-combo-opt small { color: #8a7952; font-size: 12px; white-space: nowrap; }
+  .ti-combo-opt.cur .ti-combo-l { font-weight: 700; color: #6E2621; }
+  .ti-combo-opt.dis { opacity: .45; cursor: default; }
+  .ti-combo-l { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ti-combo-opt small { min-width: 0; color: #8a7952; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ti-combo-empty { padding: 10px; font-size: 13px; color: #9a8763; }
   .ti-seg { display: inline-flex; flex-wrap: wrap; gap: 2px; background: #F3E9CE; border-radius: 11px; padding: 3px; }
   .ti-seg button { padding: 7px 12px; border-radius: 9px; font-size: 13px; font-weight: 700; color: #6E2621; cursor: pointer; }
   .ti-seg button.on { background: #6E2621; color: #fff; }
   .ti-seg button:disabled { color: #c9b88f; cursor: not-allowed; }
   .ti-hover:hover { background: #FEFBF2 !important; }
   .ti-tile:hover { border-color: #d9c79b !important; }
+  .ti-trash { width: 34px; height: 34px; border-radius: 10px; color: #a08b62; cursor: pointer; flex-shrink: 0; }
+  .ti-trash:hover { background: #fbe3dc !important; color: #B3261E; }
   .ti-row:hover { border-color: #d9c79b !important; box-shadow: 0 10px 24px -20px rgba(74,59,23,.5); }
   .ti-lib-row { display: grid; grid-template-columns: 76px minmax(0, 1.3fr) minmax(0, 1fr) 112px 104px; gap: 14px; align-items: center; padding: 9px 18px; border-top: 1px solid #f4ecd8; font-size: 13.5px; cursor: pointer; }
   .ti-lib-row:hover { background: #FEFBF2; }
@@ -50,7 +59,7 @@ var TI_DAYS = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
 var TI_HYMNALS = ['Semua', 'KK', 'KJ', 'NKB', 'PKJ', 'Kontemporer'];
 var TI_BOOKS = ['Kejadian','Keluaran','Imamat','Bilangan','Ulangan','Yosua','Hakim-hakim','Rut','1 Samuel','2 Samuel','1 Raja-raja','2 Raja-raja','1 Tawarikh','2 Tawarikh','Ezra','Nehemia','Ester','Ayub','Mazmur','Amsal','Pengkhotbah','Kidung Agung','Yesaya','Yeremia','Ratapan','Yehezkiel','Daniel','Hosea','Yoel','Amos','Obaja','Yunus','Mikha','Nahum','Habakuk','Zefanya','Hagai','Zakharia','Maleakhi','Matius','Markus','Lukas','Yohanes','Kisah Para Rasul','Roma','1 Korintus','2 Korintus','Galatia','Efesus','Filipi','Kolose','1 Tesalonika','2 Tesalonika','1 Timotius','2 Timotius','Titus','Filemon','Ibrani','Yakobus','1 Petrus','2 Petrus','1 Yohanes','2 Yohanes','3 Yohanes','Yudas','Wahyu'];
 var TI_VS_RE = /^\d+(\s*[-–]\s*\d+)?(\s*,\s*\d+(\s*[-–]\s*\d+)?)*$/;
-var TI_PLACEHOLDER = /(x\s*:\s*x-x|\bTEMA\b|\.{4,}|…{2,}|lirik lagu)/i;
+var TI_PLACEHOLDER = /(x\s*:\s*x-x|\bTEMA\b|\.{4,}|…{2,}|lirik lagu|^untitled(\s+event)?$)/i;
 var TI_RECENT_WEEKS = 4;
 var TI_LIST_CAP = 80;      // rows drawn at once in the picker and library; narrow with search for more
 
@@ -495,7 +504,7 @@ function tiNewService(date, duplicate) {
 }
 
 function tiApplySchedule(svc, sched) {
-  var theme = String(sched.theme || '').trim();
+  var theme = tiThemeOf(sched);
   var i = theme.indexOf(':');
   if (i !== -1) { svc.series = theme.slice(0, i).trim(); svc.sub = theme.slice(i + 1).trim(); }
   else if (theme) { svc.series = ''; svc.sub = theme; }
@@ -526,11 +535,16 @@ function tiGoList() {
   window.scrollTo(0, 0);
 }
 
-function tiDeleteCurrent() {
-  var svc = tiState.cur;
+/* Asks before deleting a service (from its row in the list or the builder header). */
+function tiAskDelete(svc) {
   if (!svc) return;
-  tiConfirm({ title: 'Hapus tata ibadah?', text: tiDateLong(svc.date) + ' akan dihapus. Ini tidak bisa dibatalkan.', ok: 'Hapus', danger: true },
+  tiConfirm({ title: 'Hapus tata ibadah?', text: tiTheme(svc) + ' · ' + tiDateLong(svc.date) + ' akan dihapus' + (svc.status === 'Published' ? ', walaupun sudah diterbitkan' : '') +
+    '. Jadwal di Event input dan Google Doc-nya tidak ikut terhapus. Ini tidak bisa dibatalkan.', ok: 'Hapus', danger: true },
     function () { tiDeleteService(svc); });
+}
+
+function tiTrashHtml(attrs) {
+  return '<span role="button" ' + attrs + ' class="icon-btn ti-trash" title="Hapus tata ibadah" aria-label="Hapus tata ibadah">' + icon('trash', 17) + '</span>';
 }
 
 function tiDeleteService(svc) {
@@ -621,7 +635,7 @@ function tiListHtml() {
     var sched = tiScheduleOn(nextEmpty);
     html += '<div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; background:#fdf0e6; border:1px solid #f6cfb3; border-radius:16px; padding:14px 18px; font-size:14px;">' +
       '<span style="line-height:1.5;"><strong style="font-weight:800; color:#a3420e;">Belum ada tata ibadah untuk ' + esc(tiShort(nextEmpty)) + '.</strong> ' +
-        (sched ? 'Di jadwal: ' + esc(sched.theme || 'tanpa tema') + (sched.pastor ? ' · ' + esc(sched.pastor) : '') : '') +
+        (sched ? 'Di jadwal: ' + esc(tiThemeOf(sched) || 'tanpa tema') + (sched.pastor ? ' · ' + esc(sched.pastor) : '') : '') +
         '</span>' +
       '<span style="display:flex; gap:8px;">' +
         (s.services.length ? '<button data-ti="duplicate" data-date="' + nextEmpty + '" class="ti-btn-outline">Duplikat minggu lalu</button>' : '') +
@@ -646,7 +660,7 @@ function tiListHtml() {
   s.services.forEach(function (svc) { if (svc.date) months[svc.date.slice(0, 7)] = true; });
   var monthOpts = Object.keys(months).sort().reverse();
   html += '<div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">' +
-    '<select data-tisel="monthF" style="padding:10px 34px 10px 14px; border:1px solid #e6d8b6; border-radius:11px; background:#fff; font-size:13.5px; font-weight:700; color:#6E2621; -webkit-appearance:none; appearance:none; background-image:linear-gradient(45deg, transparent 50%, #8a7952 50%), linear-gradient(135deg, #8a7952 50%, transparent 50%); background-position:calc(100% - 17px) 50%, calc(100% - 12px) 50%; background-size:5px 5px; background-repeat:no-repeat;">' +
+    '<select data-tisel="monthF" class="ti-select" style="padding:10px 14px; border:1px solid #e6d8b6; border-radius:11px; font-size:13.5px; font-weight:700; color:#6E2621;">' +
       '<option value="all"' + (s.monthF === 'all' ? ' selected' : '') + '>Semua bulan</option>' +
       monthOpts.map(function (m) { return '<option value="' + m + '"' + (s.monthF === m ? ' selected' : '') + '>' + TI_MONTHS[Number(m.slice(5)) - 1] + ' ' + m.slice(0, 4) + '</option>'; }).join('') +
     '</select>' +
@@ -663,7 +677,7 @@ function tiListHtml() {
     var p = parts(svc.date);
     var chk = svc.status === 'Published' ? null : tiChecks(svc);
     var warn = chk && (chk.reds.length || chk.ambers.length) ? chk.reds.length + ' pemblokir · ' + chk.ambers.length + ' peringatan' : '';
-    return '<button data-ti="openSvc" data-idx="' + s.services.indexOf(svc) + '" class="ti-row" style="text-align:left; cursor:pointer; display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:16px; align-items:center; padding:12px 16px; background:#fff; border:1px solid #ece0c2; border-radius:16px;">' +
+    return '<button data-ti="openSvc" data-idx="' + s.services.indexOf(svc) + '" class="ti-row" style="text-align:left; cursor:pointer; display:grid; grid-template-columns:auto minmax(0,1fr) auto auto; gap:16px; align-items:center; padding:12px 12px 12px 16px; background:#fff; border:1px solid #ece0c2; border-radius:16px;">' +
       '<span style="background:#F3E9CE; border-radius:12px; padding:7px 10px; display:flex; flex-direction:column; align-items:center; line-height:1.02; min-width:58px;">' +
         '<span style="font-weight:800; font-size:24px; color:#6E2621;">' + p.day + '</span>' +
         '<span style="font-size:11px; font-weight:700; letter-spacing:.07em; color:#8a7952;">' + (svc.date ? TI_MON[fromIso(svc.date).getMonth()].toUpperCase() : '') + '</span>' +
@@ -675,6 +689,7 @@ function tiListHtml() {
       '<span style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">' + tiStatusPill(svc.status) +
         (warn ? '<span style="font-size:12px; font-weight:600; color:' + (chk.reds.length ? TI_RED : '#a3420e') + '; white-space:nowrap;">' + warn + '</span>' : '') +
       '</span>' +
+      tiTrashHtml('data-ti="trashSvc" data-idx="' + s.services.indexOf(svc) + '"') +
     '</button>';
   }).join('') + '</section>';
 
@@ -686,12 +701,6 @@ function tiListHtml() {
 
 /* ---------- render: builder ---------- */
 
-function tiDatalist(id, values) {
-  var seen = {};
-  return '<datalist id="' + id + '">' + values.filter(function (v) { v = String(v || '').trim(); if (!v || seen[v]) return false; seen[v] = true; return true; })
-    .map(function (v) { return '<option value="' + esc(v) + '"></option>'; }).join('') + '</datalist>';
-}
-
 /* Tanggal is picked from the Service events registered in Event input; "Tanggal lain…" falls back to any date. */
 function tiServiceEvents(svc) {
   var from = iso(shiftDays(startOfToday(), -35)), byDate = {};
@@ -701,21 +710,11 @@ function tiServiceEvents(svc) {
 
 function tiDateFieldHtml(svc) {
   var evs = tiServiceEvents(svc), input;
-  var day = function (d) { return tiShort(d) + ' ' + d.slice(0, 4); };
   if (tiState.dateFree || !evs.length) {
     input = '<input id="tiF-date" data-tif="date" type="date" class="ti-field" value="' + esc(svc.date) + '">' +
       (evs.length ? '<span><span data-ti="dateList" class="ti-link">Pilih dari jadwal</span></span>' : '<span style="font-size:12px; color:#8a7952;">Belum ada ibadah terdaftar di Event input</span>');
   } else {
-    var listed = evs.some(function (e) { return e.date === svc.date; });
-    input = '<select id="tiF-date" data-tif="date" class="ti-field">' +
-      (listed ? '' : '<option value="' + esc(svc.date) + '" selected>' + esc(svc.date ? day(svc.date) + ' · belum di jadwal' : 'Pilih ibadah') + '</option>') +
-      evs.map(function (e) {
-        var taken = tiByDate(e.date, svc);
-        return '<option value="' + e.date + '"' + (e.date === svc.date ? ' selected' : '') + (taken ? ' disabled' : '') + '>' +
-          esc(day(e.date) + ' · ' + (e.theme || 'tanpa tema') + (taken ? ' (sudah ada)' : '')) + '</option>';
-      }).join('') +
-      '<option value="__free">Tanggal lain…</option>' +
-    '</select>';
+    input = tiComboHtml('date');
   }
   return '<div id="tiDateField" class="ti-label"><span>Tanggal · ibadah terdaftar</span>' + input + '</div>';
 }
@@ -728,7 +727,7 @@ function tiRenderDateField() {
 /* A Service picked as the date brings its theme and Pelayan Firman from the schedule. */
 function tiTakeSchedule(svc) {
   var sched = tiScheduleOn(svc.date);
-  if (!sched || !(String(sched.theme || '').trim() || sched.pastor)) return;
+  if (!sched || !(tiThemeOf(sched) || sched.pastor)) return;
   tiApplySchedule(svc, sched);
   ['series', 'sub', 'pf'].forEach(function (k) { var el = document.getElementById('tiF-' + k); if (el) el.value = svc[k]; });
 }
@@ -739,79 +738,181 @@ function tiSeasonHintHtml() {
   return s ? '<span style="font-size:12px; color:#8a7952;">Saran: <span data-ti="seasonUse" class="ti-link">' + esc(s) + '</span></span>' : '';
 }
 
-/* Seri: a searchable list of the series already used, newest first; typing a new name keeps it as a new series. */
-function tiSeriesOptions() {
-  var last = {};
-  var add = function (v, date) { v = String(v || '').trim(); if (v && !(last[v] >= date)) last[v] = date || ''; };
-  var cur = tiState.cur;
-  tiState.services.forEach(function (s) { if (s !== cur) add(s.series, s.date); });
-  tiState.schedule.forEach(function (e) { var t = String(e.theme || ''); if (tiIsService(e) && t.indexOf(':') !== -1 && !(cur && e.date === cur.date)) add(t.split(':')[0], e.date); });
-  return Object.keys(last).sort(function (a, b) { return last[a] < last[b] ? 1 : last[a] > last[b] ? -1 : a.localeCompare(b); })
-    .map(function (v) { return { v: v, date: last[v] }; });
+/* ---------- searchable dropdowns ---------- */
+
+/* Event input rows can carry "Untitled event" as their theme: treat it as no theme. */
+function tiThemeOf(e) {
+  var t = String(e && e.theme || '').trim();
+  return /^untitled(\s+event)?$/i.test(t) ? '' : t;
 }
 
-function tiComboItems() {
-  var q = String(tiState.cur.series || '').trim(), ql = q.toLowerCase(), all = tiSeriesOptions();
-  var exact = all.some(function (o) { return o.v.toLowerCase() === ql; });
-  var items = exact || !q ? all : all.filter(function (o) { return o.v.toLowerCase().indexOf(ql) !== -1; });
-  return q && !exact ? [{ v: q, fresh: true }].concat(items) : items;
+function tiDayLabel(d) { return d ? tiShort(d) + ' ' + d.slice(0, 4) : ''; }
+
+/* Values used before (series or PF), newest first, leaving out the open service's own. */
+function tiRecent(fromSvc, fromEvent) {
+  var last = {}, cur = tiState.cur;
+  var add = function (v, date) { v = String(v || '').trim(); if (v && !(last[v] >= date)) last[v] = date || ''; };
+  tiState.services.forEach(function (s) { if (s !== cur) add(fromSvc(s), s.date); });
+  tiState.schedule.forEach(function (e) { if (tiIsService(e) && !(cur && e.date === cur.date)) add(fromEvent(e), e.date); });
+  return Object.keys(last).sort(function (a, b) { return last[a] < last[b] ? 1 : last[a] > last[b] ? -1 : a.localeCompare(b); })
+    .map(function (v) { return { v: v, label: v, sub: tiDayLabel(last[v]) }; });
+}
+
+/*
+ * What each dropdown lists and does. Items are { v, label, sub, disabled, keep };
+ * "free" dropdowns keep whatever is typed (a new series or name), the others
+ * only take a listed item and show its text again when left.
+ */
+function tiComboSpec(k) {
+  var svc = tiState.cur, L = tiState.lib;
+  if (k === 'date') {
+    var sched = tiScheduleOn(svc.date);
+    return {
+      ph: 'Cari tanggal atau tema', value: svc.date,
+      text: svc.date ? tiDayLabel(svc.date) + (sched && tiThemeOf(sched) ? ' · ' + tiThemeOf(sched) : '') : '',
+      options: function () {
+        var evs = tiServiceEvents(svc), items = [];
+        if (svc.date && !evs.some(function (e) { return e.date === svc.date; })) items.push({ v: svc.date, label: tiDayLabel(svc.date), sub: 'belum di jadwal', keep: true });
+        evs.forEach(function (e) {
+          var taken = tiByDate(e.date, svc);
+          items.push({ v: e.date, label: tiDayLabel(e.date), sub: (tiThemeOf(e) || 'tanpa tema') + (taken ? ' · sudah ada' : ''), disabled: !!taken });
+        });
+        return items.concat([{ v: '__free', label: 'Tanggal lain…', keep: true }]);
+      },
+      pick: function (v) {
+        if (v === '__free') { tiState.dateFree = true; tiRenderDateField(); return; }
+        svc.date = v;
+        tiTakeSchedule(svc);
+      }
+    };
+  }
+  if (k === 'series' || k === 'pf') {
+    return {
+      free: true, value: svc[k], text: svc[k] || '',
+      ph: k === 'series' ? 'Cari atau tulis seri' : 'Cari atau tulis nama PF', fresh: k === 'series' ? 'Seri baru' : 'Nama baru',
+      options: function () {
+        return k === 'series'
+          ? tiRecent(function (s) { return s.series; }, function (e) { var t = tiThemeOf(e); return t.indexOf(':') !== -1 ? t.split(':')[0] : ''; })
+          : tiRecent(function (s) { return s.pf; }, function (e) { return e.pastor; });
+      },
+      pick: function (v) { svc[k] = v; }
+    };
+  }
+  if (k === 'mergeTo') {
+    var into = tiState.songById[L.mergeTo];
+    return {
+      ph: 'Cari lagu pengganti', value: L.mergeTo, text: into ? (tiSongCode(into) ? tiSongCode(into) + ' · ' : '') + into.title : '',
+      options: function () {
+        return tiState.songs.filter(function (o) { return o.id !== L.merge; }).sort(function (a, b) { return a.title.localeCompare(b.title); })
+          .map(function (o) { return { v: o.id, label: o.title, sub: tiSongCode(o) || 'Kontemporer' }; });
+      },
+      pick: function (v) { L.mergeTo = v; }
+    };
+  }
+  return { // kpBook, baBook, ofBook
+    ph: 'Cari kitab', value: svc[k], text: svc[k] || '',
+    options: function () { return TI_BOOKS.map(function (b) { return { v: b, label: b }; }); },
+    pick: function (v) { svc[k] = v; tiVerseChanged(k.slice(0, 2)); }
+  };
+}
+
+function tiComboHtml(k, wrapStyle, inputStyle) {
+  var sp = tiComboSpec(k);
+  return '<div style="position:relative; min-width:0; ' + (wrapStyle || '') + '">' +
+    '<input id="tiF-' + k + '" data-ticombo="' + k + '"' + (sp.free ? ' data-tif="' + k + '"' : '') + ' class="ti-field ti-combo-input" autocomplete="off" spellcheck="false" value="' + esc(sp.text) + '" placeholder="' + esc(sp.ph) + '" style="' + (inputStyle || '') + '">' +
+    '<span data-ti="comboToggle" data-k="' + k + '" class="ti-chev">' + icon('down', 16) + '</span>' +
+    '<div id="tiCombo-' + k + '" class="ti-combo" hidden></div>' +
+  '</div>';
+}
+
+function tiComboItems(c) {
+  var sp = tiComboSpec(c.k), all = sp.options(), q = tiNorm(c.q), toks = q ? q.split(' ') : [];
+  var match = function (o) { var h = tiNorm(o.label + ' ' + (o.sub || '')); return toks.every(function (t) { return h.indexOf(t) !== -1; }); };
+  if (!sp.free) return q ? all.filter(function (o) { return o.keep || match(o); }) : all;
+  var exact = all.some(function (o) { return tiNorm(o.v) === q; });
+  var items = exact || !q ? all : all.filter(match);
+  return q && !exact ? [{ v: c.q.trim(), label: sp.fresh + ': “' + c.q.trim() + '”' }].concat(items) : items;
 }
 
 function tiRenderCombo() {
-  var c = tiState.combo, box = document.getElementById('tiCombo-series');
+  var c = tiState.combo, box = c && document.getElementById('tiCombo-' + c.k);
   if (!box) return;
-  if (!c) { box.hidden = true; return; }
-  c.items = tiComboItems();
+  c.items = tiComboItems(c);
   c.hi = Math.max(0, Math.min(c.hi, c.items.length - 1));
-  box.hidden = !c.items.length;
-  box.innerHTML = c.items.map(function (o, i) {
-    return '<div class="ti-combo-opt' + (i === c.hi ? ' on' : '') + '" data-ticopt="' + i + '"><span>' + (o.fresh ? 'Seri baru: “' + esc(o.v) + '”' : esc(o.v)) + '</span>' +
-      (o.date ? '<small>' + esc(tiShort(o.date) + ' ' + o.date.slice(0, 4)) + '</small>' : '') + '</div>';
-  }).join('');
+  box.hidden = false;
+  box.innerHTML = c.items.length ? c.items.map(function (o, i) {
+    return '<div class="ti-combo-opt' + (i === c.hi ? ' on' : '') + (o.disabled ? ' dis' : '') + (o.v === c.value ? ' cur' : '') + '" data-ticopt="' + i + '">' +
+      '<span class="ti-combo-l">' + esc(o.label) + '</span>' + (o.sub ? '<small>' + esc(o.sub) + '</small>' : '') + '</div>';
+  }).join('') : '<div class="ti-combo-empty">Tidak ditemukan</div>';
   var on = box.querySelector('.on');
   if (on && on.offsetTop < box.scrollTop) box.scrollTop = on.offsetTop;
   else if (on && on.offsetTop + on.offsetHeight > box.scrollTop + box.clientHeight) box.scrollTop = on.offsetTop + on.offsetHeight - box.clientHeight;
 }
 
-function tiComboOpen() { tiState.combo = { hi: 0 }; tiRenderCombo(); }
-function tiComboClose() { tiState.combo = null; tiRenderCombo(); }
-
-function tiComboPick(i) {
-  var c = tiState.combo, o = c && c.items && c.items[i], svc = tiState.cur;
-  if (o && svc) {
-    svc.series = o.v;
-    document.getElementById('tiF-series').value = o.v;
-    tiRenderDynamic();
-    tiQueueSave();
-  }
-  tiComboClose();
+function tiComboOpen(k) {
+  var sp = tiComboSpec(k), inp = document.getElementById('tiF-' + k);
+  tiState.combo = { k: k, q: sp.free && inp ? inp.value : '', value: sp.value, hi: 0 };
+  var items = tiComboItems(tiState.combo);
+  items.forEach(function (o, i) { if (o.v === sp.value) tiState.combo.hi = i; });
+  if (!sp.free && inp) inp.select();
+  tiRenderCombo();
 }
 
-function tiComboKey(e) {
+function tiComboClose() {
   var c = tiState.combo;
-  if (!c) { if (e.key === 'ArrowDown') { e.preventDefault(); tiComboOpen(); } return; }
-  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); c.hi += e.key === 'ArrowDown' ? 1 : -1; tiRenderCombo(); }
-  else if (e.key === 'Enter') { e.preventDefault(); tiComboPick(c.hi); }
+  tiState.combo = null;
+  if (!c) return;
+  var box = document.getElementById('tiCombo-' + c.k), inp = document.getElementById('tiF-' + c.k), sp = tiComboSpec(c.k);
+  if (box) box.hidden = true;
+  if (inp && !sp.free) inp.value = sp.text;
+}
+
+function tiComboPick(i) {
+  var c = tiState.combo, o = c && c.items && c.items[i];
+  if (!o || o.disabled) return;
+  tiComboSpec(c.k).pick(o.v);
+  tiComboClose();
+  var inp = document.getElementById('tiF-' + c.k);
+  if (inp) inp.value = tiComboSpec(c.k).text;
+  if (c.k !== 'mergeTo' && tiState.cur) { tiRenderDynamic(); tiQueueSave(); }
+}
+
+/* Moves the highlight, skipping items that cannot be picked. */
+function tiComboMove(dir) {
+  var c = tiState.combo, n = c.items.length, i = c.hi;
+  for (var step = 0; step < n; step++) {
+    i = Math.max(0, Math.min(n - 1, i + dir));
+    if (!c.items[i].disabled) { c.hi = i; break; }
+  }
+  tiRenderCombo();
+}
+
+function tiComboKey(e, k) {
+  var c = tiState.combo;
+  if (!c || c.k !== k) { if (e.key === 'ArrowDown' || e.key === 'Enter') { e.preventDefault(); tiComboOpen(k); } return; }
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); tiComboMove(e.key === 'ArrowDown' ? 1 : -1); }
+  else if (e.key === 'Enter') { e.preventDefault(); if (c.items.length) tiComboPick(c.hi); else tiComboClose(); }
   else if (e.key === 'Escape') { e.preventDefault(); tiComboClose(); }
   else if (e.key === 'Tab') tiComboClose();
 }
 
-/* Combo options and its chevron act on mousedown so the input keeps focus. */
+/* Options and the chevron act on mousedown so the input keeps focus. */
 function tiOnMouseDown(e) {
   var opt = e.target.closest && e.target.closest('[data-ticopt]');
   if (opt) { e.preventDefault(); tiComboPick(Number(opt.getAttribute('data-ticopt'))); return; }
-  if (!(e.target.closest && e.target.closest('[data-ti=comboToggle]'))) return;
+  var tog = e.target.closest && e.target.closest('[data-ti=comboToggle]');
+  if (!tog) return;
   e.preventDefault();
-  var inp = document.getElementById('tiF-series');
+  var k = tog.getAttribute('data-k'), inp = document.getElementById('tiF-' + k);
   if (!inp || inp.matches(':disabled')) return;
-  if (tiState.combo) tiComboClose();
-  else if (document.activeElement === inp) tiComboOpen();
+  if (tiState.combo && tiState.combo.k === k) tiComboClose();
+  else if (document.activeElement === inp) tiComboOpen(k);
   else inp.focus();
 }
 
 function tiBuilderHtml() {
   var svc = tiState.cur;
-  var right = '<span id="tiSaveLabel" style="font-size:13px; font-weight:600; padding-bottom:6px;"></span>';
+  var right = '<span style="display:flex; align-items:center; gap:10px;"><span id="tiSaveLabel" style="font-size:13px; font-weight:600;"></span>' + tiTrashHtml('data-ti="delete"') + '</span>';
   var html = '<header class="page-pad" style="background:#F3E9CE; border-bottom:1px solid #e7d9b3; padding:18px 32px 20px;">' +
     '<div style="max-width:1320px; margin:0 auto; display:flex; flex-direction:column; gap:12px;">' +
       '<div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">' +
@@ -836,14 +937,10 @@ function tiBuilderHtml() {
     '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:14px;">' +
       tiDateFieldHtml(svc) +
       '<label class="ti-label"><span>Masa · kalender gerejawi</span><input id="tiF-season" data-tif="season" class="ti-field" value="' + esc(svc.season) + '" placeholder="Opsional"><span id="tiSeasonHint">' + tiSeasonHintHtml() + '</span></label>' +
-      '<div class="ti-label" style="position:relative;"><span>Seri</span><div style="position:relative;">' +
-        '<input id="tiF-series" data-tif="series" data-ticombo="series" class="ti-field" autocomplete="off" value="' + esc(svc.series) + '" placeholder="Cari atau tulis seri" style="padding-right:38px;">' +
-        '<span data-ti="comboToggle" data-k="series" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); display:flex; padding:4px; color:#8a7952; cursor:pointer;">' + icon('down', 16) + '</span>' +
-        '<div id="tiCombo-series" class="ti-combo" hidden></div></div></div>' +
+      '<div class="ti-label"><span>Seri</span>' + tiComboHtml('series') + '</div>' +
       field('sub', 'Sub-tema', 'placeholder="Tulis sub-tema"') +
-      field('pf', 'Pelayan Firman', 'list="tiPfList" placeholder="Nama PF"') +
+      '<div class="ti-label"><span>Pelayan Firman</span>' + tiComboHtml('pf') + '</div>' +
     '</div>' +
-    tiDatalist('tiPfList', tiState.services.map(function (s) { return s.pf; }).concat(tiState.schedule.map(function (e) { return e.pastor; }))) +
     '<div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; border-top:1px solid #f1e7cd; padding-top:14px;">' +
       '<label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:14px; font-weight:700; color:#3a2a15;">' +
         '<input type="checkbox" data-tif="pk"' + (svc.pk ? ' checked' : '') + ' style="width:18px; height:18px; accent-color:#6E2621;">Minggu ini Perjamuan Kudus</label>' +
@@ -1000,9 +1097,7 @@ function tiVerseHtml(p, area) {
   var svc = tiState.cur, sm = 'padding:9px 12px; font-size:14px;';
   return '<div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">' +
       '<span style="font-size:12.5px; font-weight:700; color:#8a7952;">Nas</span>' +
-      '<select id="tiF-' + p + 'Book" data-tif="' + p + 'Book" class="ti-field" style="flex:1 1 170px; width:auto; ' + sm + '">' +
-        '<option value="">Pilih kitab</option>' + TI_BOOKS.map(function (bk) { return '<option' + (svc[p + 'Book'] === bk ? ' selected' : '') + '>' + bk + '</option>'; }).join('') +
-      '</select>' +
+      tiComboHtml(p + 'Book', 'flex:1 1 170px;', sm) +
       '<input data-tif="' + p + 'Ch" type="number" min="1" value="' + esc(svc[p + 'Ch']) + '" placeholder="Pasal" class="ti-field" style="width:84px; ' + sm + '">' +
       '<span style="color:#8a7952; font-weight:700;">:</span>' +
       '<input data-tif="' + p + 'Vs" value="' + esc(svc[p + 'Vs']) + '" placeholder="Ayat, mis. 1-2" class="ti-field" style="width:130px; ' + sm + '">' +
@@ -1125,7 +1220,7 @@ function tiRenderSchedHint() {
   if (!svc || !hint) return;
   var sched = tiScheduleOn(svc.date);
   var inner = sched
-    ? '<span style="color:#24401F;">🔗 Terhubung ke jadwal Event input</span> · ' + esc(sched.theme || 'tanpa tema') + (sched.pastor ? ' · ' + esc(sched.pastor) : '')
+    ? '<span style="color:#24401F;">🔗 Terhubung ke jadwal Event input</span> · ' + esc(tiThemeOf(sched) || 'tanpa tema') + (sched.pastor ? ' · ' + esc(sched.pastor) : '')
     : (svc.sub ? 'Ditambahkan ke jadwal Event input saat disimpan' : 'Isi sub-tema untuk menambahkannya ke jadwal Event input');
   hint.innerHTML = '<span style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; font-size:13px; color:#8a7952; font-weight:600;" title="Tema dan Pelayan Firman otomatis sama dengan jadwal Event input">' + inner + '</span>';
 }
@@ -1417,10 +1512,7 @@ function tiRenderLibPanel() {
     '<div style="flex-shrink:0; border-top:1px solid #e7d9b3; background:#F3E9CE; padding:12px 22px; display:flex; flex-direction:column; gap:10px;">' +
       (merging ? '<div style="display:flex; flex-direction:column; gap:8px;">' +
           '<span style="font-size:13px; color:#a3420e; font-weight:600;">Dipakai di ' + st.count + ' tata ibadah. Ganti dengan:</span>' +
-          '<select data-tilib="mergeTo" class="ti-field" style="padding:8px 10px; font-size:13px;"><option value="">Pilih lagu pengganti</option>' +
-            tiState.songs.filter(function (o) { return o.id !== s.id; }).sort(function (a, b) { return a.title.localeCompare(b.title); })
-              .map(function (o) { return '<option value="' + esc(o.id) + '"' + (L.mergeTo === o.id ? ' selected' : '') + '>' + esc((tiSongCode(o) ? tiSongCode(o) + ' · ' : '') + o.title) + '</option>'; }).join('') +
-          '</select>' +
+          tiComboHtml('mergeTo', '', 'padding:8px 12px; font-size:13px;') +
           '<span style="display:flex; gap:8px;"><button data-ti="libMerge" data-id="' + esc(s.id) + '" class="ti-btn-outline" style="color:#fff; background:' + TI_RED + '; border-color:' + TI_RED + ';">Gabungkan & hapus</button>' +
           '<button data-ti="libCancel" class="ti-btn-outline">Batal</button></span></div>'
         : '<span style="display:flex; gap:8px;">' +
@@ -2279,7 +2371,8 @@ function tiOnClick(e) {
     case 'openSvc': tiOpenService(tiState.services[Number(el.getAttribute('data-idx'))]); break;
     case 'statusF': tiState.statusF = v; tiRender(); break;
     case 'back': tiGoList(); break;
-    case 'delete': tiDeleteCurrent(); break;
+    case 'delete': tiAskDelete(svc); break;
+    case 'trashSvc': tiAskDelete(tiState.services[Number(el.getAttribute('data-idx'))]); break;
     case 'jump': tiJumpTo(el.getAttribute('data-to')); break;
     case 'expand': tiState.open[k] = !tiState.open[k]; tiRenderBlock(k); break;
     case 'toggle': svc.enabled[k] = !svc.enabled[k]; tiRenderDynamic(); tiQueueSave(); break;
@@ -2326,12 +2419,14 @@ function tiOnClick(e) {
 function tiOnInput(e) {
   var t = e.target, svc = tiState.cur;
   var f = t.getAttribute && t.getAttribute('data-tif');
+  var ck = !f && t.getAttribute && t.getAttribute('data-ticombo');
+  if (ck) { if (tiState.combo && tiState.combo.k === ck) { tiState.combo.q = t.value; tiState.combo.hi = 0; tiRenderCombo(); } return; }
   if (f && svc) {
     if (f === 'date' && t.value === '__free') { tiState.dateFree = true; tiRenderDateField(); return; }
     if (f === 'pk') svc.pk = t.checked;
     else svc[f] = t.value;
     if (f === 'date') tiTakeSchedule(svc);
-    if (f === 'series' && tiState.combo) { tiState.combo.hi = 0; tiRenderCombo(); }
+    if (tiState.combo && tiState.combo.k === f) { tiState.combo.q = t.value; tiState.combo.hi = 0; tiRenderCombo(); }
     var vp = /^(kp|ba|of)(Book|Ch|Vs)$/.exec(f);
     if (vp) tiVerseChanged(vp[1]);
     tiRenderDynamic();
@@ -2351,7 +2446,6 @@ function tiOnInput(e) {
   var lb = t.getAttribute && t.getAttribute('data-tilib');
   if (lb === 'q') { tiState.lib.q = t.value; tiState.lib.limit = 80; tiRenderLibraryList(); return; }
   if (lb === 'sort') { tiState.lib.sort = t.value; tiState.lib.limit = 80; tiRenderLibraryList(); return; }
-  if (lb === 'mergeTo') { tiState.lib.mergeTo = t.value; return; }
   var p = t.getAttribute && t.getAttribute('data-tipk');
   if (p === 'q') { tiState.picker.q = t.value; tiRenderPickerList(); tiOnlineSearchSoon(); return; }
   if (p === 'lyric') { tiState.picker.lyrics[tiState.picker.sel + '|' + t.getAttribute('data-v')] = t.value; return; }
@@ -2373,7 +2467,8 @@ function tiOnKey(e) {
     if (e.key === 'Enter' && e.target.id !== 'tiDialogOk') { e.preventDefault(); tiCloseDialog(true); }
     return;
   }
-  if (e.target.getAttribute && e.target.getAttribute('data-ticombo')) { tiComboKey(e); return; }
+  var ck = e.target.getAttribute && e.target.getAttribute('data-ticombo');
+  if (ck) { tiComboKey(e, ck); return; }
   if (e.key === 'Escape') {
     if (tiState.songForm) { tiState.songForm = null; tiRenderModal(); return; }
     if (pk) { tiState.picker = null; tiRenderModal(); return; }
@@ -2395,7 +2490,7 @@ document.addEventListener('click', tiOnClick);
 document.addEventListener('input', tiOnInput);
 document.addEventListener('keydown', tiOnKey);
 document.addEventListener('mousedown', tiOnMouseDown);
-document.addEventListener('focusin', function (e) { if (e.target.getAttribute && e.target.getAttribute('data-ticombo')) tiComboOpen(); });
+document.addEventListener('focusin', function (e) { var k = e.target.getAttribute && e.target.getAttribute('data-ticombo'); if (k) tiComboOpen(k); });
 document.addEventListener('focusout', function (e) { if (e.target.getAttribute && e.target.getAttribute('data-ticombo')) tiComboClose(); });
 document.addEventListener('dragstart', function (e) {
   var el = e.target.closest && e.target.closest('[data-ti-seq]');

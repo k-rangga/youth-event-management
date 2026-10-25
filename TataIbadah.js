@@ -601,9 +601,15 @@ function themeOf_(series, sub) {
   return sub ? (series ? series + ': ' + sub : sub) : '';
 }
 
+/* Event input rows can carry "Untitled event" as their theme: treat it as no theme. */
+function cleanTheme_(theme) {
+  theme = String(theme || '').trim();
+  return /^untitled(\s+event)?$/i.test(theme) ? '' : theme;
+}
+
 /* The reverse of themeOf_. */
 function splitTheme_(theme) {
-  theme = String(theme || '').trim();
+  theme = cleanTheme_(theme);
   var i = theme.indexOf(':');
   return i === -1 ? { series: '', sub: theme } : { series: theme.slice(0, i).trim(), sub: theme.slice(i + 1).trim() };
 }
@@ -669,7 +675,7 @@ function syncScheduleToService_(date, eventId) {
   try {
     var row = sheet.getRange(at + 2, 1, 1, 6).getValues()[0];
     if (fmtDate_(row[1]) !== date) return null;   // rows moved since the check
-    var t = ev.theme.trim() ? splitTheme_(ev.theme) : { series: String(row[3]), sub: String(row[4]) };
+    var t = cleanTheme_(ev.theme) ? splitTheme_(ev.theme) : { series: String(row[3]), sub: String(row[4]) };
     var pf = ev.pastor.trim() || String(row[5]);
     if (t.series === String(row[3]) && t.sub === String(row[4]) && pf === String(row[5])) return { id: String(row[0]), changed: false };
     sheet.getRange(at + 2, 4, 1, 3).setValues([[t.series, t.sub, pf]]);
