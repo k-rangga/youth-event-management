@@ -10,7 +10,7 @@ const sheets = { Schedule: mkSheet() }, cache = {};
 sheets.Schedule.rows.push(['Event ID', 'Date', 'Theme', 'Pastor', 'tag'], [1, new Date('2026-10-25T00:00:00'), 'Rapat', '', 'Meeting'], [2, new Date('2026-10-25T00:00:00'), 'Old', 'X', 'Regular']);
 const ctx = { console, Date,
   SpreadsheetApp: { openById: () => ({ getSheetByName: n => sheets[n] || null, insertSheet: n => (sheets[n] = mkSheet()) }) },
-  LockService: { getScriptLock: () => ({ waitLock() {}, releaseLock() {} }) },
+  LockService: { getScriptLock: () => ({ waitLock() {}, tryLock() { return true; }, releaseLock() {} }) },
   CacheService: { getScriptCache: () => ({ get: k => cache[k] || null, put: (k, v) => { cache[k] = v; } }) },
   UrlFetchApp: { fetch: url => { const out = cp.execSync('curl -sL -m 20 -w "\\n%{http_code}" ' + JSON.stringify(url)).toString(); const i = out.lastIndexOf('\n'); return { getContentText: () => out.slice(0, i), getResponseCode: () => Number(out.slice(i + 1)) }; } },
   Utilities: { formatDate: (d, tz, f) => f.indexOf('HH:mm:ss') !== -1 ? d.toISOString().slice(0, 19) : f === 'yyyy-MM-dd' ? new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10) : '10.00' },

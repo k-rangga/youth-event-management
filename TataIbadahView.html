@@ -132,12 +132,19 @@ function tiSortedServices() { return tiState.services.slice().sort(function (a, 
 function tiPrevService(svc) {
   return tiSortedServices().filter(function (s) { return s !== svc && s.date && s.date < svc.date; })[0];
 }
-/* Tags that are never the Sunday service itself (same rule as pickScheduleEvent_ on the server). */
-var TI_SCHEDULE_SKIP = ['Meeting', 'Fellowship', 'OFF'];
+/* Tata Ibadah is for services only: a day's service is its Schedule row tagged "Service" (as pickScheduleEvent_). */
+function tiIsService(e) { return String(e.tag || '').trim().toLowerCase() === 'service'; }
 
 function tiScheduleOn(date) {
-  var usable = tiState.schedule.filter(function (e) { return e.date === date && TI_SCHEDULE_SKIP.indexOf(e.tag) === -1; });
-  return usable.filter(function (e) { return e.tag === 'Service'; })[0] || usable[0];
+  return tiState.schedule.filter(function (e) { return e.date === date && tiIsService(e); })[0];
+}
+
+/* Upcoming service dates: Service rows in the Schedule plus Tata Ibadah already made, soonest first. */
+function tiUpcomingServiceDates(n) {
+  var today = iso(startOfToday()), seen = {};
+  tiState.schedule.forEach(function (e) { if (tiIsService(e) && e.date >= today) seen[e.date] = true; });
+  tiState.services.forEach(function (s) { if (s.date && s.date >= today) seen[s.date] = true; });
+  return Object.keys(seen).sort().slice(0, n);
 }
 
 /* The service's weekly liturgist texts, with missing ones filled from the defaults. */
@@ -408,6 +415,12 @@ function tiFlushSave() {
 
 /* ---------- navigation inside Tata Ibadah ---------- */
 
+/* The next Service in the Schedule without a Tata Ibadah; else the next free Sunday. */
+function tiNextOpenService() {
+  var open = tiUpcomingServiceDates(60).filter(function (d) { return !tiByDate(d) && tiScheduleOn(d); })[0];
+  return open || tiNextEmptySunday();
+}
+
 function tiNextEmptySunday() {
   var d = startOfToday();
   d = shiftDays(d, (7 - d.getDay()) % 7);
@@ -419,7 +432,7 @@ function tiNextEmptySunday() {
 }
 
 function tiNewService(date, duplicate) {
-  date = date || tiNextEmptySunday();
+  date = date || tiNextOpenService();
   var probe = { date: date };
   var prev = tiPrevService(probe) || tiSortedServices()[0];
   var sched = tiScheduleOn(date);
@@ -560,11 +573,12 @@ function tiListHtml() {
     return html + '</div></main>';
   }
 
-  var first = startOfToday();
-  first = shiftDays(first, (7 - first.getDay()) % 7);
-  var sundays = [];
-  for (var i = 0; i < 6; i++) sundays.push(iso(shiftDays(first, i * 7)));
-  var nextEmpty = sundays.filter(function (d) { return !tiByDate(d); })[0];
+  var sundays = tiUpcomingServiceDates(6);
+  var nextEmpty = sundays.filter(function (d) { return !tiByDate(d) && tiScheduleOn(d); })[0];
+  if (!sundays.length) {
+    html += '<div style="background:#fff; border:1px solid #ece0c2; border-radius:16px; padding:14px 18px; font-size:14px; color:#6b5a38; line-height:1.5;">' +
+      'Belum ada <b>Service</b> mendatang di jadwal Event input. Tambahkan event bertag Service di Event input, atau buat tata ibadah langsung.</div>';
+  }
 
   if (nextEmpty) {
     var sched = tiScheduleOn(nextEmpty);
@@ -585,6 +599,8 @@ function tiListHtml() {
     return '<button data-ti="' + (svc ? 'open' : 'new') + '" data-date="' + d + '" class="ti-tile" style="text-align:left; cursor:pointer; background:#fff; border:1px solid ' + (d === nextEmpty ? '#f6cfb3' : '#ece0c2') + '; border-radius:16px; padding:12px 14px; display:flex; flex-direction:column; gap:6px; min-height:100px;">' +
       '<span class="ti-eyebrow" style="font-size:11px;">' + TI_MON[dt.getMonth()] + '</span>' +
       '<span style="font-weight:800; font-size:30px; line-height:1; color:#6E2621;">' + dt.getDate() + '</span>' +
+      '<span style="font-size:12px; font-weight:600; color:#6b5a38; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' +
+        esc(svc ? tiTheme(svc) : ((tiScheduleOn(d) || {}).theme || '')) + '</span>' +
       '<span style="display:flex; gap:4px; flex-wrap:wrap; margin-top:auto;">' + (svc && svc.pk ? '<span class="ti-pill" style="background:#6E2621; color:#fff;">Perjamuan Kudus</span>' : '') + st + '</span>' +
     '</button>';
   }).join('') + '</section>';

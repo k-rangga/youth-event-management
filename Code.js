@@ -105,6 +105,7 @@ function resolvePic_(tokens, dirById, dirByName) {
  * Reads the existing Schedule sheet as-is: Event ID | Date | Theme | Pastor | tag | Notes | PIC | Time start | Time end.
  */
 function getSchedule() {
+  try { reconcileServicesWithSchedule_(); } catch (e) { console.warn('Service sync skipped: ' + e.message); }
   var sheet = getScheduleSheet_();
   var lastRow = sheet.getLastRow();
   if (lastRow < 2) return [];

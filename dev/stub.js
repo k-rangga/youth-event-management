@@ -14,7 +14,8 @@
       ['waymaker','','','Way Maker','Sinach',['Bait 1','Chorus','Tag'],'Bait 1 → Chorus → Tag'],
       ['buildmylife','','','Build My Life','Pat Barrett',['Bait 1','Chorus','Bridge'],'Bait 1 → Chorus → Bridge → Chorus']
     ].map(function (s) { return { id: s[0], hymnal: s[1], number: s[2], title: s[3], credits: s[4], language: 'Indonesia', sections: s[5].map(function (l) { return { label: l, text: l === 'Bait 1' ? 'Baris pertama ' + s[3] + '\nBaris kedua' : '' }; }), arr: s[6] }; }),
-    schedule: [{ date: '2026-10-25', theme: 'Glorious Purpose: Soul of The Calling', pastor: 'Tpg. Siska', tag: 'Service' }, { date: '2026-10-24', theme: 'Rapat', pastor: '', tag: 'Meeting' }]
+    schedule: [{ date: '2026-10-25', theme: 'Glorious Purpose: Soul of The Calling', pastor: 'Tpg. Siska', tag: 'Service' }, { date: '2026-10-24', theme: 'Rapat', pastor: '', tag: 'Meeting' },
+      { date: '2026-11-01', theme: 'YM', pastor: '', tag: 'YM' }, { date: '2026-11-08', theme: 'Rooted: Deep Waters', pastor: 'Pdt. Yohanes', tag: 'Service' }, { date: '2026-11-15', theme: 'Rooted: Bear Fruit', pastor: '', tag: 'Service' }]
   };
   window.__db = db; window.__calls = [];
   /* Simulates another device saving service id. */

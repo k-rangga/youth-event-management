@@ -99,6 +99,7 @@ function stamp_(v) {
  * the song library, and the Schedule rows (to prefill theme and pastor).
  */
 function getTataIbadahData() {
+  try { reconcileServicesWithSchedule_(); } catch (e) { console.warn('Service sync skipped: ' + e.message); }
   var tiSheet = getOrCreateSheet_(TI_SHEET, TI_HEADERS);
   var services = [];
   var last = tiSheet.getLastRow();
@@ -486,12 +487,13 @@ function fetchBibleText(book, ch, vs) {
 
 /* ---------- Schedule sync ---------- */
 
-var SCHEDULE_SKIP_TAGS = ['Meeting', 'Fellowship', 'OFF'];
+/* Tata Ibadah is for services only: a day's service is its Schedule row tagged "Service". */
+function isServiceTag_(tag) {
+  return String(tag || '').trim().toLowerCase() === 'service';
+}
 
-/* The Schedule row a Sunday service belongs to: a "Service" event, else another worship event that day. */
 function pickScheduleEvent_(events) {
-  var usable = events.filter(function (e) { return SCHEDULE_SKIP_TAGS.indexOf(e.tag) === -1; });
-  return usable.filter(function (e) { return e.tag === 'Service'; })[0] || usable[0] || null;
+  return events.filter(function (e) { return isServiceTag_(e.tag); })[0] || null;
 }
 
 /* ---------- song library ---------- */
@@ -656,6 +658,56 @@ function syncScheduleToService_(date, eventId) {
     sheet.getRange(at + 2, 4, 1, 3).setValues([[t.series, t.sub, pf]]);
     sheet.getRange(at + 2, 12).setValue(new Date(Math.floor(Date.now() / 1000) * 1000));
     return { id: String(row[0]), changed: true };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/*
+ * Lines up every Tata Ibadah with its Service row in the Schedule (theme and
+ * Pelayan Firman ↔ Pastor), for services set before the two were synced on
+ * save. A blank side takes the other's value; when both are filled and differ
+ * the Tata Ibadah wins (edits since then sync both ways on save, so only older
+ * data can differ). Runs when either screen loads; returns the number of rows
+ * changed. Skips quietly if the sheets are busy.
+ */
+function reconcileServicesWithSchedule_() {
+  var ti = getOrCreateSheet_(TI_SHEET, TI_HEADERS), sched = getScheduleSheet_();
+  var tl = ti.getLastRow(), sl = sched.getLastRow();
+  if (tl < 2 || sl < 2) return 0;
+  var tiRows = ti.getRange(2, 1, tl - 1, 6).getValues();
+  var sRows = sched.getRange(2, 1, sl - 1, 5).getValues();
+  var serviceAt = {};
+  sRows.forEach(function (r, i) {
+    var d = fmtDate_(r[1]);
+    if (r[0] !== '' && isServiceTag_(r[4]) && serviceAt[d] == null) serviceAt[d] = i;
+  });
+  var schedWrites = [], tiWrites = [];
+  tiRows.forEach(function (r, i) {
+    var d = fmtDate_(r[1]), si = serviceAt[d];
+    if (r[0] === '' || si == null) return;
+    var ev = sRows[si];
+    var series = String(r[3] || '').trim(), sub = String(r[4] || '').trim(), pf = String(r[5] || '').trim();
+    var evTheme = String(ev[2] || '').trim(), evPastor = String(ev[3] || '').trim();
+    var tiTheme = themeOf_(series, sub);
+    var newEvTheme = tiTheme || evTheme, newEvPastor = pf || evPastor;
+    if (newEvTheme !== evTheme || newEvPastor !== evPastor) schedWrites.push([si + 2, newEvTheme, newEvPastor]);
+    if (!tiTheme && evTheme || !pf && evPastor) {
+      var t = tiTheme ? { series: series, sub: sub } : splitTheme_(evTheme);
+      tiWrites.push([i + 2, t.series, t.sub, pf || evPastor]);
+    }
+  });
+  if (!schedWrites.length && !tiWrites.length) return 0;
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(5000)) return 0;
+  try {
+    schedWrites.forEach(function (w) { sched.getRange(w[0], 3, 1, 2).setValues([[w[1], w[2]]]); });
+    var stamp = new Date(Math.floor(Date.now() / 1000) * 1000);
+    tiWrites.forEach(function (w) {
+      ti.getRange(w[0], 4, 1, 3).setValues([[w[1], w[2], w[3]]]);
+      ti.getRange(w[0], 12).setValue(stamp);
+    });
+    return schedWrites.length + tiWrites.length;
   } finally {
     lock.releaseLock();
   }
