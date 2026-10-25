@@ -4,12 +4,12 @@
 <base target="_top">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Plus+Jakarta+Sans:wght@400..800&display=swap">
 <style>
   *, *::before, *::after { box-sizing: border-box; }
-  body { margin: 0; background: #FBF6E7; color: #3a2a15; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-font-smoothing: antialiased; }
-  h1, h2 { font-family: 'Bricolage Grotesque', sans-serif; }
+  /* System UI font: the platform's own reading font (SF, Segoe UI, Roboto), nothing to download */
+  body { margin: 0; background: #FBF6E7; color: #3a2a15; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif; font-size: 15px; line-height: 1.45; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  h1, h2 { letter-spacing: -.02em; }
+  .tnum { font-variant-numeric: tabular-nums; }
   a { color: #6E2621; text-decoration: none; }
   a:hover { color: #E85511; }
   input, select, textarea, button { font-family: inherit; font-size: inherit; color: inherit; }
@@ -22,7 +22,12 @@
   .pill-btn.on { border-color: #6E2621; background: #6E2621; color: #fff; font-weight: 700; }
   .day-btn { height: 34px; border-radius: 9px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; border: 1px solid transparent; background: transparent; color: #8a7952; }
   .row-hover:hover { background: #FEFBF2 !important; }
+  .icon-btn { display: inline-flex; align-items: center; justify-content: center; padding: 0; line-height: 1; }
   .icon-btn:hover { background: #F3E9CE; }
+  /* Toolbar controls share one height */
+  .tb-ctl { height: 40px; display: inline-flex; align-items: center; gap: 8px; padding: 0 14px; border: 1px solid #e6d8b6; border-radius: 11px; background: #fff; font-size: 13.5px; font-weight: 700; color: #6E2621; cursor: pointer; white-space: nowrap; line-height: 1; }
+  .tb-group { height: 40px; display: inline-flex; align-items: center; gap: 2px; padding: 3px; border: 1px solid #e6d8b6; border-radius: 11px; background: #fff; }
+  .tb-group > button { height: 32px; }
 
   /* App shell: sidebar on wide screens, bottom bar on phones */
   .app-shell { display: flex; min-height: 100vh; }
@@ -52,22 +57,22 @@
 
   <nav class="side-nav">
     <div style="display:flex; align-items:center; gap:10px; padding:0 6px;">
-      <span style="width:36px; height:36px; border-radius:11px; background:#6E2621; color:#fff; display:flex; align-items:center; justify-content:center; font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:17px;">P</span>
+      <span style="width:36px; height:36px; border-radius:11px; background:#6E2621; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:17px;">P</span>
       <span style="display:flex; flex-direction:column; line-height:1.2;">
-        <span style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:15.5px; color:#3a2a15;">Pemuda</span>
+        <span style="font-weight:800; font-size:15.5px; color:#3a2a15;">Pemuda</span>
         <span style="font-size:11.5px; font-weight:600; color:#8a7952;">GKI Kota Wisata</span>
       </span>
     </div>
     <div style="display:flex; flex-direction:column; gap:4px;">
       <span style="padding:0 10px 6px; font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:#9a8763;">Menu</span>
-      <button class="nav-link" data-view="events"><span class="nav-ico">▦</span>Event input</button>
-      <button class="nav-link" data-view="tata"><span class="nav-ico">✝</span>Tata Ibadah</button>
+      <button class="nav-link" data-view="events"><span class="nav-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block; flex-shrink:0;"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><line x1="16" y1="3" x2="16" y2="7"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="3.5" y1="10.5" x2="20.5" y2="10.5"/></svg></span>Event input</button>
+      <button class="nav-link" data-view="tata"><span class="nav-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block; flex-shrink:0;"><line x1="12" y1="3" x2="12" y2="21"/><line x1="6.5" y1="8.5" x2="17.5" y2="8.5"/></svg></span>Tata Ibadah</button>
     </div>
   </nav>
 
   <nav class="bottom-nav">
-    <button class="bottom-link" data-view="events"><span class="nav-ico">▦</span>Event input</button>
-    <button class="bottom-link" data-view="tata"><span class="nav-ico">✝</span>Tata Ibadah</button>
+    <button class="bottom-link" data-view="events"><span class="nav-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block; flex-shrink:0;"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><line x1="16" y1="3" x2="16" y2="7"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="3.5" y1="10.5" x2="20.5" y2="10.5"/></svg></span>Event input</button>
+    <button class="bottom-link" data-view="tata"><span class="nav-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block; flex-shrink:0;"><line x1="12" y1="3" x2="12" y2="21"/><line x1="6.5" y1="8.5" x2="17.5" y2="8.5"/></svg></span>Tata Ibadah</button>
   </nav>
 
   <div id="viewTata" class="app-view" style="display:none;"></div>
@@ -82,7 +87,7 @@
       </div>
       <div style="display:flex; align-items:center; gap:10px;">
         <div style="display:flex; align-items:center; gap:8px; background:#fff; border:1px solid #e6d8b6; border-radius:12px; padding:0 14px; height:44px; min-width:240px;">
-          <span style="color:#b3a37c; font-size:14px;">⌕</span>
+          <span style="color:#b3a37c;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block; flex-shrink:0;"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.2" y2="16.2"/></svg></span>
           <input id="searchInput" placeholder="Search theme, pastor, tag" style="border:none; outline:none; background:transparent; width:100%; font-size:14px;">
         </div>
         <button id="newEventBtn" style="height:44px; padding:0 20px; border-radius:12px; background:#E85511; color:#fff; font-weight:700; font-size:15px; cursor:pointer; box-shadow:0 10px 24px -12px rgba(232,85,17,.6);">+ New event</button>
@@ -134,7 +139,7 @@
           <span id="drawerEyebrow" style="color:#8a7952; font-size:11.5px; font-weight:700; letter-spacing:.07em; text-transform:uppercase;"></span>
           <h2 id="drawerTitle" style="margin:0; font-weight:800; font-size:24px; letter-spacing:-.02em;"></h2>
         </div>
-        <button id="drawerCloseBtn" class="icon-btn" style="width:36px; height:36px; border-radius:11px; background:rgba(58,42,21,.08); font-size:17px; cursor:pointer;">✕</button>
+        <button id="drawerCloseBtn" class="icon-btn" style="width:36px; height:36px; border-radius:11px; background:rgba(58,42,21,.08); cursor:pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block; flex-shrink:0;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
 
       <div style="flex:1; overflow-y:auto; padding:22px 26px 28px; display:flex; flex-direction:column; gap:18px;">
@@ -221,6 +226,30 @@ function esc(s) {
     return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
   });
 }
+/* Line icons (24×24, stroked in currentColor), so chevrons and symbols sit centred in any font. */
+var ICONS = {
+  left: '<polyline points="15 18 9 12 15 6"/>',
+  right: '<polyline points="9 18 15 12 9 6"/>',
+  dleft: '<polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/>',
+  dright: '<polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/>',
+  down: '<polyline points="6 9 12 15 18 9"/>',
+  arrowUp: '<line x1="12" y1="19" x2="12" y2="5"/><polyline points="6 11 12 5 18 11"/>',
+  arrowDown: '<line x1="12" y1="5" x2="12" y2="19"/><polyline points="6 13 12 19 18 13"/>',
+  arrowRight: '<line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/>',
+  search: '<circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.2" y2="16.2"/>',
+  x: '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+  filter: '<polygon points="21 4 3 4 10 12.5 10 19 14 21 14 12.5 21 4"/>',
+  calendar: '<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><line x1="16" y1="3" x2="16" y2="7"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="3.5" y1="10.5" x2="20.5" y2="10.5"/>',
+  external: '<path d="M14 4h6v6"/><line x1="10" y1="14" x2="20" y2="4"/><path d="M19 14v4.5a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 4 18.5v-12A1.5 1.5 0 0 1 5.5 5H10"/>',
+  more: '<circle cx="5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="19" cy="12" r="1.3" fill="currentColor"/>',
+  plus: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+  minus: '<line x1="5" y1="12" x2="19" y2="12"/>'
+};
+function icon(name, size) {
+  size = size || 16;
+  return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block; flex-shrink:0;">' + ICONS[name] + '</svg>';
+}
+
 function tagColor(tag) { return TAG_COLORS[tag] || FALLBACK_COLOR; }
 function startOfToday() { var d = new Date(); d.setHours(0, 0, 0, 0); return d; }
 function shiftDays(d, n) { var x = new Date(d); x.setDate(x.getDate() + n); return x; }
@@ -447,14 +476,14 @@ function renderCalendarGrid() {
   var nd = 1;
   while (cells.length % 7 !== 0) { cells.push({ inMonth: false, day: nd, iso: iso(new Date(y, m + 1, nd)) }); nd++; }
 
-  var dowHtml = DAYS.map(function (d) { return '<span style="padding:11px 10px; font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:#8a7952;">' + d.toUpperCase() + '</span>'; }).join('');
+  var dowHtml = DAYS.map(function (d) { return '<span style="padding:11px 14px; font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:#8a7952;">' + d.toUpperCase() + '</span>'; }).join('');
 
   var cellsHtml = cells.map(function (c) {
     var evts = (map[c.iso] || []).slice().sort(function (a, b) { return (a.timeStart || '').localeCompare(b.timeStart || ''); });
     var shown = evts.slice(0, 3);
     var extra = evts.length - shown.length;
     var isToday = c.iso === todayIso;
-    var dayNumHtml = '<span style="display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:8px; font-size:12.5px; font-weight:700; ' +
+    var dayNumHtml = '<span class="tnum" style="align-self:flex-start; display:inline-flex; align-items:center; height:24px; padding:0 6px; border-radius:8px; font-size:13px; font-weight:700; ' +
       (isToday ? 'background:#E85511; color:#fff;' : 'color:' + (c.inMonth ? '#3a2a15' : '#d9c79b') + ';') + '">' + c.day + '</span>';
     var pillsHtml = shown.map(function (r) {
       var tc = tagColor(r.tag);
@@ -462,7 +491,7 @@ function renderCalendarGrid() {
         (r.timeStart ? '<span style="opacity:.85;">' + esc(r.timeStart) + '</span> ' : '') + esc(r.theme || 'Untitled') + '</button>';
     }).join('');
     var moreHtml = extra > 0 ? '<button class="cal-more-btn" data-iso="' + c.iso + '" style="cursor:pointer; text-align:left; width:100%; background:transparent; color:#8a7952; font-size:10.5px; font-weight:700; margin-top:3px;">+' + extra + ' more</button>' : '';
-    return '<div id="cal-' + c.iso + '" style="min-height:104px; background:#fff; padding:8px 7px; display:flex; flex-direction:column;' + (c.inMonth ? '' : 'opacity:.45;') + '">' + dayNumHtml + pillsHtml + moreHtml + '</div>';
+    return '<div id="cal-' + c.iso + '" style="min-height:104px; background:#fff; padding:8px; display:flex; flex-direction:column; gap:3px;' + (c.inMonth ? '' : 'opacity:.45;') + '">' + dayNumHtml + pillsHtml + moreHtml + '</div>';
   }).join('');
 
   card.innerHTML = '<div style="background:#fff; border:1px solid #ece0c2; border-radius:20px; overflow:hidden;">' +
@@ -521,40 +550,39 @@ function renderToolbar() {
   var isCal = s.viewMode === 'calendar';
   var html = '';
 
-  html += '<div style="display:flex; gap:3px; background:#fff; border:1px solid #e6d8b6; border-radius:12px; padding:4px;">' +
-    '<button id="viewCalBtn" style="padding:9px 16px; border-radius:9px; font-size:13px; font-weight:700; cursor:pointer; ' + (isCal ? 'background:#6E2621; color:#fff;' : 'background:transparent; color:#6E2621;') + '">Calendar</button>' +
-    '<button id="viewListBtn" style="padding:9px 16px; border-radius:9px; font-size:13px; font-weight:700; cursor:pointer; ' + (!isCal ? 'background:#6E2621; color:#fff;' : 'background:transparent; color:#6E2621;') + '">List</button>' +
+  html += '<div class="tb-group">' +
+    '<button id="viewCalBtn" style="padding:0 16px; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; ' + (isCal ? 'background:#6E2621; color:#fff;' : 'background:transparent; color:#6E2621;') + '">Calendar</button>' +
+    '<button id="viewListBtn" style="padding:0 16px; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; ' + (!isCal ? 'background:#6E2621; color:#fff;' : 'background:transparent; color:#6E2621;') + '">List</button>' +
     '</div>';
 
   if (!isCal) {
-    html += '<button id="sortBtn" style="display:flex; align-items:center; gap:8px; padding:11px 16px; border:1px solid #e6d8b6; border-radius:11px; background:#fff; font-size:13.5px; font-weight:700; color:#6E2621; cursor:pointer; white-space:nowrap; line-height:1.1;">' +
-      '<span style="font-size:13px;">' + (s.sortDir === 'asc' ? '↑' : '↓') + '</span>Date · ' + (s.sortDir === 'asc' ? 'oldest first' : 'newest first') + '</button>';
+    html += '<button id="sortBtn" class="tb-ctl">' + icon(s.sortDir === 'asc' ? 'arrowUp' : 'arrowDown', 15) + 'Date · ' + (s.sortDir === 'asc' ? 'oldest first' : 'newest first') + '</button>';
   }
 
-  html += '<button id="filtersBtn" style="display:flex; align-items:center; gap:8px; height:40px; padding:0 16px; border-radius:11px; cursor:pointer; font-size:13.5px; font-weight:700; border:1px solid ' +
+  html += '<button id="filtersBtn" class="tb-ctl" style="border-color:' +
     (filterCount || s.filtersOpen ? '#6E2621' : '#e6d8b6') + '; background:' + (filterCount ? '#6E2621' : '#fff') + '; color:' + (filterCount ? '#fff' : '#6E2621') + ';">' +
-    '<span style="font-size:13px;">⛃</span>Filters' +
+    icon('filter', 15) + 'Filters' +
     (filterCount ? '<span style="background:#E85511; color:#fff; font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px;">' + filterCount + '</span>' : '') +
     '</button>';
 
-  html += '<button id="todayBtn" style="display:flex; align-items:center; gap:7px; padding:11px 16px; border:1px solid #e6d8b6; border-radius:11px; background:#fff; font-size:13.5px; font-weight:700; color:#6E2621; cursor:pointer; white-space:nowrap; line-height:1.1;">' +
+  html += '<button id="todayBtn" class="tb-ctl">' +
     '<span style="width:7px; height:7px; border-radius:50%; background:#E85511;"></span>Go to today</button>';
 
   if (isCal) {
     var anchor = fromIso(s.calMonth) || startOfToday();
-    html += '<div style="display:flex; align-items:center; gap:2px; border:1px solid #e6d8b6; border-radius:11px; background:#fff; padding:3px;">' +
-      '<button id="calMonthPrevBtn" class="icon-btn" style="width:30px; height:32px; border-radius:8px; color:#8a7952; font-size:17px; cursor:pointer;">‹</button>' +
+    html += '<div class="tb-group">' +
+      '<button id="calMonthPrevBtn" class="icon-btn" aria-label="Bulan sebelumnya" style="width:32px; border-radius:8px; color:#8a7952; cursor:pointer;">' + icon('left', 18) + '</button>' +
       '<span style="min-width:142px; text-align:center; font-weight:800; font-size:14px; color:#6E2621;">' + MONTHS_FULL[anchor.getMonth()] + ' ' + anchor.getFullYear() + '</span>' +
-      '<button id="calMonthNextBtn" class="icon-btn" style="width:30px; height:32px; border-radius:8px; color:#8a7952; font-size:17px; cursor:pointer;">›</button>' +
+      '<button id="calMonthNextBtn" class="icon-btn" aria-label="Bulan berikutnya" style="width:32px; border-radius:8px; color:#8a7952; cursor:pointer;">' + icon('right', 18) + '</button>' +
       '</div>';
   } else {
     var sorted = visibleRows();
     var rangeLabel = (!s.rangeFrom && !s.rangeTo) ? 'All dates' : (shortDate(s.rangeFrom) || 'Any') + ' – ' + (shortDate(s.rangeTo) || 'Any');
     html += '<div style="position:relative;">' +
-      '<div style="display:flex; align-items:center; gap:2px; border:1px solid #e6d8b6; border-radius:11px; background:#fff; padding:3px;">' +
-      '<button id="calPrevBtn" class="icon-btn" style="width:30px; height:32px; border-radius:8px; color:#8a7952; font-size:17px; cursor:pointer;">‹</button>' +
-      '<button id="calLabelBtn" class="icon-btn" style="display:flex; align-items:center; gap:8px; height:32px; padding:0 10px; border-radius:8px; font-size:13.5px; font-weight:700; color:#6E2621; cursor:pointer; white-space:nowrap;">' + esc(rangeLabel) + '<span style="font-size:13px; opacity:.7;">🗓</span></button>' +
-      '<button id="calNextBtn" class="icon-btn" style="width:30px; height:32px; border-radius:8px; color:#8a7952; font-size:17px; cursor:pointer;">›</button>' +
+      '<div class="tb-group">' +
+      '<button id="calPrevBtn" class="icon-btn" aria-label="Sebelumnya" style="width:32px; border-radius:8px; color:#8a7952; cursor:pointer;">' + icon('left', 18) + '</button>' +
+      '<button id="calLabelBtn" class="icon-btn" style="display:flex; align-items:center; gap:8px; height:32px; padding:0 10px; border-radius:8px; font-size:13.5px; font-weight:700; color:#6E2621; cursor:pointer; white-space:nowrap;">' + esc(rangeLabel) + '<span style="opacity:.7;">' + icon('calendar', 15) + '</span></button>' +
+      '<button id="calNextBtn" class="icon-btn" aria-label="Berikutnya" style="width:32px; border-radius:8px; color:#8a7952; cursor:pointer;">' + icon('right', 18) + '</button>' +
       '</div>' +
       '<div id="calPopover"></div>' +
       '</div>';
@@ -686,14 +714,14 @@ function renderCalendar() {
   pop.innerHTML = '<div style="position:absolute; top:calc(100% + 8px); right:0; left:auto; z-index:90; width:min(620px, calc(100vw - 56px)); background:#fff; border:1px solid #ece0c2; border-radius:18px; box-shadow:0 20px 44px rgba(74,59,23,.24); padding:18px 20px 16px;">' +
     '<div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px;">' +
     '<span style="display:flex; align-items:center; gap:4px;">' +
-    '<button id="calPrevYear" class="icon-btn" style="width:28px; height:28px; border-radius:8px; color:#9a8763; cursor:pointer; font-size:13px;">«</button>' +
-    '<button id="calPrevM" class="icon-btn" style="width:28px; height:28px; border-radius:8px; color:#9a8763; cursor:pointer; font-size:15px;">‹</button>' +
+    '<button id="calPrevYear" class="icon-btn" style="width:28px; height:28px; border-radius:8px; color:#9a8763; cursor:pointer;">' + icon('dleft', 16) + '</button>' +
+    '<button id="calPrevM" class="icon-btn" style="width:28px; height:28px; border-radius:8px; color:#9a8763; cursor:pointer;">' + icon('left', 16) + '</button>' +
     '<span style="font-weight:800; font-size:15px; color:#3a2a15; margin-left:4px;">' + MONTHS_FULL[anchor.getMonth()] + ' ' + anchor.getFullYear() + '</span>' +
     '</span>' +
     '<span style="display:flex; align-items:center; gap:4px;">' +
     '<span style="font-weight:800; font-size:15px; color:#3a2a15; margin-right:4px;">' + MONTHS_FULL[anchorB.getMonth()] + ' ' + anchorB.getFullYear() + '</span>' +
-    '<button id="calNextM" class="icon-btn" style="width:28px; height:28px; border-radius:8px; color:#9a8763; cursor:pointer; font-size:15px;">›</button>' +
-    '<button id="calNextYear" class="icon-btn" style="width:28px; height:28px; border-radius:8px; color:#9a8763; cursor:pointer; font-size:13px;">»</button>' +
+    '<button id="calNextM" class="icon-btn" style="width:28px; height:28px; border-radius:8px; color:#9a8763; cursor:pointer;">' + icon('right', 16) + '</button>' +
+    '<button id="calNextYear" class="icon-btn" style="width:28px; height:28px; border-radius:8px; color:#9a8763; cursor:pointer;">' + icon('dright', 16) + '</button>' +
     '</span>' +
     '</div>' +
     '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:22px;">' +
@@ -833,7 +861,7 @@ function renderTable() {
         '<div style="padding:14px 12px; font-size:13px; color:#6b5a38; line-height:1.4;">' +
         (row.notes ? esc(row.notes) : '<span style="color:#c0ad82;">—</span>') +
         '</div>' +
-        '<div style="padding:14px 4px; text-align:center; color:#c6b58c; font-size:16px;">›</div>' +
+        '<div style="padding:14px 4px; display:flex; justify-content:center; color:#c6b58c;">' + icon('right', 18) + '</div>' +
         '</div>';
     }).join('');
 
@@ -914,7 +942,7 @@ function renderPicField() {
 
   var chipsHtml = pic.map(function (m) {
     return '<span class="pill-btn on" style="display:inline-flex; align-items:center; gap:6px;">' + esc(m.name) +
-      '<button type="button" data-remove-pic="' + esc(m.id) + '" style="cursor:pointer; color:inherit; font-weight:700; line-height:1;">✕</button></span>';
+      '<button type="button" data-remove-pic="' + esc(m.id) + '" aria-label="Hapus" style="cursor:pointer; color:inherit; display:inline-flex; padding:0;">' + icon('x', 13) + '</button></span>';
   }).join('');
   var chipsEl = document.getElementById('picChips');
   chipsEl.innerHTML = chipsHtml;

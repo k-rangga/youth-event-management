@@ -584,7 +584,7 @@ function tiListHtml() {
     var st = svc ? tiStatusPill(svc.status) : '<span class="ti-pill" style="background:' + (d === nextEmpty ? '#fbdcc9' : '#F3E9CE') + '; color:' + (d === nextEmpty ? '#a3420e' : '#9a8763') + ';">Belum ada</span>';
     return '<button data-ti="' + (svc ? 'open' : 'new') + '" data-date="' + d + '" class="ti-tile" style="text-align:left; cursor:pointer; background:#fff; border:1px solid ' + (d === nextEmpty ? '#f6cfb3' : '#ece0c2') + '; border-radius:16px; padding:12px 14px; display:flex; flex-direction:column; gap:6px; min-height:100px;">' +
       '<span class="ti-eyebrow" style="font-size:11px;">' + TI_MON[dt.getMonth()] + '</span>' +
-      '<span style="font-family:\'Bricolage Grotesque\',sans-serif; font-weight:800; font-size:30px; line-height:1; color:#6E2621;">' + dt.getDate() + '</span>' +
+      '<span style="font-weight:800; font-size:30px; line-height:1; color:#6E2621;">' + dt.getDate() + '</span>' +
       '<span style="display:flex; gap:4px; flex-wrap:wrap; margin-top:auto;">' + (svc && svc.pk ? '<span class="ti-pill" style="background:#6E2621; color:#fff;">Perjamuan Kudus</span>' : '') + st + '</span>' +
     '</button>';
   }).join('') + '</section>';
@@ -612,7 +612,7 @@ function tiListHtml() {
     var warn = chk && (chk.reds.length || chk.ambers.length) ? chk.reds.length + ' pemblokir · ' + chk.ambers.length + ' peringatan' : '';
     return '<button data-ti="openSvc" data-idx="' + s.services.indexOf(svc) + '" class="ti-row" style="text-align:left; cursor:pointer; display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:16px; align-items:center; padding:12px 16px; background:#fff; border:1px solid #ece0c2; border-radius:16px;">' +
       '<span style="background:#F3E9CE; border-radius:12px; padding:7px 10px; display:flex; flex-direction:column; align-items:center; line-height:1.02; min-width:58px;">' +
-        '<span style="font-weight:800; font-size:24px; color:#6E2621; font-family:\'Bricolage Grotesque\',sans-serif;">' + p.day + '</span>' +
+        '<span style="font-weight:800; font-size:24px; color:#6E2621;">' + p.day + '</span>' +
         '<span style="font-size:11px; font-weight:700; letter-spacing:.07em; color:#8a7952;">' + (svc.date ? TI_MON[fromIso(svc.date).getMonth()].toUpperCase() : '') + '</span>' +
       '</span>' +
       '<span style="min-width:0; display:flex; flex-direction:column; gap:3px;">' +
@@ -645,7 +645,7 @@ function tiBuilderHtml() {
   var html = '<header class="page-pad" style="background:#F3E9CE; border-bottom:1px solid #e7d9b3; padding:18px 32px 20px;">' +
     '<div style="max-width:1320px; margin:0 auto; display:flex; flex-direction:column; gap:12px;">' +
       '<div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">' +
-        '<button data-ti="back" style="color:#6E2621; font-size:13.5px; font-weight:700; cursor:pointer; padding:0;">← Daftar ibadah</button>' + right +
+        '<button data-ti="back" style="color:#6E2621; font-size:13.5px; font-weight:700; cursor:pointer; padding:0; display:inline-flex; align-items:center; gap:4px;">' + icon('left', 16) + 'Daftar ibadah</button>' + right +
       '</div>' +
       '<div style="display:flex; flex-direction:column; gap:4px; min-width:0;">' +
         '<span id="tiEyebrow" class="ti-eyebrow" style="line-height:1.4;"></span>' +
@@ -751,7 +751,7 @@ function tiBlockParts(b) {
       '<div style="flex:1 1 260px; min-width:0; display:flex; flex-direction:column; gap:4px;">' +
         '<div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">' +
           (tiSongCode(song) ? '<span style="font-size:12px; font-weight:700; background:#F3E9CE; color:#6E2621; padding:2px 7px; border-radius:6px;">' + esc(tiSongCode(song)) + '</span>' : '') +
-          '<span style="font-family:\'Bricolage Grotesque\',sans-serif; font-size:17px; font-weight:700; color:#3a2a15;">' + esc(song.title) + '</span>' +
+          '<span style="font-size:17px; font-weight:700; color:#3a2a15;">' + esc(song.title) + '</span>' +
           (recent ? '<span class="ti-pill" style="background:#fdf0e6; color:#a3420e; font-weight:600;">Dipakai ' + esc(tiShort(u.date)) + '</span>' : '') +
         '</div>' +
         (song.credits ? '<span style="font-size:12.5px; color:#8a7952;">' + esc(song.credits) + '</span>' : '') +
@@ -795,7 +795,7 @@ function tiBlockParts(b) {
       note = nextPk ? 'Minggu depan (' + tiShort(nextPk.date) + ') Perjamuan Kudus' : 'Nyalakan bila Minggu depan Perjamuan Kudus';
     }
     h += '<div style="' + pad + ' display:flex; flex-direction:column; gap:2px;">' +
-      '<span style="font-family:\'Bricolage Grotesque\',sans-serif; font-size:16px; font-weight:700; color:' + (on ? '#3a2a15' : '#9a8763') + ';">' + esc(main) + '</span>' +
+      '<span style="font-size:16px; font-weight:700; color:' + (on ? '#3a2a15' : '#9a8763') + ';">' + esc(main) + '</span>' +
       '<span style="font-size:12px; color:#8a7952;">' + esc(note) + '</span>' +
     '</div>';
   }
@@ -972,7 +972,7 @@ function tiRenderAside() {
     '<div ' + card + '>' +
       '<div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;"><span class="ti-eyebrow">Perlu diisi</span><span style="font-size:12.5px; font-weight:600; color:#8a7952;">' + (todos.length ? todos.length + ' tersisa' : 'Lengkap') + '</span></div>' +
       '<span style="font-size:13.5px; font-weight:600; color:#3a2a15;">' + (nextT ? 'Berikutnya: ' + esc(nextT.label) : 'Semua kolom dan slot sudah terisi.') + '</span>' +
-      (nextT ? '<button data-ti="jump" data-to="' + nextT.id + '" class="ti-btn-orange">Isi berikutnya ↓</button>'
+      (nextT ? '<button data-ti="jump" data-to="' + nextT.id + '" class="ti-btn-orange" style="display:inline-flex; align-items:center; justify-content:center; gap:6px;">Isi berikutnya ' + icon('arrowDown', 16) + '</button>'
              : '<span style="background:#e3ebdc; color:#24401F; font-weight:700; font-size:14px; padding:12px 14px; border-radius:12px; text-align:center;">Semua terisi ✓</span>') +
     '</div>' +
     '<div ' + card + '>' +
@@ -989,7 +989,7 @@ function tiRenderAside() {
         return '<button ' + (c.to ? 'data-ti="jump" data-to="' + c.to + '" class="ti-hover"' : '') + ' style="text-align:left; cursor:' + (c.to ? 'pointer' : 'default') + '; display:grid; grid-template-columns:18px minmax(0,1fr) auto; gap:9px; align-items:start; font-size:13.5px; line-height:1.4; padding:5px 7px; margin:0 -7px; border-radius:9px;">' +
           '<span style="width:17px; height:17px; border-radius:50%; background:' + c.color + '; color:#fff; font-size:10px; display:flex; align-items:center; justify-content:center; margin-top:1px; font-weight:800;">' + c.icon + '</span>' +
           '<span style="display:flex; flex-direction:column; gap:1px; min-width:0;"><span style="color:#3a2a15; font-weight:600;">' + esc(c.text) + '</span>' + (c.sub ? '<span style="font-size:12px; color:#8a7952;">' + esc(c.sub) + '</span>' : '') + '</span>' +
-          '<span style="font-size:12px; color:#c6b58c;">' + (c.to ? '→' : '') + '</span>' +
+          '<span style="color:#c6b58c; padding-top:2px;">' + (c.to ? icon('right', 14) : '') + '</span>' +
         '</button>';
       }).join('') + '</div>' +
     '</div>' +
@@ -1014,7 +1014,7 @@ function tiOutputHtml(svc, redN) {
           '<div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">' +
             '<span style="display:flex; flex-direction:column; gap:1px; min-width:0;"><span style="font-size:14px; font-weight:700; color:#3a2a15;">Google Doc</span>' +
             '<span style="font-size:12px; color:#8a7952;">' + (svc.doc.updatedAt ? 'Diperbarui ' + esc(svc.doc.updatedAt) : 'Dibuat ' + esc(svc.doc.at)) + ' · Drive › Tata Ibadah</span></span>' +
-            '<a href="' + esc(svc.doc.url) + '" target="_blank" style="font-size:13px; font-weight:700; color:#E85511; white-space:nowrap;">Buka ↗</a>' +
+            '<a href="' + esc(svc.doc.url) + '" target="_blank" style="font-size:13px; font-weight:700; color:#E85511; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;">Buka ' + icon('external', 14) + '</a>' +
           '</div>' +
           btn('gdocUpdate', 'Perbarui Google Doc', false).replace('flex:1;', 'width:100%;') +
           '<span data-ti="download" data-v="gdoc" class="ti-link" style="align-self:flex-start;' + (busy ? ' pointer-events:none; opacity:.5;' : '') + '">' + (busy === 'gdoc' ? 'Membuat…' : 'Buat Google Doc baru') + '</span>' +
@@ -1084,7 +1084,7 @@ function tiLibraryHtml() {
   var html = tiHeader('Tata Ibadah · Pemuda GKI Kota Wisata', 'Perpustakaan lagu',
     '<span style="display:flex; gap:8px; align-items:center; position:relative;">' +
       '<button data-ti="newSong" class="ti-btn-orange" style="height:44px; padding:0 20px; font-size:15px;">+ Lagu baru</button>' +
-      (imported ? '<button data-ti="libMenu" class="ti-btn-outline" aria-label="Menu lain" style="height:44px; width:44px; padding:0; font-size:18px;">⋯</button>' +
+      (imported ? '<button data-ti="libMenu" class="ti-btn-outline" aria-label="Menu lain" style="height:44px; width:44px; padding:0; display:inline-flex; align-items:center; justify-content:center;">' + icon('more', 20) + '</button>' +
         (L.menu ? '<div style="position:absolute; right:0; top:52px; z-index:20; background:#fff; border:1px solid #ece0c2; border-radius:12px; box-shadow:0 16px 36px rgba(74,59,23,.2); padding:6px; min-width:260px;">' +
           '<button data-ti="libImportAll" class="ti-hover" style="width:100%; text-align:left; padding:10px 12px; border-radius:8px; font-size:13.5px; font-weight:600; color:#3a2a15; cursor:pointer;"' + (L.importing ? ' disabled' : '') + '>' + importLabel + '</button>' +
           '<span style="display:block; padding:0 12px 8px; font-size:12px; color:#8a7952;">Menambah judul yang belum ada. Lagu yang ada tidak diubah.</span>' +
@@ -1099,7 +1099,7 @@ function tiLibraryHtml() {
   }
   html += '<div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">' +
       '<div style="display:flex; align-items:center; gap:8px; background:#fff; border:1px solid #e6d8b6; border-radius:12px; padding:0 14px; height:42px; flex:1 1 240px; max-width:380px;">' +
-        '<span style="color:#b3a37c;">⌕</span><input id="tiLibQ" data-tilib="q" value="' + esc(L.q) + '" placeholder="Cari judul, nomor atau lirik" autocomplete="off" style="border:none; outline:none; background:transparent; width:100%; font-size:14px;"></div>' +
+        '<span style="color:#b3a37c;">' + icon('search', 16) + '</span><input id="tiLibQ" data-tilib="q" value="' + esc(L.q) + '" placeholder="Cari judul, nomor atau lirik" autocomplete="off" style="border:none; outline:none; background:transparent; width:100%; font-size:14px;"></div>' +
       '<div id="tiLibChips" style="display:flex; gap:6px; flex-wrap:wrap;"></div>' +
       '<label style="margin-left:auto; display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:700; color:#8a7952;">Urutkan' +
         '<select data-tilib="sort" class="ti-field" style="width:auto; padding:8px 10px; font-size:13px;">' +
@@ -1216,7 +1216,7 @@ function tiRenderLibPanel() {
         '<h2 style="margin:0; font-weight:800; font-size:22px; letter-spacing:-.02em; line-height:1.2;">' + esc(s.title) + '</h2>' +
         (s.credits ? '<span style="font-size:12.5px; color:#8a7952; line-height:1.45;">' + esc(s.credits) + '</span>' : '') +
       '</div>' +
-      '<button data-ti="libClose" class="icon-btn" aria-label="Tutup" style="width:36px; height:36px; border-radius:11px; background:rgba(58,42,21,.08); font-size:17px; cursor:pointer; flex-shrink:0;">✕</button>' +
+      '<button data-ti="libClose" class="icon-btn" aria-label="Tutup" style="width:36px; height:36px; border-radius:11px; background:rgba(58,42,21,.08); cursor:pointer; flex-shrink:0;">' + icon('x', 18) + '</button>' +
     '</div>' +
     '<div style="flex:1; overflow-y:auto; padding:18px 22px 24px; display:flex; flex-direction:column; gap:16px;">' + body +
       '<div style="display:flex; flex-direction:column; gap:6px; border-top:1px solid #f1e7cd; padding-top:14px;">' +
@@ -1368,7 +1368,7 @@ function tiFetchDetailHtml(song) {
   var f = tiState.picker.fetch;
   if (!f || f.id !== song.id) return '';
   var head = '<div style="display:flex; flex-direction:column; gap:4px;"><span style="font-size:12px; font-weight:700; color:#8a7952;">' + esc(tiSongCode(song)) + '</span>' +
-    '<span style="font-family:\'Bricolage Grotesque\',sans-serif; font-size:24px; font-weight:800; line-height:1.2; color:#3a2a15;">' + esc(song.title) + '</span></div>';
+    '<span style="font-size:24px; font-weight:800; line-height:1.2; color:#3a2a15;">' + esc(song.title) + '</span></div>';
   if (f.busy) return head + '<span style="font-size:13.5px; color:#8a7952; font-weight:600;">Mengambil lirik dari Alkitab SABDA…</span>';
   if (f.variants) {
     return head + '<span style="font-size:13.5px; color:#3a2a15; font-weight:600;">' + esc(tiSongCode(song)) + ' punya ' + f.variants.length + ' versi. Pilih yang dipakai:</span>' +
@@ -1433,7 +1433,7 @@ function tiRenderModal() {
         '<div style="flex-shrink:0; background:#F3E9CE; border-bottom:1px solid #e7d9b3; padding:16px 22px; display:flex; justify-content:space-between; align-items:center; gap:12px;">' +
           '<div style="display:flex; flex-direction:column; gap:2px; min-width:0;"><span class="ti-eyebrow">' + tiN(b.n) + ' · ' + esc(b.title) + '</span>' +
           '<h2 style="margin:0; font-weight:800; font-size:22px; letter-spacing:-.02em;">Pilih lagu</h2></div>' +
-          '<button data-ti="closePicker" class="icon-btn" aria-label="Tutup" style="width:36px; height:36px; border-radius:11px; background:rgba(58,42,21,.08); font-size:17px; cursor:pointer;">✕</button>' +
+          '<button data-ti="closePicker" class="icon-btn" aria-label="Tutup" style="width:36px; height:36px; border-radius:11px; background:rgba(58,42,21,.08); cursor:pointer;">' + icon('x', 18) + '</button>' +
         '</div>' +
         '<div style="display:flex; flex-wrap:wrap; min-height:0; flex:1; overflow:auto;">' +
           '<div style="flex:1 1 340px; min-width:0; padding:16px 20px; display:flex; flex-direction:column; gap:12px; border-right:1px solid #ece0c2; overflow:auto; max-height:100%;">' +
@@ -1497,7 +1497,7 @@ function tiRenderPickerParts() {
     detail.innerHTML =
       '<div style="display:flex; flex-direction:column; gap:4px;">' +
         '<span style="font-size:12px; font-weight:700; color:#8a7952;">' + esc(tiSongCode(song) || 'Kontemporer') + (song.language ? ' · ' + esc(song.language) : '') + ' · <span data-ti="editSong" class="ti-link" style="font-size:12px;">Edit di perpustakaan</span></span>' +
-        '<span style="font-family:\'Bricolage Grotesque\',sans-serif; font-size:24px; font-weight:800; line-height:1.2; color:#3a2a15;">' + esc(song.title) + '</span>' +
+        '<span style="font-size:24px; font-weight:800; line-height:1.2; color:#3a2a15;">' + esc(song.title) + '</span>' +
         (song.credits ? '<span style="font-size:13px; color:#8a7952;">' + esc(song.credits) + '</span>' : '') +
       '</div>' +
       '<div style="display:flex; flex-direction:column; gap:10px;">' +
@@ -1512,7 +1512,7 @@ function tiRenderPickerParts() {
           var sel = cs === i;
           return '<div draggable="true" data-ti-seq="' + i + '" data-ti="chip" data-i="' + i + '" class="ti-seq-chip" style="border:1px solid ' + (sel ? '#E85511' : '#ecd2bd') + '; background:' + (sel ? '#fdf0e6' : '#fff') + '; opacity:' + (pk.dragI === i ? 0.4 : 1) + ';">' +
             '<span style="font-size:11px; font-weight:800; color:#E85511;">' + (i + 1) + '</span>' + esc(label) +
-            '<button data-ti="chipRemove" data-i="' + i + '" aria-label="Hapus" class="icon-btn" style="color:#b3a37c; cursor:pointer; width:22px; height:22px; padding:0; font-size:13px; border-radius:6px;">✕</button>' +
+            '<button data-ti="chipRemove" data-i="' + i + '" aria-label="Hapus" class="icon-btn" style="color:#b3a37c; cursor:pointer; width:22px; height:22px; padding:0; border-radius:6px;">\' + icon(\'x\', 13) + \'</button>' +
           '</div>';
         }).join('') +
         '<button data-ti="addMenu" style="border:1px dashed #d9c79b; background:#fff; color:#6E2621; font-size:13px; font-weight:700; padding:7px 11px; border-radius:10px; cursor:pointer; white-space:nowrap;">+ Bagian</button></div>' +
@@ -1522,8 +1522,8 @@ function tiRenderPickerParts() {
         '</div>' : '') +
         (cs != null && cs < pk.seq.length ? '<div style="display:flex; gap:5px; flex-wrap:wrap; align-items:center; font-size:12.5px;">' +
           '<span style="color:#8a7952; font-weight:600; margin-right:6px;">Bagian ' + (cs + 1) + ' · ' + esc(pk.seq[cs]) + '</span>' +
-          '<button data-ti="chipLeft" class="ti-btn-outline" style="padding:5px 9px; font-size:12.5px;"' + (cs === 0 ? ' disabled' : '') + '>← Geser</button>' +
-          '<button data-ti="chipRight" class="ti-btn-outline" style="padding:5px 9px; font-size:12.5px;"' + (cs === pk.seq.length - 1 ? ' disabled' : '') + '>Geser →</button>' +
+          '<button data-ti="chipLeft" class="ti-btn-outline" style="padding:5px 9px; font-size:12.5px; display:inline-flex; align-items:center; gap:4px;"' + (cs === 0 ? ' disabled' : '') + '>' + icon('left', 14) + 'Geser</button>' +
+          '<button data-ti="chipRight" class="ti-btn-outline" style="padding:5px 9px; font-size:12.5px; display:inline-flex; align-items:center; gap:4px;"' + (cs === pk.seq.length - 1 ? ' disabled' : '') + '>Geser' + icon('right', 14) + '</button>' +
           '<button data-ti="chipDup" class="ti-btn-outline" style="padding:5px 9px; font-size:12.5px;">Ulangi bagian ini</button>' +
           '<button data-ti="chipRemove" data-i="' + cs + '" class="ti-btn-outline" style="padding:5px 9px; font-size:12.5px; color:' + TI_RED + ';">Hapus</button>' +
         '</div>' : '') +
@@ -1538,7 +1538,7 @@ function tiRenderPickerParts() {
             '<button data-ti="secToggle" data-v="' + esc(sx.label) + '" style="width:100%; cursor:pointer; display:grid; grid-template-columns:80px minmax(0,1fr) 20px; gap:10px; align-items:baseline; padding:10px 2px; text-align:left;">' +
               '<span style="font-size:13.5px; font-weight:700; color:#3a2a15;">' + esc(sx.label) + '</span>' +
               '<span style="font-size:14px; color:#8a7952; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + (open ? '' : esc(text.split('\n')[0] || 'Lirik belum diisi')) + '</span>' +
-              '<span style="font-size:15px; color:#b3a37c; text-align:right;">' + (open ? '−' : '+') + '</span>' +
+              '<span style="color:#b3a37c; display:flex; justify-content:flex-end;">' + icon(open ? 'minus' : 'plus', 15) + '</span>' +
             '</button>' +
             (open && !editing ? '<div style="padding:0 2px 12px 92px; display:flex; flex-direction:column; gap:6px;"><span style="font-size:14.5px; line-height:1.6; color:' + (text ? '#3a2a15' : '#b3a37c') + '; white-space:pre-line;">' + esc(text || 'Lirik belum diisi') + '</span><span data-ti="secEdit" data-v="' + esc(sx.label) + '" class="ti-link" style="align-self:flex-start;">Edit lirik</span></div>' : '') +
             (open && editing ? '<div style="padding:0 2px 12px 92px; display:flex; flex-direction:column; gap:6px;"><textarea data-tipk="lyric" data-v="' + esc(sx.label) + '" rows="' + Math.max(3, text.split('\n').length) + '" class="ti-field" style="resize:vertical; line-height:1.5; font-family:inherit;">' + esc(text) + '</textarea><span data-ti="secDone" data-v="' + esc(sx.label) + '" class="ti-link" style="align-self:flex-start;">Selesai</span></div>' : '') +
@@ -1830,7 +1830,7 @@ function tiSongFormHtml() {
     '<section style="position:relative; width:520px; max-width:100%; height:100%; background:#FBF6E7; box-shadow:-24px 0 60px rgba(74,59,23,.3); display:flex; flex-direction:column;">' +
       '<div style="flex-shrink:0; background:#F3E9CE; border-bottom:1px solid #e7d9b3; padding:22px 26px 20px; display:flex; align-items:flex-start; justify-content:space-between; gap:16px;">' +
         '<div style="display:flex; flex-direction:column; gap:3px;"><span class="ti-eyebrow">Perpustakaan lagu</span><h2 style="margin:0; font-weight:800; font-size:24px; letter-spacing:-.02em;">' + (f.id ? 'Edit lagu' : 'Lagu baru') + '</h2></div>' +
-        '<button data-ti="closeSongForm" class="icon-btn" style="width:36px; height:36px; border-radius:11px; background:rgba(58,42,21,.08); font-size:17px; cursor:pointer;">✕</button>' +
+        '<button data-ti="closeSongForm" class="icon-btn" aria-label="Tutup" style="width:36px; height:36px; border-radius:11px; background:rgba(58,42,21,.08); cursor:pointer;">' + icon('x', 18) + '</button>' +
       '</div>' +
       '<div style="flex:1; overflow-y:auto; padding:22px 26px 28px; display:flex; flex-direction:column; gap:16px;">' +
         (f.pasteOpen
@@ -1860,7 +1860,7 @@ function tiSongFormHtml() {
           f.sections.map(function (s, i) {
             return '<div class="ti-card" style="border-radius:14px; padding:12px; display:flex; flex-direction:column; gap:8px;">' +
               '<div style="display:flex; gap:8px; align-items:center;"><input data-tisf="label" data-i="' + i + '" value="' + esc(s.label) + '" placeholder="mis. Bait 1, Ref, Chorus" class="ti-field" style="padding:9px 12px; font-weight:700;">' +
-              '<button data-ti="sfRemove" data-i="' + i + '" class="icon-btn" aria-label="Hapus bagian" style="width:34px; height:34px; border-radius:10px; color:#b3a37c; cursor:pointer; flex-shrink:0;">✕</button></div>' +
+              '<button data-ti="sfRemove" data-i="' + i + '" class="icon-btn" aria-label="Hapus bagian" style="width:34px; height:34px; border-radius:10px; color:#b3a37c; cursor:pointer; flex-shrink:0;">\' + icon(\'x\', 15) + \'</button></div>' +
               '<textarea data-tisf="text" data-i="' + i + '" rows="4" placeholder="Lirik" class="ti-field" style="resize:vertical; line-height:1.5; font-family:inherit; padding:9px 12px;">' + esc(s.text) + '</textarea>' +
             '</div>';
           }).join('') +
