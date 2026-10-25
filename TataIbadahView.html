@@ -1197,7 +1197,7 @@ function tiOutputHtml(svc, redN) {
       ? '<div style="display:flex; flex-direction:column; gap:10px; padding-top:10px; border-top:1px solid #f1e7cd;">' +
           '<div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">' +
             '<span style="display:flex; flex-direction:column; gap:1px; min-width:0;"><span style="font-size:14px; font-weight:700; color:#3a2a15;">Google Doc</span>' +
-            '<span style="font-size:12px; color:#8a7952;">' + (svc.doc.updatedAt ? 'Diperbarui ' + esc(svc.doc.updatedAt) : 'Dibuat ' + esc(svc.doc.at)) + ' · Drive › Tata Ibadah</span></span>' +
+            '<span style="font-size:12px; color:#8a7952;">' + (svc.doc.updatedAt ? 'Diperbarui ' + esc(svc.doc.updatedAt) : 'Dibuat ' + esc(svc.doc.at)) + ' · <a href="https://drive.google.com/drive/folders/1TWKE5taosfH3N5Dy9iyXRZGtFMkRH9dM" target="_blank" rel="noopener" style="color:inherit;">folder Drive</a></span></span>' +
             '<a href="' + esc(svc.doc.url) + '" target="_blank" style="font-size:13px; font-weight:700; color:#E85511; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;">Buka ' + icon('external', 14) + '</a>' +
           '</div>' +
           btn('gdocUpdate', 'Perbarui Google Doc', false).replace('flex:1;', 'width:100%;') +

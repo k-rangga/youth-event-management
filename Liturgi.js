@@ -2,9 +2,12 @@
  * Liturgy output: builds the whole "Tata Ibadah Minggu" booklet (A5, as in
  * the Pemuda liturgy) as a Google Doc from a saved service, with the fixed
  * wording from LiturgiText.js and the service's weekly texts. Downloads
- * return .docx or .pdf; "Buat Google Doc" keeps an editable Doc in
- * Drive / Tata Ibadah / <year>.
+ * return .docx or .pdf; "Buat Google Doc" keeps an editable Doc in the
+ * shared Tata Ibadah folder (TI_OUTPUT_FOLDER_ID).
  */
+
+/* Shared Drive folder for the liturgy Google Docs; the account the web app runs as needs edit access. */
+var TI_OUTPUT_FOLDER_ID = '1TWKE5taosfH3N5Dy9iyXRZGtFMkRH9dM';
 
 var ID_MONTHS = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 var LIT_BLUE = '#0070c0';
@@ -160,18 +163,19 @@ function downloadLiturgy(serviceId, format) {
 }
 
 /**
- * Creates an editable Google Doc of the liturgy in Drive / Tata Ibadah / <year>
+ * Creates an editable Google Doc of the liturgy in the shared Tata Ibadah folder
  * and remembers it on the service. Earlier Docs are kept (they may hold edits).
  */
 function createLiturgyDoc(serviceId) {
   var found = findService_(serviceId);
   if (!found) return { success: false, message: 'Simpan tata ibadah ini dulu.' };
+  var folder = outputFolder_();
   var file = produceLiturgy_(found.svc, 'Liturgi Pemuda ' + idDate_(found.svc.date), 'gdoc');
-  file.moveTo(yearFolder_(found.svc.date.slice(0, 4)));
+  try { file.moveTo(folder); } catch (e) { file.setTrashed(true); throw new Error('Tidak bisa menyimpan ke folder Drive tata ibadah: ' + e.message); }
   var doc = { id: file.getId(), url: file.getUrl(), at: Utilities.formatDate(new Date(), TZ, 'd MMM, HH.mm') };
   found.data.doc = doc;
   found.sheet.getRange(found.row, 11).setValue(JSON.stringify(found.data));
-  return { success: true, message: 'Google Doc dibuat di Drive › Tata Ibadah', doc: doc };
+  return { success: true, message: 'Google Doc dibuat di folder Drive tata ibadah', doc: doc };
 }
 
 /**
@@ -185,8 +189,10 @@ function updateLiturgyDoc(serviceId) {
   if (!found) return { success: false, message: 'Simpan tata ibadah ini dulu.' };
   var doc = found.data.doc;
   if (!doc || !doc.id) return { success: false, message: 'Belum ada Google Doc. Buat dulu.' };
+  var file;
   try {
-    if (DriveApp.getFileById(doc.id).isTrashed()) return { success: false, gone: true, message: 'Google Doc itu ada di sampah. Buat Google Doc baru.' };
+    file = DriveApp.getFileById(doc.id);
+    if (file.isTrashed()) return { success: false, gone: true, message: 'Google Doc itu ada di sampah. Buat Google Doc baru.' };
   } catch (e) {
     return { success: false, gone: true, message: 'Google Doc tidak ditemukan. Buat Google Doc baru.' };
   }
@@ -195,6 +201,7 @@ function updateLiturgyDoc(serviceId) {
   buildLiturgy_(gdoc, found.svc, liturgySongs_(), { inPlace: true });
   gdoc.setName('Liturgi Pemuda ' + idDate_(found.svc.date));
   gdoc.saveAndClose();
+  moveToOutput_(file);
   doc.updatedAt = Utilities.formatDate(new Date(), TZ, 'd MMM, HH.mm');
   found.data.doc = doc;
   found.sheet.getRange(found.row, 11).setValue(JSON.stringify(found.data));
@@ -212,18 +219,22 @@ function emptyBody_(body) {
   keep.setHeading(DocumentApp.ParagraphHeading.NORMAL);
 }
 
-function yearFolder_(year) {
-  var props = PropertiesService.getScriptProperties();
-  var root = null, id = props.getProperty('TI_OUTPUT_FOLDER_ID');
-  if (id) {
-    try { root = DriveApp.getFolderById(id); if (root.isTrashed()) root = null; } catch (e) { root = null; }
+function outputFolder_() {
+  try {
+    return DriveApp.getFolderById(TI_OUTPUT_FOLDER_ID);
+  } catch (e) {
+    throw new Error('Folder Drive tata ibadah tidak bisa dibuka. Pastikan akun web app punya akses edit ke folder itu.');
   }
-  if (!root) {
-    root = DriveApp.createFolder('Tata Ibadah');
-    props.setProperty('TI_OUTPUT_FOLDER_ID', root.getId());
+}
+
+/* Docs made before the shared folder (My Drive › Tata Ibadah › <year>) move into it when updated. */
+function moveToOutput_(file) {
+  try {
+    if (file.getParents().hasNext() && file.getParents().next().getId() === TI_OUTPUT_FOLDER_ID) return;
+    file.moveTo(outputFolder_());
+  } catch (e) {
+    console.warn('Doc not moved to the shared folder: ' + e.message);
   }
-  var it = root.getFoldersByName(String(year));
-  return it.hasNext() ? it.next() : root.createFolder(String(year));
 }
 
 /* ---------- writer ---------- */
