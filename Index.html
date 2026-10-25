@@ -332,37 +332,64 @@ function visibleRows() {
   });
 }
 
+/*
+ * When an event runs, as timestamps: its start and end times when set. With
+ * only a start time it is taken to last two hours; with no times, all day.
+ */
+function eventSpan(r) {
+  var d = fromIso(r.date);
+  if (!d || isNaN(d)) return null;
+  var at = function (hhmm) {
+    var m = String(hhmm || '').match(/^(\d{1,2}):(\d{2})/);
+    if (!m) return null;
+    var x = new Date(d); x.setHours(Number(m[1]), Number(m[2]), 0, 0);
+    return x.getTime();
+  };
+  var start = at(r.timeStart), end = at(r.timeEnd);
+  if (start == null) return { start: d.getTime(), end: d.getTime() + 86400000 };
+  if (end == null || end <= start) end = start + 2 * 3600000;
+  return { start: start, end: end };
+}
+
+function isHappeningNow(r) {
+  var s = eventSpan(r), now = Date.now();
+  return !!s && s.start <= now && now < s.end;
+}
+
+/* The event running now or coming next (by time, not just date); else the most recent one. */
 function nearestEvent() {
-  var now = new Date(); now.setHours(0, 0, 0, 0);
-  var today = now.getTime();
-  var withStamp = state.rows.map(function (r) { return { r: r, t: parts(r.date).stamp }; }).filter(function (x) { return isFinite(x.t); });
-  var future = withStamp.filter(function (x) { return x.t >= today; }).sort(function (a, b) { return a.t - b.t; });
-  var pastEv = withStamp.filter(function (x) { return x.t < today; }).sort(function (a, b) { return b.t - a.t; });
+  var now = Date.now();
+  var spans = state.rows.map(function (r) { return { r: r, s: eventSpan(r) }; }).filter(function (x) { return x.s; });
+  var future = spans.filter(function (x) { return x.s.end > now; }).sort(function (a, b) { return a.s.start - b.s.start; });
+  var pastEv = spans.filter(function (x) { return x.s.end <= now; }).sort(function (a, b) { return b.s.end - a.s.end; });
   return (future[0] || pastEv[0] || {}).r;
 }
 
-function countdownLabel(dateStr) {
-  var d = fromIso(dateStr);
+function countdownLabel(r) {
+  var d = fromIso(r.date);
   if (!d || isNaN(d)) return 'Upcoming';
+  if (isHappeningNow(r)) return 'Happening now';
+  var span = eventSpan(r);
+  if (span && span.end <= Date.now()) return 'Past event';
   var diffDays = Math.round((d.getTime() - startOfToday().getTime()) / 86400000);
-  if (diffDays < 0) return 'Past event';
-  if (diffDays === 0) return 'Today';
+  if (diffDays === 0) return r.timeStart ? 'Today · ' + r.timeStart : 'Today';
   if (diffDays === 1) return 'Tomorrow';
-  if (diffDays <= 7) return 'This ' + DAYS_FULL[d.getDay()];
+  if (diffDays < 7) return 'This ' + DAYS_FULL[d.getDay()];
+  if (diffDays === 7) return 'Next ' + DAYS_FULL[d.getDay()];
   if (diffDays <= 14) return 'Next week';
   if (diffDays <= 30) return 'Next month';
   return 'In ' + Math.round(diffDays / 30) + ' months';
 }
 
-/* The event right after the highlighted one, in date order — gives the
+/* The event right after the highlighted one, in time order — gives the
    highlight card a "then" line for context without a second big card. */
 function nearestThenLabel(nearest) {
-  var withStamp = state.rows.map(function (r) { return { r: r, t: parts(r.date).stamp }; }).filter(function (x) { return isFinite(x.t); });
-  withStamp.sort(function (a, b) { return a.t - b.t; });
+  var spans = state.rows.map(function (r) { return { r: r, s: eventSpan(r) }; }).filter(function (x) { return x.s; });
+  spans.sort(function (a, b) { return a.s.start - b.s.start; });
   var idx = -1;
-  for (var i = 0; i < withStamp.length; i++) { if (withStamp[i].r.id === nearest.id) { idx = i; break; } }
-  if (idx === -1 || idx + 1 >= withStamp.length) return '';
-  var next = withStamp[idx + 1].r;
+  for (var i = 0; i < spans.length; i++) { if (spans[i].r.id === nearest.id) { idx = i; break; } }
+  if (idx === -1 || idx + 1 >= spans.length) return '';
+  var next = spans[idx + 1].r;
   return 'Then ' + shortDate(next.date) + ' — ' + esc(next.theme || 'Untitled event');
 }
 
@@ -390,7 +417,7 @@ function renderHighlightCard() {
       '</div>' +
       '<div style="flex:1; min-width:240px; display:flex; flex-direction:column; gap:7px;">' +
         '<span style="display:flex; align-items:center; gap:9px; flex-wrap:wrap;">' +
-          '<span style="background:#E85511; color:#fff; font-size:10.5px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; padding:4px 10px; border-radius:6px;">Next up · ' + esc(countdownLabel(nearest.date)) + '</span>' +
+          '<span style="background:#E85511; color:#fff; font-size:10.5px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; padding:4px 10px; border-radius:6px;">' + (isHappeningNow(nearest) ? 'Happening now' : 'Next up · ' + esc(countdownLabel(nearest))) + '</span>' +
           (nearest.tag ? '<span style="background:' + tc[0] + '; color:' + tc[1] + '; font-size:10.5px; font-weight:700; padding:4px 10px; border-radius:6px;">' + esc(nearest.tag) + '</span>' : '') +
         '</span>' +
         '<h2 style="margin:0; font-weight:800; font-size:26px; letter-spacing:-.025em; line-height:1.15; text-wrap:pretty;">' + esc(nearest.theme || 'Untitled event') + '</h2>' +
@@ -840,7 +867,7 @@ function renderTable() {
         '<div style="padding:14px 12px; display:flex; flex-direction:column; gap:2px; min-width:0;">' +
         '<span style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">' +
         '<span style="font-weight:700; font-size:15.5px; color:#3a2a15; text-wrap:pretty;">' + esc(row.theme || 'Untitled event') + '</span>' +
-        (isNext ? '<span style="background:#E85511; color:#fff; font-size:10px; font-weight:700; letter-spacing:.07em; padding:3px 8px; border-radius:6px;">NEXT UP</span>' : '') +
+        (isNext ? '<span style="background:#E85511; color:#fff; font-size:10px; font-weight:700; letter-spacing:.07em; padding:3px 8px; border-radius:6px;">' + (isHappeningNow(row) ? 'NOW' : 'NEXT UP') + '</span>' : '') +
         '</span>' +
         (timeLabel ? '<span style="font-size:12.5px; color:#8a7952; font-weight:600;">' + timeLabel + '</span>' : '') +
         '</div>' +
@@ -1109,6 +1136,16 @@ function deleteEventClick() {
 
 /* ---------- data + boot ---------- */
 
+/* Once a minute: if the event running now / coming next changed (one ended, one started), redraw. */
+function watchNextUp() {
+  setInterval(function () {
+    if (!state.loaded) return;
+    var n = nearestEvent();
+    var key = n ? n.id + (isHappeningNow(n) ? ':now' : '') : '';
+    if (key !== state.nextKey) { state.nextKey = key; renderAll(); }
+  }, 60000);
+}
+
 function fetchSchedule(done) {
   google.script.run
     .withSuccessHandler(function (rows) {
@@ -1201,6 +1238,7 @@ function boot() {
   renderAll();
   fetchSchedule();
   fetchMemberPool();
+  watchNextUp();
 }
 
 /* ---------- navigation ---------- */
