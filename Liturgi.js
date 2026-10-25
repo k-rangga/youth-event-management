@@ -416,7 +416,8 @@ function verseList_(order) {
  * "Ref." above refrain lines). A section sung again becomes a tag after the
  * previous line ("Ref."), as in the printed liturgy.
  */
-function writeSong_(w, svc, k, songs) {
+/* brk.write() runs where the song pauses (Nyanyian persembahan: offering bags); see tiBreakAt in the builder. */
+function writeSong_(w, svc, k, songs, brk) {
   var song = songs[svc.slots[k]];
   if (!song) { w.p('♫ (lagu belum dipilih)', { bold: true, align: 'center', before: 4, after: 4 }); return; }
   var order = String(svc.arr[k] || song.arr || '').split(' → ').filter(Boolean);
@@ -432,6 +433,18 @@ function writeSong_(w, svc, k, songs) {
     var sec = song.sections.filter(function (s) { return s.label === label; })[0];
     return sec ? sec.text : '';
   };
+  if (!brk) { writeSongRows_(w, svc, song, order, textOf, hymn); return; }
+  var v = svc.breaks && svc.breaks[k], n = order.length, at = 0;
+  if (v != null) at = Math.max(1, Math.min(Number(v), n));
+  else order.forEach(function (l, i) { if (i && /^bait\b/i.test(l)) at = i; });
+  if (!at) at = n >= 2 ? n - 1 : n;
+  writeSongRows_(w, svc, song, order.slice(0, at), textOf, hymn);
+  brk.write();
+  if (at < n) writeSongRows_(w, svc, song, order.slice(at), textOf, hymn);
+}
+
+/* The lyrics of one run of parts, as a numbered table (repeats become tags like "Ref. (2x)"). */
+function writeSongRows_(w, svc, song, order, textOf, hymn) {
   var runs = [];
   order.forEach(function (l) {
     if (runs.length && runs[runs.length - 1].label === l) runs[runs.length - 1].n++;
@@ -625,11 +638,12 @@ function buildLiturgy_(doc, svc, songs, opts) {
   if (ofText) w.say('', [['(' + ofText + ')', blueI]]);
 
   w.item('NYANYIAN PERSEMBAHAN');
-  writeSong_(w, svc, 'b18', songs);
-  w.note('(Usher maju ke depan, Pnt menyerahkan kantong persembahan)');
-  w.note('(instrumentalia sampai kantong persembahan selesai diedarkan)');
-  w.note('(multimedia menayangkan QR persembahan)');
-  w.p('(umat berdiri)', { italic: true, align: 'center', before: 8, after: LIT.space.note[1] });
+  writeSong_(w, svc, 'b18', songs, { write: function () {
+    w.note('(Usher maju ke depan, Pnt menyerahkan kantong persembahan)');
+    w.note('(instrumentalia sampai kantong persembahan selesai diedarkan)');
+    w.note('(multimedia menayangkan QR persembahan)');
+    w.p('(umat berdiri)', { italic: true, align: 'center', before: 8, after: LIT.space.note[1] });
+  } });
 
   w.item('DOA PERSEMBAHAN', 'berdiri');
   writeFixed_(w, 'b19');

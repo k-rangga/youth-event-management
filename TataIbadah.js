@@ -86,6 +86,7 @@ function serviceFromRow_(r) {
     variants: data.variants || {},
     enabled: data.enabled || {},
     lyrics: data.lyrics || {},
+    breaks: data.breaks || {},
     texts: data.texts || {},
     doc: data.doc || null,
     updatedAt: stamp_(r[11])
@@ -142,7 +143,7 @@ function saveTataIbadah(p) {
     kpBook: p.kpBook || '', kpCh: String(p.kpCh || ''), kpVs: p.kpVs || '',
     baBook: p.baBook || '', baCh: String(p.baCh || ''), baVs: p.baVs || '',
     ofBook: p.ofBook || '', ofCh: String(p.ofCh || ''), ofVs: p.ofVs || '',
-    slots: p.slots || {}, arr: p.arr || {}, variants: p.variants || {}, enabled: p.enabled || {}, lyrics: p.lyrics || {},
+    slots: p.slots || {}, arr: p.arr || {}, variants: p.variants || {}, enabled: p.enabled || {}, lyrics: p.lyrics || {}, breaks: p.breaks || {},
     texts: p.texts || {}
   };
 

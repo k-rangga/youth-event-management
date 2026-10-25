@@ -184,6 +184,7 @@ function tiVerseDefaults(svc) {
     var book = m && TI_BOOKS.filter(function (b) { return b.toLowerCase() === m[1].toLowerCase(); })[0];
     if (book && TI_VS_RE.test(m[3].trim())) { svc.kpBook = book; svc.kpCh = m[2]; svc.kpVs = m[3].trim(); }
   }
+  svc.breaks = svc.breaks || {};
   if (svc.ofBook == null) {
     var ov = tiState.liturgy.offeringVerse || {}, om = /^(.+?)\s+(\d+):(.+)$/.exec(ov.ref || '');
     svc.ofBook = om ? om[1] : ''; svc.ofCh = om ? om[2] : ''; svc.ofVs = om ? om[3] : '';
@@ -412,7 +413,7 @@ function tiFlushSave() {
   var payload = {
     id: svc.id, date: svc.date, season: svc.season, series: svc.series, sub: svc.sub, pf: svc.pf, kp: svc.kp,
     pk: svc.pk, status: svc.status,
-    slots: svc.slots, arr: svc.arr, variants: svc.variants, enabled: svc.enabled, lyrics: svc.lyrics,
+    slots: svc.slots, arr: svc.arr, breaks: svc.breaks, variants: svc.variants, enabled: svc.enabled, lyrics: svc.lyrics,
     texts: tiTexts(svc), baseUpdatedAt: svc.updatedAt || '', force: !!svc.forceSave
   };
   Object.keys(TI_VERSES).forEach(function (p) {
@@ -480,7 +481,7 @@ function tiNewService(date, duplicate) {
   var svc = {
     id: null, date: date, season: '', series: prev ? prev.series : '', sub: '', pf: prev ? prev.pf : '', kp: '',
     kpBook: '', kpCh: '', kpVs: '', baBook: '', baCh: '', baVs: '', pk: false, status: 'Draft',
-    slots: {}, arr: {}, variants: {}, enabled: { b15: !!(next && next.pk), b22: false }, lyrics: {}, texts: {}
+    slots: {}, arr: {}, variants: {}, enabled: { b15: !!(next && next.pk), b22: false }, lyrics: {}, breaks: {}, texts: {}
   };
   var carry = (prev && prev.texts) || {};
   ['call', 'confession', 'offering'].forEach(function (k) { if (carry[k] != null) svc.texts[k] = carry[k]; });
@@ -494,6 +495,7 @@ function tiNewService(date, duplicate) {
     svc.slots = JSON.parse(JSON.stringify(prev.slots));
     svc.arr = JSON.parse(JSON.stringify(prev.arr));
     svc.lyrics = JSON.parse(JSON.stringify(prev.lyrics || {}));
+    svc.breaks = JSON.parse(JSON.stringify(prev.breaks || {}));
     svc.enabled.b22 = !!prev.enabled.b22;
   }
   if (sched) tiApplySchedule(svc, sched);
@@ -1024,10 +1026,10 @@ function tiBlockParts(b) {
         '</div>' +
         (song.credits ? '<span style="font-size:12.5px; color:#8a7952;">' + esc(song.credits) + '</span>' : '') +
         '<div style="display:flex; gap:10px; align-items:baseline; flex-wrap:wrap; margin-top:2px;">' +
-          (arr ? '<span style="font-size:12.5px; font-weight:600; color:#6b5a38;">' + esc(arr) + '</span>' : '<span style="font-size:12.5px; font-weight:600; color:#a3420e;">Urutan belum diisi</span>') +
+          (arr ? '<span style="font-size:12.5px; font-weight:600; color:#6b5a38;">' + (b.cue ? tiArrWithBreak(svc, b.k, arr) : esc(arr)) + '</span>' : '<span style="font-size:12.5px; font-weight:600; color:#a3420e;">Urutan belum diisi</span>') +
           '<span data-ti="pick" data-k="' + b.k + '" class="ti-link">Ubah urutan</span>' +
         '</div>' +
-        (b.cue ? '<span style="font-size:13px; font-style:italic; font-weight:600; color:#31536f; margin-top:2px;">' + esc(b.cue) + '</span>' : '') +
+        (b.cue ? tiBreakHtml(b, svc, arr) : '') +
       '</div>' +
       '<button data-ti="pick" data-k="' + b.k + '" class="ti-btn-outline">Ganti lagu</button>' +
     '</div>';
@@ -1082,6 +1084,33 @@ function tiBlockParts(b) {
     main: h,
     inputs: inputs
   };
+}
+
+/* Nyanyian persembahan pauses for the offering bags after a chosen part (svc.breaks[k] = parts sung before); by default before the last verse. */
+function tiBreakAt(svc, k, order) {
+  var v = svc.breaks && svc.breaks[k], n = order.length, last = 0;
+  if (v != null) return Math.max(1, Math.min(Number(v), n));
+  order.forEach(function (l, i) { if (i && /^bait\b/i.test(l)) last = i; });
+  return last || (n >= 2 ? n - 1 : n);
+}
+
+function tiArrWithBreak(svc, k, arr) {
+  var order = arr.split(' → '), at = tiBreakAt(svc, k, order);
+  var mark = '<span style="color:#31536f; font-style:italic;">persembahan diedarkan</span>';
+  return esc(order.slice(0, at).join(' → ')) + ' → ' + mark + (at < order.length ? ' → ' + esc(order.slice(at).join(' → ')) : '');
+}
+
+function tiBreakHtml(b, svc, arr) {
+  var order = arr ? arr.split(' → ') : [];
+  var cue = '<span style="font-size:13px; font-style:italic; font-weight:600; color:#31536f; margin-top:2px;">' + esc(b.cue) + '</span>';
+  if (order.length < 2) return cue;
+  var at = tiBreakAt(svc, b.k, order);
+  var dup = order.some(function (l, i) { return order.indexOf(l) !== i; });
+  return cue + '<div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:2px;">' +
+    '<span style="font-size:12.5px; font-weight:600; color:#8a7952;">Kantong diedarkan setelah</span>' +
+    '<div class="ti-seg">' + order.map(function (l, i) {
+      return '<button data-ti="break" data-k="' + b.k + '" data-v="' + (i + 1) + '" class="' + (at === i + 1 ? 'on' : '') + '">' + esc((dup ? (i + 1) + '. ' : '') + l) + '</button>';
+    }).join('') + '</div></div>';
 }
 
 function tiBlockHtml(b) {
@@ -2319,7 +2348,7 @@ function tiOnClick(e) {
   var svc = tiState.cur, pk = tiState.picker, sf = tiState.songForm;
   var i = Number(el.getAttribute('data-i'));
 
-  var editing = { toggle: 1, variant: 1, pick: 1, fetchVerse: 1, seasonUse: 1, dateList: 1 };
+  var editing = { toggle: 1, variant: 1, break: 1, pick: 1, fetchVerse: 1, seasonUse: 1, dateList: 1 };
   if (editing[a] && svc && svc.status === 'Published' && tiState.screen === 'builder') { flash('Terkunci: ubah status ke Review untuk mengedit'); return; }
 
   switch (a) {
@@ -2377,6 +2406,7 @@ function tiOnClick(e) {
     case 'expand': tiState.open[k] = !tiState.open[k]; tiRenderBlock(k); break;
     case 'toggle': svc.enabled[k] = !svc.enabled[k]; tiRenderDynamic(); tiQueueSave(); break;
     case 'variant': svc.variants[k] = v; tiRenderBlock(k); tiRenderAside(); tiQueueSave(); break;
+    case 'break': svc.breaks[k] = Number(v); tiRenderBlock(k); tiQueueSave(); break;
     case 'status':
       if (el.disabled) return;
       var was = svc.status;
