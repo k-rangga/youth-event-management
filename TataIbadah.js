@@ -73,9 +73,12 @@ function serviceFromRow_(r) {
     sub: String(r[4] || ''),
     pf: String(r[5] || ''),
     kp: String(r[6] || ''),
+    kpBook: data.kpBook || '', kpCh: data.kpCh || '', kpVs: data.kpVs || '',
     baBook: data.baBook || '',
     baCh: data.baCh || '',
     baVs: data.baVs || '',
+    // Left undefined on services saved before the offering verse was per service: they print LITURGI_OFFERING_VERSE.
+    ofBook: data.ofBook, ofCh: data.ofCh, ofVs: data.ofVs,
     pk: r[8] === true || String(r[8]).toUpperCase() === 'TRUE',
     status: TI_STATUSES.indexOf(String(r[9])) !== -1 ? String(r[9]) : 'Draft',
     slots: data.slots || {},
@@ -136,7 +139,9 @@ function saveTataIbadah(p) {
   var status = TI_STATUSES.indexOf(p.status) !== -1 ? p.status : 'Draft';
   var ba = p.baBook && p.baCh && p.baVs ? p.baBook + ' ' + p.baCh + ':' + p.baVs : '';
   var data = {
+    kpBook: p.kpBook || '', kpCh: String(p.kpCh || ''), kpVs: p.kpVs || '',
     baBook: p.baBook || '', baCh: String(p.baCh || ''), baVs: p.baVs || '',
+    ofBook: p.ofBook || '', ofCh: String(p.ofCh || ''), ofVs: p.ofVs || '',
     slots: p.slots || {}, arr: p.arr || {}, variants: p.variants || {}, enabled: p.enabled || {}, lyrics: p.lyrics || {},
     texts: p.texts || {}
   };
@@ -282,6 +287,16 @@ function normSearch_(s) {
   return String(s || '').toLowerCase().replace(/[’‘'`"“”!?.,:;()\-]/g, '').replace(/\s+/g, ' ').trim();
 }
 
+/* At most one typo between two words (as tiNear in the client). */
+function nearWord_(a, b) {
+  var la = a.length, lb = b.length, i = 0;
+  if (Math.abs(la - lb) > 1) return false;
+  while (i < la && i < lb && a.charAt(i) === b.charAt(i)) i++;
+  if (i === la && i === lb) return true;
+  if (la === lb) return a.slice(i + 1) === b.slice(i + 1) || (a.charAt(i) === b.charAt(i + 1) && a.charAt(i + 1) === b.charAt(i) && a.slice(i + 2) === b.slice(i + 2));
+  return la > lb ? a.slice(i + 1) === b.slice(i) : a.slice(i) === b.slice(i + 1);
+}
+
 /**
  * Searches the online KJ / KK / PKJ / NKB indexes by number ("392", "KJ 392")
  * or title. `hymnal` limits it to one book; anything else searches all four.
@@ -293,6 +308,7 @@ function searchHymnalOnline(query, hymnal) {
   var m = q.match(/^(kj|kk|pkj|nkb)\s*(\S*)$/);
   if (m) { books = [m[1].toUpperCase()]; q = m[2]; }
 
+  var toks = /^\d/.test(q) ? [] : q.split(' ').filter(Boolean);
   var have = {};
   readSongs_().forEach(function (s) { if (s.hymnal) have[s.hymnal + '|' + s.number] = s.id; });
 
@@ -305,6 +321,7 @@ function searchHymnalOnline(query, hymnal) {
       else if (/^\d/.test(q) && num.indexOf(q) === 0) rank = 1;
       else if (title.indexOf(q) === 0) rank = 2;
       else if (title.indexOf(q) !== -1) rank = 3;
+      else if (toks.length && toks.every(function (t) { return title.indexOf(t) !== -1 || (t.length >= 4 && title.split(' ').some(function (w) { return nearWord_(t, w); })); })) rank = 4;
       else return;
       results.push({ hymnal: book, number: num, title: row[1], rank: rank, songId: have[book + '|' + num] || '' });
     });

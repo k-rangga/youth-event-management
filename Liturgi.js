@@ -524,7 +524,7 @@ function buildLiturgy_(doc, svc, songs, opts) {
     logos.appendInlineImage(Utilities.newBlob(Utilities.base64Decode(a.data), a.type, l[0])).setWidth(36).setHeight(36);
   });
   w.p([['TATA IBADAH MINGGU', { bold: true, size: 20 }]], sora);
-  w.p(svc.season || '', litMerge_(sora, { size: 12 }));
+  if (svc.season) w.p(svc.season, litMerge_(sora, { size: 12 }));
   w.p('Pemuda GKI Kota Wisata', litMerge_(sora, { size: 12 }));
   w.p(date, litMerge_(sora, { size: 12, after: 10 }));
   w.image('cover', 205, { after: 10 });
@@ -549,6 +549,7 @@ function buildLiturgy_(doc, svc, songs, opts) {
 
   w.item('KATA PEMBUKA', 'duduk');
   w.say('L', [['(menyampaikan tema: ' + theme + ' dan Firman Tuhan ' + (svc.kp || '…') + ')', { bold: true, color: LIT_BLUE }]]);
+  if (String(texts.kpText || '').trim()) w.say('', [['(' + String(texts.kpText).trim() + ')', blueI]]);
 
   w.item('NYANYIAN UMAT');
   writeSong_(w, svc, 'b5', songs);
@@ -606,8 +607,11 @@ function buildLiturgy_(doc, svc, songs, opts) {
   // persembahan
   w.part('PELAYANAN PERSEMBAHAN');
   w.item('NAS PERSEMBAHAN');
-  w.say('Pnt', [[(String(texts.offering || '').trim() || '…') + ' Dasar Persembahan kita adalah ' + LITURGI_OFFERING_VERSE.ref, { color: LIT_BLUE }]]);
-  w.say('', [['(' + LITURGI_OFFERING_VERSE.text + ')', blueI]]);
+  var fixedOf = svc.ofBook == null;
+  var ofRef = fixedOf ? LITURGI_OFFERING_VERSE.ref : svc.ofBook && svc.ofCh && svc.ofVs ? svc.ofBook + ' ' + svc.ofCh + ':' + svc.ofVs : '…';
+  var ofText = fixedOf ? LITURGI_OFFERING_VERSE.text : String(texts.ofText || '').trim();
+  w.say('Pnt', [[(String(texts.offering || '').trim() || '…') + ' Dasar Persembahan kita adalah ' + ofRef, { color: LIT_BLUE }]]);
+  if (ofText) w.say('', [['(' + ofText + ')', blueI]]);
 
   w.item('NYANYIAN PERSEMBAHAN');
   writeSong_(w, svc, 'b18', songs);

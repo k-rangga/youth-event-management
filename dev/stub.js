@@ -36,7 +36,7 @@
       }
       return { success: true, message: 'Event updated', id: p.id, tataIbadah: t };
     },
-    getTataIbadahData: function () { return JSON.parse(JSON.stringify({ services: db.services, songs: db.songs, schedule: db.schedule, liturgy: getLiturgyText_() })); },
+    getTataIbadahData: function () { db.schedule.forEach(function (e, i) { if (!e.id) e.id = 's' + i; }); return JSON.parse(JSON.stringify({ services: db.services, songs: db.songs, schedule: db.schedule, liturgy: getLiturgyText_() })); },
     fetchBibleText: function (book, ch, vs) { db.bibleCalls = (db.bibleCalls || 0) + 1; return book === 'Mazmur' ? { success: true, ref: book + ' ' + ch + ':' + vs, text: 'Selidikilah aku, ya Allah, dan kenallah hatiku (' + vs + ').' } : { success: false, message: 'Teks Alkitab tidak bisa diambil sekarang.' }; },
     deleteSong: function (id, rep) { var used = db.services.filter(function (s) { return Object.keys(s.slots).some(function (k) { return s.slots[k] === id; }); });
       if (used.length && !rep) return { success: false, used: used.length, message: 'Lagu dipakai di ' + used.length + ' tata ibadah. Pilih lagu pengganti dulu.' };

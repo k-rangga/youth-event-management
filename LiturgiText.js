@@ -66,7 +66,7 @@ var LITURGI_DEFAULT_TEXTS = {
   reading: ''
 };
 
-/* The offering verse printed after the weekly introduction (Nas persembahan). */
+/* Nas persembahan for a new service with no previous one to carry it from, and for services saved before it was per service. */
 var LITURGI_OFFERING_VERSE = {
   ref: 'Mazmur 116:12-14',
   text: 'Bagaimanakah akan kubalas kepada TUHAN segala kebajikan-Nya kepadaku? Aku akan mengangkat piala keselamatan, dan akan menyerukan nama TUHAN, akan membayar nazarku kepada TUHAN di depan seluruh umat-Nya.'
