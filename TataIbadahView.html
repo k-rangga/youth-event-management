@@ -104,7 +104,7 @@ var tiState = {
   screen: 'list', monthF: 'all', statusF: 'Semua',
   cur: null, open: {}, flash: null, lastJump: null,
   saveLabel: '', saveError: false, saving: false, pending: null,
-  picker: null, songForm: null, dialog: null,
+  picker: null, songForm: null, dialog: null, fetchSeq: 0,
   dl: { busy: '', error: '' },
   liturgy: { fixed: {}, defaults: {}, offeringVerse: { ref: '', text: '' } },
   conflict: null, baFetch: { busy: false, error: '' },
@@ -1189,7 +1189,9 @@ function tiRenderLibPanel() {
   var st = tiSongStats(s.id), f = L.fetch && L.fetch.id === s.id ? L.fetch : null;
   var body;
   if (f && f.busy) {
-    body = '<span style="font-size:13.5px; color:#8a7952; font-weight:600;">Mengambil lirik dari Alkitab SABDA…</span>';
+    body = '<span style="font-size:13.5px; color:#8a7952; font-weight:600;">Mengambil lirik dari Alkitab SABDA…</span>' +
+      (f.slow ? '<span style="font-size:13px; color:#a3420e;">Lebih lama dari biasanya. Server mungkin sedang sibuk.</span>' +
+        '<button data-ti="libRetry" class="ti-btn-outline" style="align-self:flex-start;">Coba lagi</button>' : '');
   } else if (f && f.variants) {
     body = '<span style="font-size:13.5px; color:#3a2a15; font-weight:600;">' + esc(tiSongCode(s)) + ' punya ' + f.variants.length + ' versi. Pilih yang ditambahkan:</span>' +
       f.variants.map(function (v) {
@@ -1276,21 +1278,26 @@ function tiImportAllTitles(confirmed) {
 function tiLibFetchLyrics(id, number) {
   var L = tiState.lib, song = tiState.songById[id];
   if (!song) return;
-  L.fetch = { id: id, busy: true, error: '', variants: null };
+  var token = ++tiState.fetchSeq;
+  L.fetch = { id: id, busy: true, error: '', variants: null, token: token, number: number };
   tiRenderLibPanel();
+  tiSlowFetchWatch(function () { return L.fetch && L.fetch.token === token && L.fetch.busy ? L.fetch : null; }, tiRenderLibPanel);
   google.script.run
     .withSuccessHandler(function (res) {
+      if (!L.fetch || L.fetch.token !== token) return;   // a newer request (retry or another song) took over
       if (res.variants) L.fetch = { id: id, busy: false, error: '', variants: res.variants };
       else if (!res.success) L.fetch = { id: id, busy: false, error: res.message, variants: null };
       else {
         L.fetch = null;
         tiSetSongs(tiState.songs.filter(function (s) { return s.id !== res.song.id; }).concat([res.song]));
         if (L.sel === id) L.sel = res.song.id;
+        if (res.ms != null) console.info('Lirik ' + res.song.title + ' diambil dalam ' + res.ms + ' ms');
       }
       tiRenderLibraryList();
       tiRenderLibPanel();
     })
     .withFailureHandler(function (err) {
+      if (!L.fetch || L.fetch.token !== token) return;
       L.fetch = { id: id, busy: false, error: err && err.message ? err.message : String(err), variants: null };
       tiRenderLibPanel();
     })
@@ -1344,11 +1351,13 @@ function tiSelectSong(id) {
 function tiFetchLyrics(id, number) {
   var pk = tiState.picker, song = tiState.songById[id];
   if (!pk || !song) return;
-  pk.fetch = { id: id, busy: true, error: '', variants: null };
+  var token = ++tiState.fetchSeq;
+  pk.fetch = { id: id, busy: true, error: '', variants: null, token: token, number: number };
   tiRenderPickerParts();
+  tiSlowFetchWatch(function () { return tiState.picker === pk && pk.fetch && pk.fetch.token === token && pk.fetch.busy ? pk.fetch : null; }, tiRenderPickerParts);
   google.script.run
     .withSuccessHandler(function (res) {
-      if (tiState.picker !== pk) return;
+      if (tiState.picker !== pk || !pk.fetch || pk.fetch.token !== token) return;
       if (res.variants) { pk.fetch = { id: id, busy: false, error: '', variants: res.variants }; tiRenderPickerParts(); return; }
       if (!res.success) { pk.fetch = { id: id, busy: false, error: res.message, variants: null }; tiRenderPickerParts(); return; }
       pk.fetch = null;
@@ -1356,7 +1365,7 @@ function tiFetchLyrics(id, number) {
       tiSelectSong(res.song.id);
     })
     .withFailureHandler(function (err) {
-      if (tiState.picker !== pk) return;
+      if (tiState.picker !== pk || !pk.fetch || pk.fetch.token !== token) return;
       pk.fetch = { id: id, busy: false, error: err && err.message ? err.message : String(err), variants: null };
       tiRenderPickerParts();
     })
@@ -1369,7 +1378,8 @@ function tiFetchDetailHtml(song) {
   if (!f || f.id !== song.id) return '';
   var head = '<div style="display:flex; flex-direction:column; gap:4px;"><span style="font-size:12px; font-weight:700; color:#8a7952;">' + esc(tiSongCode(song)) + '</span>' +
     '<span style="font-size:24px; font-weight:800; line-height:1.2; color:#3a2a15;">' + esc(song.title) + '</span></div>';
-  if (f.busy) return head + '<span style="font-size:13.5px; color:#8a7952; font-weight:600;">Mengambil lirik dari Alkitab SABDA…</span>';
+  if (f.busy) return head + '<span style="font-size:13.5px; color:#8a7952; font-weight:600;">Mengambil lirik dari Alkitab SABDA…</span>' +
+    (f.slow ? '<span style="font-size:13px; color:#a3420e;">Lebih lama dari biasanya. Server mungkin sedang sibuk.</span> <span data-ti="retryLyrics" class="ti-link">Coba lagi</span>' : '');
   if (f.variants) {
     return head + '<span style="font-size:13.5px; color:#3a2a15; font-weight:600;">' + esc(tiSongCode(song)) + ' punya ' + f.variants.length + ' versi. Pilih yang dipakai:</span>' +
       '<div style="display:flex; flex-direction:column; gap:6px;">' + f.variants.map(function (v) {
@@ -1615,6 +1625,14 @@ function tiOnlineImport(hymnal, number, rowKey) {
       tiRenderOnline();
     })
     .importHymnalSong(hymnal, number);
+}
+
+/* After 20 s without an answer, marks the fetch slow so the panel offers "Coba lagi" (the request keeps running). */
+function tiSlowFetchWatch(current, render) {
+  setTimeout(function () {
+    var f = current();
+    if (f) { f.slow = true; render(); }
+  }, 20000);
 }
 
 function tiHasLyrics(song) { return !!song && song.sections.some(function (s) { return String(s.text || '').trim(); }); }
@@ -1975,8 +1993,9 @@ function tiOnClick(e) {
     case 'libImportAll': tiImportAllTitles(); break;
     case 'libFetch': tiLibFetchLyrics(el.getAttribute('data-id')); break;
     case 'libVariant': tiLibFetchLyrics(tiState.lib.fetch.id, el.getAttribute('data-n')); break;
+    case 'libRetry': tiLibFetchLyrics(tiState.lib.fetch.id, tiState.lib.fetch.number); break;
     case 'pickVariant': tiFetchLyrics(pk.fetch.id, el.getAttribute('data-n')); break;
-    case 'retryLyrics': tiFetchLyrics(pk.fetch.id); break;
+    case 'retryLyrics': tiFetchLyrics(pk.fetch.id, pk.fetch.number); break;
     case 'fetchBa': tiFetchBa(true); break;
     case 'conflictLoad':
       var latest = tiState.conflict && tiState.conflict.latest;

@@ -14,8 +14,11 @@ function include(filename) {
   return HtmlService.createHtmlOutputFromFile(filename).getContent();
 }
 
+var ssCache_ = null;
+
+/* The spreadsheet, opened once per execution (openById is slow and was called several times per request). */
 function getSs_() {
-  return SpreadsheetApp.openById(SPREADSHEET_ID);
+  return ssCache_ || (ssCache_ = SpreadsheetApp.openById(SPREADSHEET_ID));
 }
 
 function getScheduleSheet_() {

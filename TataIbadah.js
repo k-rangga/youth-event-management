@@ -371,39 +371,78 @@ function parseHymnalPage_(html, variant) {
   return pick && pick.sections.length ? { title: title, credits: pick.credits, sections: pick.sections, arr: pick.arr } : null;
 }
 
+/* A hymnal page's HTML, cached for six hours (versions of one number share a page). */
+function hymnalPage_(code, num) {
+  var key = 'hymnal-page-' + code + '-' + num;
+  var cache = CacheService.getScriptCache();
+  var hit = cache.get(key);
+  if (hit) return { code: 200, html: hit };
+  var res = UrlFetchApp.fetch(HYMNAL_SOURCE + code + '/' + num + '/', { muteHttpExceptions: true });
+  var html = res.getContentText();
+  if (res.getResponseCode() === 200 && html.length < 90000) cache.put(key, html, 21600);
+  return { code: res.getResponseCode(), html: html };
+}
+
 /**
  * Adds one hymn from the online hymnal to the library. `number` may carry a
  * version letter ("767h"). A library song with the same book and number is
  * filled in only if its lyrics are still blank, so edits made here are never
  * overwritten. Numbers with several versions come back as
  * { success:false, variants } for the caller to choose from.
+ * Reads only the key columns and the one matching row, and writes only that
+ * row, so it stays fast with the full hymnals in the library.
  */
 function importHymnalSong(hymnal, number) {
+  var started = Date.now();
   var code = HYMNAL_CODES[hymnal];
   number = String(number || '').trim().toLowerCase();
   var nm = number.match(/^(\d+)([a-z]?)$/);
   if (!code || !nm) return { success: false, message: 'Nomor lagu tidak valid.' };
 
-  var existing = readSongs_().filter(function (s) { return s.hymnal === hymnal && s.number.toLowerCase() === number; })[0];
-  var blank = existing && !existing.sections.some(function (s) { return String(s.text || '').trim(); });
-  if (existing && !blank) return { success: true, message: 'Lagu sudah ada di perpustakaan', song: existing };
+  var sheet = getSongsSheet_();
+  var findRow = function () {
+    var last = sheet.getLastRow();
+    var keys = last > 1 ? sheet.getRange(2, 1, last - 1, 3).getValues() : [];
+    for (var i = 0; i < keys.length; i++) {
+      if (String(keys[i][1]) === hymnal && String(keys[i][2]).toLowerCase() === number) return { index: i, keys: keys };
+    }
+    return { index: -1, keys: keys };
+  };
+  var found = findRow();
+  var existing = found.index !== -1 ? songFromRow_(sheet.getRange(found.index + 2, 1, 1, SONG_HEADERS.length).getValues()[0]) : null;
+  var hasLyrics = existing && existing.sections.some(function (s) { return String(s.text || '').trim(); });
+  if (hasLyrics) return { success: true, message: 'Lagu sudah ada di perpustakaan', song: existing, ms: Date.now() - started };
 
-  var res = UrlFetchApp.fetch(HYMNAL_SOURCE + code + '/' + nm[1] + '/', { muteHttpExceptions: true });
-  if (res.getResponseCode() !== 200) return { success: false, message: 'Gagal mengambil ' + hymnal + ' ' + number + ' (HTTP ' + res.getResponseCode() + ').' };
-  var parsed = parseHymnalPage_(res.getContentText(), nm[2] ? number : '');
+  var page = hymnalPage_(code, nm[1]);
+  if (page.code !== 200) return { success: false, message: 'Gagal mengambil ' + hymnal + ' ' + number + ' (HTTP ' + page.code + ').' };
+  var parsed = parseHymnalPage_(page.html, nm[2] ? number : '');
   if (parsed && parsed.variants) return { success: false, message: hymnal + ' ' + nm[1] + ' punya beberapa versi. Pilih salah satu.', title: hymnalTitle_(parsed.title), variants: parsed.variants };
   if (!parsed) return { success: false, message: 'Lirik ' + hymnal + ' ' + number + ' tidak ditemukan di sumber.' };
 
-  return saveSong({
-    id: existing ? existing.id : '',
-    hymnal: hymnal,
-    number: number,
-    title: existing ? existing.title : hymnalTitle_(parsed.title),
-    credits: (existing && existing.credits) || parsed.credits,
-    language: (existing && existing.language) || 'Indonesia',
-    arr: parsed.arr,
-    sections: parsed.sections
-  });
+  var lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    found = findRow();   // rows may have moved while the page was fetched
+    var id;
+    if (found.index !== -1) id = String(found.keys[found.index][0]);
+    else {
+      var ids = {};
+      found.keys.forEach(function (k) { ids[String(k[0])] = true; });
+      var base = (hymnal + number).toLowerCase();
+      id = base;
+      for (var n = 2; ids[id]; n++) id = base + '-' + n;
+    }
+    var row = [id, hymnal, number,
+      existing ? existing.title : hymnalTitle_(parsed.title),
+      (existing && existing.credits) || parsed.credits,
+      (existing && existing.language) || 'Indonesia',
+      JSON.stringify(parsed.sections), parsed.arr];
+    if (found.index !== -1) sheet.getRange(found.index + 2, 1, 1, row.length).setValues([row]);
+    else sheet.appendRow(row);
+    return { success: true, message: found.index !== -1 ? 'Lirik diambil' : 'Lagu ditambahkan ke perpustakaan', song: songFromRow_(row), ms: Date.now() - started };
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 /* ---------- Bible text (Alkitab Mobile SABDA, TB) ---------- */
