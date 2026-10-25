@@ -22,7 +22,10 @@
   var api = {
     getSchedule: function () { return db.schedule.map(function (e, i) { return { id: String(i + 1), date: e.date, theme: e.theme, pastor: e.pastor, tag: e.tag, notes: '', pic: [], timeStart: '', timeEnd: '' }; }); },
     getMemberPool: function () { return []; },
+    deleteEvent: function (id) { db.deleted = (db.deleted || []).concat([id]); return id === '999' ? { success: false, message: 'Event not found.' } : { success: true, message: 'Event deleted' }; },
     saveEvent: function (p) {
+      if (p.theme === 'FAIL') return { success: false, message: 'Server menolak (uji coba).' };
+      if (!p.id) { db.schedule.push({ date: p.date, theme: p.theme, pastor: p.pastor, tag: p.tag }); return { success: true, message: 'Event added to schedule', id: String(db.schedule.length) }; }
       var ev = db.schedule.filter(function (e, i) { return String(i + 1) === String(p.id); })[0];
       if (ev) { ev.date = p.date; ev.theme = p.theme; ev.pastor = p.pastor; ev.tag = p.tag; }
       var svc = db.services.filter(function (s) { return s.date === p.date; })[0], t = null;

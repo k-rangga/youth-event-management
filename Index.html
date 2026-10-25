@@ -894,6 +894,7 @@ function openNew() {
 function openEdit(id) {
   var row = state.rows.filter(function (r) { return r.id === id; })[0];
   if (!row) return;
+  if (/^new-/.test(id)) { flash('Sedang menyimpan, tunggu sebentar…'); return; }
   state.drawerOpen = true;
   state.editingId = id;
   state.form = { date: row.date, theme: row.theme, tag: row.tag, pastor: row.pastor, notes: row.notes || '', pic: (row.pic || []).slice(), timeStart: row.timeStart || '', timeEnd: row.timeEnd || '' };
@@ -1024,17 +1025,19 @@ function renderTagChips() {
   });
 }
 
+/*
+ * Saves without waiting: the drawer closes and the row updates at once, the
+ * server call runs in the background, and a failure restores the previous
+ * rows and reopens the drawer with the entries and the error.
+ */
 function saveEventClick() {
   var form = state.form;
   if (!form.date) { state.error = 'Pick a date for this event.'; renderDrawer(); return; }
   if (!form.theme.trim()) { state.error = 'Give the event a theme or title.'; renderDrawer(); return; }
 
-  state.saving = true;
-  state.error = '';
-  renderDrawer();
-
+  var editingId = state.editingId;
   var payload = {
-    id: state.editingId,
+    id: editingId,
     date: form.date,
     theme: form.theme.trim(),
     tag: form.tag.trim(),
@@ -1044,43 +1047,63 @@ function saveEventClick() {
     timeStart: form.timeStart || '',
     timeEnd: form.timeEnd || ''
   };
+  var tempId = editingId || 'new-' + Date.now();
+  var row = { id: tempId, date: payload.date, theme: payload.theme, tag: payload.tag, pastor: payload.pastor, notes: payload.notes,
+    pic: (form.pic || []).slice(), timeStart: payload.timeStart, timeEnd: payload.timeEnd };
+  var before = state.rows.slice();
+  state.rows = state.rows.filter(function (r) { return r.id !== tempId; }).concat([row]);
+  state.error = '';
+  state.drawerOpen = false;
+  renderDrawer();
+  renderAll();
+  flash('Menyimpan…');
 
+  var fail = function (message) {
+    state.rows = before;
+    state.drawerOpen = true;
+    state.editingId = editingId;
+    state.form = form;
+    state.error = message;
+    renderAll();
+    renderDrawer();
+  };
   google.script.run
     .withSuccessHandler(function (res) {
-      state.saving = false;
-      if (!res.success) { state.error = res.message; renderDrawer(); return; }
-      state.drawerOpen = false;
-      renderDrawer();
-      fetchSchedule(function () { flash(res.message); });
+      if (!res.success) { fail(res.message); return; }
+      if (row.id !== res.id) { row.id = res.id; renderAll(); }
+      flash(res.message);
       if (res.tataIbadah && res.tataIbadah.changed && typeof tiAfterScheduleChange === 'function') tiAfterScheduleChange();
     })
-    .withFailureHandler(function (err) {
-      state.saving = false;
-      state.error = err && err.message ? err.message : String(err);
-      renderDrawer();
-    })
+    .withFailureHandler(function (err) { fail(err && err.message ? err.message : String(err)); })
     .saveEvent(payload);
 }
 
+/* Deletes without waiting, like saveEventClick; a failure puts the row back and reopens it. */
 function deleteEventClick() {
   if (!state.editingId) return;
-  var id = state.editingId;
-  state.saving = true;
+  var id = state.editingId, form = state.form;
+  var before = state.rows.slice();
+  state.rows = state.rows.filter(function (r) { return r.id !== id; });
+  state.drawerOpen = false;
   renderDrawer();
+  renderAll();
+  flash('Menghapus…');
 
+  var fail = function (message) {
+    state.rows = before;
+    state.drawerOpen = true;
+    state.editingId = id;
+    state.form = form;
+    state.error = message;
+    renderAll();
+    renderDrawer();
+  };
   google.script.run
     .withSuccessHandler(function (res) {
-      state.saving = false;
-      if (!res.success) { state.error = res.message; renderDrawer(); return; }
-      state.drawerOpen = false;
-      renderDrawer();
-      fetchSchedule(function () { flash(res.message); });
+      if (!res.success) { fail(res.message); return; }
+      flash(res.message);
     })
-    .withFailureHandler(function (err) {
-      state.saving = false;
-      state.error = err && err.message ? err.message : String(err);
-      renderDrawer();
-    })
+    .withFailureHandler(function (err) { fail(err && err.message ? err.message : String(err)); })
     .deleteEvent(id);
 }
 

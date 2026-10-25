@@ -628,28 +628,34 @@ function pushServiceToSchedule_(date, series, sub, pf) {
  * After an Event input save: if that row is the day's service row, the Tata
  * Ibadah on that date takes its theme and Pastor (and its saved-at time moves
  * on, so an open builder sees the change). Returns { id, changed } or null.
+ * Most events have no Tata Ibadah on their date, so that is checked first
+ * from the date column alone; the lock is taken only to write.
  */
 function syncScheduleToService_(date, eventId) {
   if (!date) return null;
+  var sheet = getOrCreateSheet_(TI_SHEET, TI_HEADERS);
+  var last = sheet.getLastRow();
+  if (last < 2) return null;
+  var dates = sheet.getRange(2, 1, last - 1, 2).getValues();
+  var at = -1;
+  for (var i = 0; i < dates.length; i++) {
+    if (dates[i][0] !== '' && fmtDate_(dates[i][1]) === date) { at = i; break; }
+  }
+  if (at === -1) return null;
+
+  var ev = pickScheduleEvent_(scheduleEventsOn_(getScheduleSheet_(), date));
+  if (!ev || ev.id !== String(eventId)) return null;
   var lock = LockService.getScriptLock();
-  lock.waitLock(30000);
+  lock.waitLock(15000);
   try {
-    var ev = pickScheduleEvent_(scheduleEventsOn_(getScheduleSheet_(), date));
-    if (!ev || ev.id !== String(eventId)) return null;
-    var sheet = getOrCreateSheet_(TI_SHEET, TI_HEADERS);
-    var last = sheet.getLastRow();
-    if (last < 2) return null;
-    var rows = sheet.getRange(2, 1, last - 1, 6).getValues();
-    for (var i = 0; i < rows.length; i++) {
-      if (rows[i][0] === '' || fmtDate_(rows[i][1]) !== date) continue;
-      var t = ev.theme.trim() ? splitTheme_(ev.theme) : { series: String(rows[i][3]), sub: String(rows[i][4]) };
-      var pf = ev.pastor.trim() || String(rows[i][5]);
-      if (t.series === String(rows[i][3]) && t.sub === String(rows[i][4]) && pf === String(rows[i][5])) return { id: String(rows[i][0]), changed: false };
-      sheet.getRange(i + 2, 4, 1, 3).setValues([[t.series, t.sub, pf]]);
-      sheet.getRange(i + 2, 12).setValue(new Date(Math.floor(Date.now() / 1000) * 1000));
-      return { id: String(rows[i][0]), changed: true };
-    }
-    return null;
+    var row = sheet.getRange(at + 2, 1, 1, 6).getValues()[0];
+    if (fmtDate_(row[1]) !== date) return null;   // rows moved since the check
+    var t = ev.theme.trim() ? splitTheme_(ev.theme) : { series: String(row[3]), sub: String(row[4]) };
+    var pf = ev.pastor.trim() || String(row[5]);
+    if (t.series === String(row[3]) && t.sub === String(row[4]) && pf === String(row[5])) return { id: String(row[0]), changed: false };
+    sheet.getRange(at + 2, 4, 1, 3).setValues([[t.series, t.sub, pf]]);
+    sheet.getRange(at + 2, 12).setValue(new Date(Math.floor(Date.now() / 1000) * 1000));
+    return { id: String(row[0]), changed: true };
   } finally {
     lock.releaseLock();
   }
