@@ -1876,7 +1876,7 @@ function tiRenderPickerParts() {
           var sel = cs === i;
           return '<div draggable="true" data-ti-seq="' + i + '" data-ti="chip" data-i="' + i + '" class="ti-seq-chip" style="border:1px solid ' + (sel ? '#E85511' : '#ecd2bd') + '; background:' + (sel ? '#fdf0e6' : '#fff') + '; opacity:' + (pk.dragI === i ? 0.4 : 1) + ';">' +
             '<span style="font-size:11px; font-weight:800; color:#E85511;">' + (i + 1) + '</span>' + esc(label) +
-            '<button data-ti="chipRemove" data-i="' + i + '" aria-label="Hapus" class="icon-btn" style="color:#b3a37c; cursor:pointer; width:22px; height:22px; padding:0; border-radius:6px;">\' + icon(\'x\', 13) + \'</button>' +
+            '<button data-ti="chipRemove" data-i="' + i + '" aria-label="Hapus" class="icon-btn" style="color:#b3a37c; cursor:pointer; width:22px; height:22px; padding:0; border-radius:6px;">' + icon('x', 13) + '</button>' +
           '</div>';
         }).join('') +
         '<button data-ti="addMenu" style="border:1px dashed #d9c79b; background:#fff; color:#6E2621; font-size:13px; font-weight:700; padding:7px 11px; border-radius:10px; cursor:pointer; white-space:nowrap;">+ Bagian</button></div>' +
@@ -2232,7 +2232,7 @@ function tiSongFormHtml() {
           f.sections.map(function (s, i) {
             return '<div class="ti-card" style="border-radius:14px; padding:12px; display:flex; flex-direction:column; gap:8px;">' +
               '<div style="display:flex; gap:8px; align-items:center;"><input data-tisf="label" data-i="' + i + '" value="' + esc(s.label) + '" placeholder="mis. Bait 1, Ref, Chorus" class="ti-field" style="padding:9px 12px; font-weight:700;">' +
-              '<button data-ti="sfRemove" data-i="' + i + '" class="icon-btn" aria-label="Hapus bagian" style="width:34px; height:34px; border-radius:10px; color:#b3a37c; cursor:pointer; flex-shrink:0;">\' + icon(\'x\', 15) + \'</button></div>' +
+              '<button data-ti="sfRemove" data-i="' + i + '" class="icon-btn" aria-label="Hapus bagian" style="width:34px; height:34px; border-radius:10px; color:#b3a37c; cursor:pointer; flex-shrink:0;">' + icon('x', 15) + '</button></div>' +
               '<textarea data-tisf="text" data-i="' + i + '" rows="4" placeholder="Lirik" class="ti-field" style="resize:vertical; line-height:1.5; font-family:inherit; padding:9px 12px;">' + esc(s.text) + '</textarea>' +
             '</div>';
           }).join('') +
