@@ -766,6 +766,7 @@ function tiRecent(fromSvc, fromEvent) {
  * only take a listed item and show its text again when left.
  */
 function tiComboSpec(k) {
+  if (k.indexOf('ku') === 0) return kuComboSpec(k);
   var svc = tiState.cur, L = tiState.lib;
   if (k === 'date') {
     var sched = tiScheduleOn(svc.date);
@@ -821,7 +822,7 @@ function tiComboSpec(k) {
 function tiComboHtml(k, wrapStyle, inputStyle) {
   var sp = tiComboSpec(k);
   return '<div style="position:relative; min-width:0; ' + (wrapStyle || '') + '">' +
-    '<input id="tiF-' + k + '" data-ticombo="' + k + '"' + (sp.free ? ' data-tif="' + k + '"' : '') + ' class="ti-field ti-combo-input" autocomplete="off" spellcheck="false" value="' + esc(sp.text) + '" placeholder="' + esc(sp.ph) + '" style="' + (inputStyle || '') + '">' +
+    '<input id="tiF-' + k + '" data-ticombo="' + k + '"' + (sp.free && k.indexOf('ku') !== 0 ? ' data-tif="' + k + '"' : '') + (sp.free && k.indexOf('ku') === 0 ? ' data-kuf="' + k.slice(2, 3).toLowerCase() + k.slice(3) + '"' : '') + ' class="ti-field ti-combo-input" autocomplete="off" spellcheck="false" value="' + esc(sp.text) + '" placeholder="' + esc(sp.ph) + '" style="' + (inputStyle || '') + '">' +
     '<span data-ti="comboToggle" data-k="' + k + '" class="ti-chev">' + icon('down', 16) + '</span>' +
     '<div id="tiCombo-' + k + '" class="ti-combo" hidden></div>' +
   '</div>';
@@ -876,7 +877,7 @@ function tiComboPick(i) {
   tiComboClose();
   var inp = document.getElementById('tiF-' + c.k);
   if (inp) inp.value = tiComboSpec(c.k).text;
-  if (c.k !== 'mergeTo' && tiState.cur) { tiRenderDynamic(); tiQueueSave(); }
+  if (c.k !== 'mergeTo' && c.k.indexOf('ku') !== 0 && tiState.cur) { tiRenderDynamic(); tiQueueSave(); }
 }
 
 /* Moves the highlight, skipping items that cannot be picked. */

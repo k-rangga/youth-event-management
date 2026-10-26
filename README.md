@@ -14,6 +14,9 @@ Tata Ibadah builder (liturgy, song library, PDF/.docx/Google Doc output).
 - `Liturgi.js`, `LiturgiText.js`, `LiturgiAssets.js` – liturgy booklet generator, its fixed text and images
 - `Index.html` – app shell, navigation, Event input UI
 - `TataIbadahView.html` – Tata Ibadah UI (list, builder, song picker, library)
+- `Keuangan.js`, `KeuanganView.html` – Keuangan tab: budget vs actual per Schedule event (sheets `Anggaran`,
+  `Transaksi`, hidden `_Keuangan` for the PIN hash and receipt folder). Every call needs a PIN unlock token;
+  receipts go to a private Drive folder and are only served back through the app.
 
 ## Local testing (`dev/`)
 `python3 dev/build_harness.py` then `python3 -m http.server 8765 --directory dev` and open
@@ -21,3 +24,4 @@ Tata Ibadah builder (liturgy, song library, PDF/.docx/Google Doc output).
 `node dev/grid_test.js . preview.html` renders the liturgy layout to `dev/preview.html`;
 `node dev/server_test.js . all` runs the server code against fake sheets (Bible fetch hits alkitab.mobi);
 `node dev/pagenum_test.js` checks the page-number .docx edit.
+`node dev/keuangan_test.js .` checks the Keuangan server code (PIN, lines, transactions, receipts). In the harness, `#keuangan` opens with PIN `123456`.

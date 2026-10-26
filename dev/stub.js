@@ -88,8 +88,39 @@
       db.songs = db.songs.filter(function (s) { return s.id !== song.id; }).concat([song]);
       return { success: true, message: 'Lagu ditambahkan ke perpustakaan', song: song };
     },
-    saveSong: function (p) { var song = JSON.parse(JSON.stringify(p)); song.id = song.id || song.title.toLowerCase().replace(/[^a-z0-9]+/g, ''); db.songs = db.songs.filter(function (s) { return s.id !== song.id; }).concat([song]); return { success: true, message: 'Lagu ditambahkan ke perpustakaan', song: song }; }
+    saveSong: function (p) { var song = JSON.parse(JSON.stringify(p)); song.id = song.id || song.title.toLowerCase().replace(/[^a-z0-9]+/g, ''); db.songs = db.songs.filter(function (s) { return s.id !== song.id; }).concat([song]); return { success: true, message: 'Lagu ditambahkan ke perpustakaan', song: song }; },
+    // Keuangan: PIN "123456" (db.ku.pin = null starts at the setup screen)
+    kuStatus: function (t) { return { pinSet: !!db.ku.pin, unlocked: !!t && db.ku.tokens.indexOf(t) !== -1 }; },
+    kuSetupPin: function (pin) { if (db.ku.pin) return { success: false, message: 'PIN keuangan sudah dibuat.' }; if (String(pin).length < 6) return { success: false, message: 'PIN minimal 6 karakter.' }; db.ku.pin = pin; return kuTok(); },
+    kuUnlock: function (pin) { return pin === db.ku.pin ? kuTok() : { success: false, message: 'PIN salah.' }; },
+    kuLock: function (t) { db.ku.tokens = db.ku.tokens.filter(function (x) { return x !== t; }); return { success: true }; },
+    kuChangePin: function (t, o, n) { kuAuth(t); if (o !== db.ku.pin) return { success: false, message: 'PIN lama salah.' }; if (String(n).length < 6) return { success: false, message: 'PIN baru minimal 6 karakter.' }; db.ku.pin = n; return { success: true, message: 'PIN keuangan diganti' }; },
+    getKeuanganData: function (t) { kuAuth(t); return JSON.parse(JSON.stringify({ events: api.getSchedule().concat([{ id: '7', date: '2026-08-15', theme: 'Retreat Pemuda 2026', pastor: '', tag: 'Fellowship' }]), lines: db.ku.lines, txs: db.ku.txs })); },
+    saveBudgetLine: function (t, p) { kuAuth(t); var l = JSON.parse(JSON.stringify(p)); l.id = l.id || 'l' + (++db.ku.n); if (l.qty !== '' && l.price !== '') l.amount = Math.round(l.qty * l.price); db.ku.lines = db.ku.lines.filter(function (x) { return x.id !== l.id; }).concat([l]); return { success: true, line: l }; },
+    deleteBudgetLine: function (t, id) { kuAuth(t); db.ku.lines = db.ku.lines.filter(function (x) { return x.id !== id; }); db.ku.txs.forEach(function (x) { if (x.lineId === id) x.lineId = ''; }); return { success: true }; },
+    saveTransaction: function (t, p) { kuAuth(t); var x = JSON.parse(JSON.stringify(p)); x.id = x.id || 't' + (++db.ku.n); if (x.source !== 'personal') x.reimbursed = false; db.ku.txs = db.ku.txs.filter(function (y) { return y.id !== x.id; }).concat([x]); return { success: true, tx: x }; },
+    deleteTransaction: function (t, id) { kuAuth(t); db.ku.txs = db.ku.txs.filter(function (x) { return x.id !== id; }); return { success: true }; },
+    copyBudget: function (t, from, to) { kuAuth(t); var out = db.ku.lines.filter(function (l) { return l.eventId === from; }).map(function (l) { var c = JSON.parse(JSON.stringify(l)); c.id = 'l' + (++db.ku.n); c.eventId = to; return c; }); db.ku.lines = db.ku.lines.concat(out); return { success: true, lines: out }; },
+    uploadReceipt: function (t, ev, name, mime, data) { kuAuth(t); var id = 'f' + (++db.ku.n); db.ku.files[id] = { name: name, mimeType: mime, data: data }; return { success: true, receiptId: id, receiptName: name }; },
+    getReceipt: function (t, id) { kuAuth(t); var f = db.ku.files[id]; if (!f) throw new Error('Bukti tidak ditemukan.'); return { success: true, name: f.name, mimeType: f.mimeType, data: f.data }; }
   };
+  db.ku = { pin: '123456', tokens: [], n: 100, files: { f1: { name: 'nota-katering.png', mimeType: 'image/png', data: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==' } },
+    lines: [
+      { id: 'l1', eventId: '7', type: 'out', category: 'Konsumsi', desc: 'Makan 3x2 hari', qty: 60, price: 25000, amount: 1500000, notes: '' },
+      { id: 'l2', eventId: '7', type: 'out', category: 'Transport', desc: 'Sewa bus', qty: '', price: '', amount: 2500000, notes: '2 bus' },
+      { id: 'l3', eventId: '7', type: 'out', category: 'Akomodasi', desc: 'Villa', qty: '', price: '', amount: 4000000, notes: '' },
+      { id: 'l4', eventId: '7', type: 'in', category: 'Iuran peserta', desc: 'Iuran 50 peserta', qty: 50, price: 120000, amount: 6000000, notes: '' },
+      { id: 'l5', eventId: '7', type: 'in', category: 'Subsidi gereja', desc: 'Subsidi majelis', qty: '', price: '', amount: 2500000, notes: '' }
+    ],
+    txs: [
+      { id: 't1', eventId: '7', lineId: 'l1', date: '2026-08-10', type: 'out', category: 'Konsumsi', desc: 'DP katering', amount: 500000, source: 'kas', paidBy: '', reimbursed: false, receiptId: 'f1', receiptName: 'nota-katering.png' },
+      { id: 't2', eventId: '7', lineId: 'l1', date: '2026-08-16', type: 'out', category: 'Konsumsi', desc: 'Pelunasan katering', amount: 1150000, source: 'personal', paidBy: 'Andreas', reimbursed: false, receiptId: '', receiptName: '' },
+      { id: 't3', eventId: '7', lineId: 'l2', date: '2026-08-15', type: 'out', category: 'Transport', desc: 'Bus PP', amount: 2400000, source: 'kas', paidBy: '', reimbursed: false, receiptId: '', receiptName: '' },
+      { id: 't4', eventId: '7', lineId: '', date: '2026-08-15', type: 'out', category: 'Perlengkapan', desc: 'Obat-obatan P3K', amount: 175000, source: 'personal', paidBy: 'Maria', reimbursed: true, receiptId: '', receiptName: '' },
+      { id: 't5', eventId: '7', lineId: 'l4', date: '2026-08-01', type: 'in', category: 'Iuran peserta', desc: 'Iuran 46 peserta', amount: 5520000, source: 'kas', paidBy: '', reimbursed: false, receiptId: '', receiptName: '' }
+    ] };
+  function kuTok() { var t = 'tok' + (++db.ku.n); db.ku.tokens.push(t); return { success: true, token: t }; }
+  function kuAuth(t) { if (db.ku.tokens.indexOf(t) === -1) throw new Error('KU_LOCKED'); }
   function runner(ok, fail) {
     var r = { withSuccessHandler: function (f) { return runner(f, fail); }, withFailureHandler: function (f) { return runner(ok, f); } };
     Object.keys(api).forEach(function (name) {
