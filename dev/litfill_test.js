@@ -46,8 +46,8 @@ ok('text Docs still refuses is skipped, not fatal', same(fill([['☐', {}], ['Am
 {
   const e = new Error('Boom'); e.stack = 'Error: Boom\n    at litFill_ (Liturgi:300:9)\n    at x (Liturgi:9:1)';
   const a = ctx.litLocated_(e);
-  ok('error names its line', a.message === 'Boom [di litFill_ (Liturgi:300:9) < x (Liturgi:9:1)]', a.message);
-  ok('not located twice', ctx.litLocated_(a) === a || !/\[di .*\[di /.test(ctx.litLocated_(a).message));
+  ok('error names its line', a.message === 'Boom [at litFill_ (Liturgi:300:9) < x (Liturgi:9:1)]', a.message);
+  ok('not located twice', ctx.litLocated_(a) === a || !/\[at .*\[at /.test(ctx.litLocated_(a).message));
 }
 
 // writeFooter_ on a new Doc: the blank footer paragraph is never set to empty text.

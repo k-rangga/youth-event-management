@@ -1,17 +1,5 @@
 <style>
-  .ti-field { width: 100%; padding: 11px 13px; border-radius: 12px; border: 1px solid #e6d8b6; background: #fff; font-size: 14.5px; }
-  .ti-label { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
-  .ti-label > span:first-child { font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #3a2a15; }
-  .ti-eyebrow { font-size: 11.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: #8a7952; }
-  .ti-card { background: #fff; border: 1px solid #ece0c2; border-radius: 20px; }
-  .ti-pill { font-size: 11.5px; font-weight: 700; padding: 3px 9px; border-radius: 7px; white-space: nowrap; }
   .ti-posture { font-size: 11.5px; font-weight: 600; color: #8a7952; border: 1px solid #e6d8b6; border-radius: 20px; padding: 2px 9px; white-space: nowrap; }
-  .ti-btn-outline { border: 1px solid #e6d8b6; background: #fff; color: #6E2621; font-size: 13px; font-weight: 700; padding: 8px 13px; border-radius: 10px; cursor: pointer; white-space: nowrap; }
-  .ti-btn-outline:hover { border-color: #6E2621; }
-  .ti-btn-orange { background: #E85511; color: #fff; font-weight: 700; font-size: 14.5px; padding: 12px 18px; border-radius: 12px; cursor: pointer; box-shadow: 0 10px 24px -12px rgba(232,85,17,.6); }
-  .ti-btn-orange:hover { background: #d44c0e; }
-  .ti-link { color: #E85511; font-size: 12.5px; font-weight: 700; cursor: pointer; }
-  .ti-link:hover { text-decoration: underline; }
   select.ti-field, .ti-select { -webkit-appearance: none; appearance: none; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a7952' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 14px center / 16px 16px; padding-right: 42px !important; cursor: pointer; }
   .ti-combo-input { padding-right: 42px !important; text-overflow: ellipsis; }
   .ti-chev { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); display: flex; color: #8a7952; cursor: pointer; }
@@ -24,10 +12,6 @@
   .ti-combo-l { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ti-combo-opt small { min-width: 0; color: #8a7952; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ti-combo-empty { padding: 10px; font-size: 13px; color: #9a8763; }
-  .ti-seg { display: inline-flex; flex-wrap: wrap; gap: 2px; background: #F3E9CE; border-radius: 11px; padding: 3px; }
-  .ti-seg button { padding: 7px 12px; border-radius: 9px; font-size: 13px; font-weight: 700; color: #6E2621; cursor: pointer; }
-  .ti-seg button.on { background: #6E2621; color: #fff; }
-  .ti-seg button:disabled { color: #c9b88f; cursor: not-allowed; }
   .ti-hover:hover { background: #FEFBF2 !important; }
   .ti-tile:hover { border-color: #d9c79b !important; }
   .ti-trash { width: 34px; height: 34px; border-radius: 10px; color: #a08b62; cursor: pointer; flex-shrink: 0; }
@@ -51,12 +35,12 @@
 <script>
 /* ===================== Tata Ibadah ===================== */
 
-var TI_ST_COLORS = { Draft: ['#F3E9CE', '#8a7952'], Review: ['#CFE4F7', '#31536f'], Published: ['#24401F', '#ffffff'] };
+var TI_ST_COLORS = { Draft: ['#F3E9CE', '#8a7952'], Published: ['#24401F', '#ffffff'] };
 var TI_RED = '#B5483A', TI_AMBER = '#D08A1E', TI_GREEN = '#24401F';
-var TI_MONTHS = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-var TI_MON = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-var TI_DAYS = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
-var TI_HYMNALS = ['Semua', 'KK', 'KJ', 'NKB', 'PKJ', 'Kontemporer'];
+var TI_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+var TI_MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var TI_DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+var TI_HYMNALS = ['All', 'KK', 'KJ', 'NKB', 'PKJ', 'Contemporary'];
 var TI_BOOKS = ['Kejadian','Keluaran','Imamat','Bilangan','Ulangan','Yosua','Hakim-hakim','Rut','1 Samuel','2 Samuel','1 Raja-raja','2 Raja-raja','1 Tawarikh','2 Tawarikh','Ezra','Nehemia','Ester','Ayub','Mazmur','Amsal','Pengkhotbah','Kidung Agung','Yesaya','Yeremia','Ratapan','Yehezkiel','Daniel','Hosea','Yoel','Amos','Obaja','Yunus','Mikha','Nahum','Habakuk','Zefanya','Hagai','Zakharia','Maleakhi','Matius','Markus','Lukas','Yohanes','Kisah Para Rasul','Roma','1 Korintus','2 Korintus','Galatia','Efesus','Filipi','Kolose','1 Tesalonika','2 Tesalonika','1 Timotius','2 Timotius','Titus','Filemon','Ibrani','Yakobus','1 Petrus','2 Petrus','1 Yohanes','2 Yohanes','3 Yohanes','Yudas','Wahyu'];
 var TI_VS_RE = /^\d+(\s*[-–]\s*\d+)?(\s*,\s*\d+(\s*[-–]\s*\d+)?)*$/;
 var TI_PLACEHOLDER = /(x\s*:\s*x-x|\bTEMA\b|\.{4,}|…{2,}|lirik lagu|^untitled(\s+event)?$)/i;
@@ -71,39 +55,39 @@ function tiB(k, n, title, kind, posture, extra) {
 
 /* Liturgy template: fixed blocks are read-only, the rest are filled per service. */
 var TI_TPL = [
-  { name: 'Persiapan', blocks: [
-    tiB('b0', 0, 'Sampul', 'auto', '—'),
-    tiB('b1', 1, 'Persiapan · mulai 09.40', 'fixed', '—')
+  { name: 'Preparation', blocks: [
+    tiB('b0', 0, 'Cover', 'auto', '—'),
+    tiB('b1', 1, 'Preparation · starts 09.40', 'fixed', '—')
   ]},
-  { name: 'Umat Berhimpun', blocks: [
-    tiB('b2', 2, 'Panggilan beribadah', 'song', 'Berdiri', { field: 'call', fieldLabel: 'Kata liturgos' }),
-    tiB('b3', 3, 'Votum dan salam', 'fixed', 'Berdiri'),
-    tiB('b4', 4, 'Kata pembuka', 'auto', 'Duduk', { verse: 'kp' }),
-    tiB('b5', 5, 'Nyanyian umat 1', 'song', 'Duduk'),
-    tiB('b6', 6, 'Pengakuan dosa', 'text', 'Duduk', { field: 'confession', fieldLabel: 'Narasi liturgos' }),
-    tiB('b7', 7, 'Nyanyian umat 2 · pengakuan dosa', 'song', 'Duduk'),
-    tiB('b8', 8, 'Berita anugerah', 'variant', 'Berdiri', { verse: 'ba', opts: [['A', 'Formula A'], ['B', 'Formula B']], notes: { A: '“Demikianlah berita anugerah dari Tuhan” / “Syukur kepada Allah”', B: '“Di dalam Kristus, engkau telah diampuni” + Damai Kristus' } }),
-    tiB('b9', 9, 'Salam damai', 'variant', 'Berdiri', { opts: [['1×', 'Lagu 1×'], ['2×', 'Lagu 2×'], ['3×', 'Lagu 3×']], notes: { '1×': 'Lagu pengiring dinyanyikan 1 kali', '2×': 'Lagu pengiring dinyanyikan 2 kali', '3×': 'Lagu pengiring dinyanyikan 3 kali' } }),
-    tiB('b10', 10, 'Nyanyian umat 3', 'song', 'Berdiri → duduk')
+  { name: 'Gathering', blocks: [
+    tiB('b2', 2, 'Call to worship', 'song', 'Stand', { field: 'call', fieldLabel: 'Liturgist words' }),
+    tiB('b3', 3, 'Votum and greeting', 'fixed', 'Stand'),
+    tiB('b4', 4, 'Opening words', 'auto', 'Sit', { verse: 'kp' }),
+    tiB('b5', 5, 'Congregational song 1', 'song', 'Sit'),
+    tiB('b6', 6, 'Confession of sin', 'text', 'Sit', { field: 'confession', fieldLabel: 'Liturgist narration' }),
+    tiB('b7', 7, 'Congregational song 2 · confession', 'song', 'Sit'),
+    tiB('b8', 8, 'Assurance of grace', 'variant', 'Stand', { verse: 'ba', opts: [['A', 'Wording A'], ['B', 'Wording B']], notes: { A: '“Demikianlah berita anugerah dari Tuhan” / “Syukur kepada Allah”', B: '“Di dalam Kristus, engkau telah diampuni” + Damai Kristus' } }),
+    tiB('b9', 9, 'Passing the peace', 'variant', 'Stand', { opts: [['1×', 'Song 1×'], ['2×', 'Song 2×'], ['3×', 'Song 3×']] }),
+    tiB('b10', 10, 'Congregational song 3', 'song', 'Stand → sit')
   ]},
-  { name: 'Pelayanan Firman', blocks: [
-    tiB('b11', 11, 'Doa, pembacaan Alkitab, Haleluya', 'variant', 'Duduk', { reading: true, opts: [['767h', 'KK 767h'], ['767F', 'KK 767F']], notes: { '767h': 'Notasi Haleluya KK 767h disisipkan sebagai gambar', '767F': 'Notasi Haleluya KK 767F disisipkan sebagai gambar' } }),
-    tiB('b12', 12, 'Khotbah', 'auto', 'Duduk'),
-    tiB('b13', 13, 'Saat hening', 'fixed', 'Duduk'),
-    tiB('b14', 14, 'Pengakuan Iman Rasuli', 'fixed', 'Berdiri'),
-    tiB('b15', 15, 'Persiapan Perjamuan Kudus (Sensura Morum)', 'optional', 'Duduk'),
-    tiB('b16', 16, 'Doa syafaat', 'fixed', 'Duduk')
+  { name: 'Word', blocks: [
+    tiB('b11', 11, 'Prayer, Bible reading, Hallelujah', 'variant', 'Sit', { reading: true, opts: [['767h', 'KK 767h'], ['767F', 'KK 767F']] }),
+    tiB('b12', 12, 'Sermon', 'auto', 'Sit'),
+    tiB('b13', 13, 'Silence', 'fixed', 'Sit'),
+    tiB('b14', 14, "Apostles' Creed", 'fixed', 'Stand'),
+    tiB('b15', 15, 'Communion preparation (Sensura Morum)', 'optional', 'Sit'),
+    tiB('b16', 16, 'Intercession', 'fixed', 'Sit')
   ]},
-  { name: 'Persembahan', blocks: [
-    tiB('b17', 17, 'Nas persembahan', 'text', 'Duduk', { verse: 'of', field: 'offering', fieldLabel: 'Ajakan persembahan (Pnt)' }),
-    tiB('b18', 18, 'Nyanyian persembahan', 'song', 'Duduk → berdiri', { cue: 'Kantong persembahan diedarkan · QR persembahan tampil di layar' }),
-    tiB('b19', 19, 'Doa persembahan dan kesimpulan khotbah', 'fixed', 'Berdiri')
+  { name: 'Offering', blocks: [
+    tiB('b17', 17, 'Offering verse', 'text', 'Sit', { verse: 'of', field: 'offering', fieldLabel: 'Offering invitation (elder)' }),
+    tiB('b18', 18, 'Offering song', 'song', 'Sit → stand', { cue: 'Offering bags go round · QR on screen' }),
+    tiB('b19', 19, 'Offering prayer and sermon summary', 'fixed', 'Stand')
   ]},
-  { name: 'Pengutusan', blocks: [
-    tiB('b20', 20, 'Nyanyian pengutusan', 'song', 'Berdiri'),
-    tiB('b21', 21, 'Pengutusan dan berkat', 'variant', 'Berdiri', { opts: [['768b', 'KK 768b'], ['ongko', 'Haleluya Amin (Ongkowidjaja)']], notes: { '768b': 'Ordinarium KK 768b setelah berkat', ongko: 'Ordinarium Haleluya Amin (Ongkowidjaja) setelah berkat' } }),
-    tiB('b22', 22, 'Nyanyian penutup', 'song', 'Berdiri', { optional: true }),
-    tiB('b23', 23, 'Penutup · saat teduh dan pengumuman', 'fixed', 'Duduk')
+  { name: 'Sending', blocks: [
+    tiB('b20', 20, 'Sending song', 'song', 'Stand'),
+    tiB('b21', 21, 'Sending and blessing', 'variant', 'Stand', { opts: [['768b', 'KK 768b'], ['ongko', 'Haleluya Amin (Ongkowidjaja)']] }),
+    tiB('b22', 22, 'Closing song', 'song', 'Stand', { optional: true }),
+    tiB('b23', 23, 'Close · silence and announcements', 'fixed', 'Sit')
   ]}
 ];
 var TI_BLOCKS = [].concat.apply([], TI_TPL.map(function (s) { return s.blocks; }));
@@ -115,15 +99,15 @@ var TI_VARIANT_DEFAULT = { b8: 'A', b9: '1×', b11: '767h', b21: '768b' };
 var tiState = {
   loaded: false, loading: false, loadError: '',
   services: [], songs: [], songById: {}, schedule: [],
-  screen: 'list', monthF: 'all', statusF: 'Semua',
+  screen: 'list', monthF: 'all', statusF: 'All', chkOpen: {},
   cur: null, open: {}, flash: null, lastJump: null,
   saveLabel: '', saveError: false, saving: false, pending: null,
   picker: null, songForm: null, dialog: null, fetchSeq: 0,
-  dl: { busy: '', error: '' },
+  dl: { busy: '', error: null },
   liturgy: { fixed: {}, defaults: {}, offeringVerse: { ref: '', text: '' } },
   conflict: null, vFetch: { kp: {}, ba: {}, of: {} }, vTimers: {}, combo: null, dateFree: false,
   searchIx: {}, searchCache: null,
-  lib: { q: '', h: 'Semua', sort: 'number', limit: 80, sel: null, menu: false, merge: null, mergeTo: '', fetch: null, importing: false }
+  lib: { q: '', h: 'All', sort: 'number', limit: 80, sel: null, menu: false, merge: null, mergeTo: '', fetch: null, importing: false }
 };
 
 /* ---------- helpers ---------- */
@@ -134,13 +118,13 @@ function tiIsSunday(s) { var d = fromIso(s); return !!d && !isNaN(d) && d.getDay
 function tiShort(s) { var d = fromIso(s); return d && !isNaN(d) ? d.getDate() + ' ' + TI_MON[d.getMonth()] : ''; }
 function tiDateLong(s) {
   var d = fromIso(s);
-  if (!d || isNaN(d)) return 'Tanggal belum diisi';
+  if (!d || isNaN(d)) return 'No date yet';
   return TI_DAYS[d.getDay()] + ', ' + d.getDate() + ' ' + TI_MONTHS[d.getMonth()] + ' ' + d.getFullYear();
 }
 function tiSongCode(s) { return s && s.hymnal ? s.hymnal + ' ' + s.number : ''; }
 function tiTheme(svc) { return (svc.series ? svc.series + ': ' : '') + (svc.sub || '…'); }
 /* Verses picked as book / chapter / verses: svc.kpBook, svc.kpCh, svc.kpVs and so on; their TB text is texts.kpText. */
-var TI_VERSES = { kp: 'Nas kata pembuka', ba: 'Nas berita anugerah', of: 'Nas persembahan' };
+var TI_VERSES = { kp: 'Opening verse', ba: 'Assurance verse', of: 'Offering verse' };
 function tiRef(svc, p) {
   var vs = String(svc[p + 'Vs'] || '').trim();
   return svc[p + 'Book'] && svc[p + 'Ch'] && TI_VS_RE.test(vs) ? svc[p + 'Book'] + ' ' + svc[p + 'Ch'] + ':' + vs : '';
@@ -215,7 +199,7 @@ function tiFixedHtml(k) {
       case 'note': case 'p': return '<p style="margin:0 0 4px; text-align:center; font-style:italic;">' + tiMarksHtml(e[1]) + '</p>';
       case 'line': return '<p ' + line + '>' + tiMarksHtml(e[1]) + '</p>';
       case 'steps': return e[1].map(function (x) { return '<p style="margin:0 0 4px; padding-left:16px; text-indent:-16px;">•&nbsp;&nbsp;' + tiMarksHtml(x) + '</p>'; }).join('');
-      case 'image': return '<p style="margin:0 0 4px; text-align:center; color:#9a8763;">[notasi ' + esc(e[1]) + ']</p>';
+      case 'image': return '<p style="margin:0 0 4px; text-align:center; color:#9a8763;">[notation ' + esc(e[1]) + ']</p>';
       case 'posture': return '<p style="margin:0 0 4px; text-align:right; font-style:italic;">(' + esc(e[1]) + ')</p>';
     }
     return '';
@@ -276,81 +260,91 @@ function tiSeason(s) {
 
 function tiChecks(svc) {
   var reds = [], ambers = [], greens = [];
-  var req = [['date', 'Tanggal', svc.date], ['series', 'Seri', svc.series], ['sub', 'Sub-tema', svc.sub], ['pf', 'Pelayan Firman', svc.pf], ['kpBook', 'Nas kata pembuka', tiRef(svc, 'kp') || svc.kp], ['baBook', 'Nas berita anugerah', tiRef(svc, 'ba')], ['ofBook', 'Nas persembahan', tiRef(svc, 'of')]]
+  var req = [['date', 'Date', svc.date], ['series', 'Series', svc.series], ['sub', 'Sub-theme', svc.sub], ['pf', 'Preacher', svc.pf], ['kpBook', TI_VERSES.kp, tiRef(svc, 'kp') || svc.kp], ['baBook', TI_VERSES.ba, tiRef(svc, 'ba')], ['ofBook', TI_VERSES.of, tiRef(svc, 'of')]]
     .filter(function (r) { return !String(r[2] || '').trim(); });
-  if (req.length) reds.push({ text: 'Kolom wajib kosong', sub: req.map(function (r) { return r[1]; }).join(', '), to: 'tiF-' + req[0][0] });
-  else greens.push({ text: 'Kolom wajib lengkap' });
+  if (req.length) reds.push({ todo: true, text: 'Required fields empty', sub: req.map(function (r) { return r[1]; }).join(', '), to: 'tiF-' + req[0][0] });
+  else greens.push({ text: 'Required fields filled' });
 
-  if (tiIsSunday(svc.date)) greens.push({ text: 'Tanggal hari Minggu' });
-  else if (svc.date) reds.push({ text: 'Tanggal bukan hari Minggu', to: 'tiF-date' });
+  if (tiIsSunday(svc.date)) greens.push({ text: 'Date is a Sunday' });
+  else if (svc.date) reds.push({ text: 'Date is not a Sunday', to: 'tiF-date' });
 
   var songBlocks = tiActiveSongBlocks(svc);
   var empty = songBlocks.filter(function (b) { return !svc.slots[b.k]; });
-  empty.forEach(function (b) { reds.push({ text: 'Slot lagu kosong', sub: tiN(b.n) + ' · ' + b.title, to: 'tiBlk-' + b.k }); });
-  if (!empty.length) greens.push({ text: 'Semua slot lagu terisi' });
+  empty.forEach(function (b) { reds.push({ todo: true, g: 'songs', text: 'Song not chosen', sub: tiN(b.n) + ' · ' + b.title, to: 'tiBlk-' + b.k }); });
+  if (!empty.length) greens.push({ text: 'All songs chosen' });
 
   var ph = [['series', svc.series], ['sub', svc.sub], ['season', svc.season]].filter(function (f) { return TI_PLACEHOLDER.test(String(f[1] || '')); });
-  if (ph.length) reds.push({ text: 'Teks placeholder tertinggal', sub: ph.map(function (f) { return '“' + f[1] + '”'; }).join(', '), to: 'tiF-' + ph[0][0] });
-  else greens.push({ text: 'Tanpa teks placeholder' });
+  if (ph.length) reds.push({ text: 'Placeholder text left in', sub: ph.map(function (f) { return '“' + f[1] + '”'; }).join(', '), to: 'tiF-' + ph[0][0] });
+  else greens.push({ text: 'No placeholder text' });
 
   var ids = songBlocks.map(function (b) { return svc.slots[b.k]; }).filter(Boolean);
   var dups = ids.filter(function (x, i) { return ids.indexOf(x) !== i; }).filter(function (x, i, a) { return a.indexOf(x) === i; });
   dups.forEach(function (id) {
     var last = songBlocks.filter(function (b) { return svc.slots[b.k] === id; }).pop();
-    reds.push({ text: 'Lagu dipakai dua kali', sub: (tiState.songById[id] || {}).title || id, to: 'tiBlk-' + last.k });
+    reds.push({ text: 'Song used twice', sub: (tiState.songById[id] || {}).title || id, to: 'tiBlk-' + last.k });
   });
-  if (!dups.length) greens.push({ text: 'Tidak ada lagu ganda' });
+  if (!dups.length) greens.push({ text: 'No repeated songs' });
 
   songBlocks.forEach(function (b) {
     var song = tiState.songById[svc.slots[b.k]];
     var u = song && tiSongUsage(song.id, svc);
-    if (u && u.weeks <= TI_RECENT_WEEKS) ambers.push({ text: song.title + ' baru dipakai', sub: tiShort(u.date) + ' · ' + b.title, to: 'tiBlk-' + b.k });
+    if (u && u.weeks <= TI_RECENT_WEEKS) ambers.push({ g: 'recent', text: song.title + ' used recently', sub: tiShort(u.date) + ' · ' + b.title, to: 'tiBlk-' + b.k });
   });
   songBlocks.forEach(function (b) {
     var song = tiState.songById[svc.slots[b.k]];
-    if (song && !tiHasLyrics(song)) ambers.push({ text: 'Lirik ' + song.title + ' belum ada', sub: 'Buka pemilih lagu untuk mengambil lirik', to: 'tiBlk-' + b.k });
+    if (song && !tiHasLyrics(song)) ambers.push({ g: 'lyrics', text: 'No lyrics for ' + song.title, sub: b.title, to: 'tiBlk-' + b.k });
   });
   songBlocks.forEach(function (b) {
-    if (svc.slots[b.k] && !svc.arr[b.k]) ambers.push({ text: 'Urutan lagu belum diisi', sub: tiN(b.n) + ' · ' + b.title, to: 'tiBlk-' + b.k });
+    if (svc.slots[b.k] && !svc.arr[b.k]) ambers.push({ g: 'order', text: 'Song order not set', sub: tiN(b.n) + ' · ' + b.title, to: 'tiBlk-' + b.k });
   });
 
   var next = svc.date ? tiByDate(tiAddDays(svc.date, 7)) : null;
   if (next && next.pk) {
-    if (svc.enabled.b15) greens.push({ text: 'Sensura Morum sesuai kalender', sub: 'Perjamuan Kudus pada ' + tiShort(next.date) });
-    else ambers.push({ text: 'Sensura Morum mati', sub: 'Minggu depan Perjamuan Kudus (' + tiShort(next.date) + ')', to: 'tiBlk-b15' });
+    if (svc.enabled.b15) greens.push({ text: 'Sensura Morum matches the calendar' });
+    else ambers.push({ text: 'Sensura Morum is off', sub: 'Communion next week (' + tiShort(next.date) + ')', to: 'tiBlk-b15' });
   }
 
   var tx = tiTexts(svc);
-  if (!tx.call.trim() || /\.\.\.\s*$/.test(tx.call)) ambers.push({ text: 'Kata liturgos panggilan beribadah belum diisi', to: 'tiF-call' });
-  if (!tx.reading.trim()) ambers.push({ text: 'Bacaan Alkitab belum diisi', to: 'tiF-reading' });
+  if (!tx.call.trim() || /\.\.\.\s*$/.test(tx.call)) ambers.push({ g: 'texts', text: 'Liturgist words not written', sub: 'Call to worship', to: 'tiF-call' });
+  if (!tx.reading.trim()) ambers.push({ g: 'texts', text: 'Bible reading empty', sub: 'Bible reading', to: 'tiF-reading' });
   ['ba', 'of'].forEach(function (p) {
-    if (tiRef(svc, p) && !tx[p + 'Text'].trim()) ambers.push({ text: 'Teks ' + TI_VERSES[p].toLowerCase() + ' kosong', sub: tiRef(svc, p), to: 'tiF-' + p + 'Text' });
+    if (tiRef(svc, p) && !tx[p + 'Text'].trim()) ambers.push({ g: 'texts', text: TI_VERSES[p] + ' text empty', sub: TI_VERSES[p] + ' · ' + tiRef(svc, p), to: 'tiF-' + p + 'Text' });
   });
 
   var prev = tiPrevService(svc);
   if (prev && prev.texts && prev.texts.confession && prev.texts.confession === tx.confession) {
-    ambers.push({ text: 'Narasi pengakuan dosa sama dengan minggu lalu', sub: 'Pastikan disengaja', to: 'tiF-confession' });
+    ambers.push({ g: 'same', text: 'Same confession as last week', sub: 'Confession of sin', to: 'tiF-confession' });
   }
   if (prev) {
     TI_VARIANT_KEYS.forEach(function (k) {
-      if (prev.variants[k] && svc.variants[k] !== prev.variants[k]) ambers.push({ text: 'Variasi berbeda dari minggu lalu', sub: TI_BLOCK[k].title + ': pastikan disengaja', to: 'tiBlk-' + k });
+      if (prev.variants[k] && svc.variants[k] !== prev.variants[k]) ambers.push({ g: 'same', text: 'Option differs from last week', sub: TI_BLOCK[k].title, to: 'tiBlk-' + k });
     });
   }
   return { reds: reds, ambers: ambers, greens: greens };
 }
 
+/* Titles for a checklist group of several items. */
+var TI_CHECK_GROUPS = {
+  songs: function (n) { return n + ' songs not chosen'; },
+  recent: function (n) { return n + ' songs used recently'; },
+  lyrics: function (n) { return n + ' songs without lyrics'; },
+  order: function (n) { return n + ' songs without an order'; },
+  texts: function (n) { return n + ' texts not written'; },
+  same: function (n) { return n + ' things to double-check'; }
+};
+
 function tiTodos(svc) {
   var t = [];
-  [['date', 'Tanggal'], ['series', 'Seri'], ['sub', 'Sub-tema'], ['pf', 'Pelayan Firman']].forEach(function (f) {
+  [['date', 'Date'], ['series', 'Series'], ['sub', 'Sub-theme'], ['pf', 'Preacher']].forEach(function (f) {
     if (!String(svc[f[0]] || '').trim() || (f[0] === 'date' && !tiIsSunday(svc.date))) t.push({ id: 'tiF-' + f[0], label: f[1] });
   });
   TI_BLOCKS.forEach(function (b) {
-    if (b.k === 'b2' && /\.\.\.\s*$|^\s*$/.test(tiTexts(svc).call)) t.push({ id: 'tiF-call', label: 'Kata liturgos' });
+    if (b.k === 'b2' && /\.\.\.\s*$|^\s*$/.test(tiTexts(svc).call)) t.push({ id: 'tiF-call', label: 'Liturgist words' });
     if (b.verse && !tiRef(svc, b.verse) && !(b.verse === 'kp' && svc.kp)) t.push({ id: 'tiF-' + b.verse + 'Book', label: TI_VERSES[b.verse] });
-    if (b.k === 'b11' && !tiTexts(svc).reading.trim()) t.push({ id: 'tiF-reading', label: 'Bacaan Alkitab' });
+    if (b.k === 'b11' && !tiTexts(svc).reading.trim()) t.push({ id: 'tiF-reading', label: 'Bible reading' });
     if (b.kind === 'song' && tiIsOn(svc, b)) {
       if (!svc.slots[b.k]) t.push({ id: 'tiBlk-' + b.k, label: tiN(b.n) + ' · ' + b.title });
-      else if (!svc.arr[b.k]) t.push({ id: 'tiBlk-' + b.k, label: 'Urutan · ' + b.title });
+      else if (!svc.arr[b.k]) t.push({ id: 'tiBlk-' + b.k, label: 'Order · ' + b.title });
     }
   });
   return t;
@@ -370,6 +364,7 @@ function tiLoad() {
       tiState.loading = false;
       tiState.loaded = true;
       tiState.services = data.services || [];
+      tiState.services.forEach(function (svc) { if (svc.status !== 'Published') svc.status = 'Draft'; });
       tiState.schedule = data.schedule || [];
       if (tiState.cur && tiState.cur.id) {
         var fresh = tiState.services.filter(function (s) { return s.id === tiState.cur.id; })[0];
@@ -381,7 +376,7 @@ function tiLoad() {
     })
     .withFailureHandler(function (err) {
       tiState.loading = false;
-      tiState.loadError = err && err.message ? err.message : String(err);
+      tiState.loadError = errText(err, 'load the liturgy');
       tiRender();
     })
     .getTataIbadahData();
@@ -395,7 +390,7 @@ function tiSetSongs(songs) {
 
 function tiQueueSave() {
   tiState.pending = tiState.cur;
-  tiState.saveLabel = 'Menyimpan…';
+  tiState.saveLabel = 'Saving…';
   tiState.saveError = false;
   tiRenderSaveLabel();
   clearTimeout(tiState.saveTimer);
@@ -426,7 +421,7 @@ function tiFlushSave() {
         svc.id = res.id;
         svc.updatedAt = res.updatedAt;
         svc.forceSave = false;
-        tiState.saveLabel = 'Tersimpan otomatis · ' + res.savedAt;
+        tiState.saveLabel = 'Saved · ' + res.savedAt;
         tiState.saveError = false;
         if (res.schedule) {
           tiState.schedule = tiState.schedule.filter(function (e) { return e.id !== res.schedule.id; }).concat([res.schedule]);
@@ -435,7 +430,7 @@ function tiFlushSave() {
         if (res.scheduleChanged && typeof fetchSchedule === 'function') fetchSchedule();
       } else if (res.conflict) {
         tiState.conflict = { svc: svc, latest: res.latest };
-        tiState.saveLabel = 'Belum tersimpan: ada versi lebih baru';
+        tiState.saveLabel = 'Not saved: a newer version exists';
         tiState.saveError = true;
         tiRenderBanner();
       } else {
@@ -447,7 +442,7 @@ function tiFlushSave() {
     })
     .withFailureHandler(function (err) {
       tiState.saving = false;
-      tiState.saveLabel = 'Gagal menyimpan: ' + (err && err.message ? err.message : err);
+      tiState.saveLabel = errText(err, 'save');
       tiState.saveError = true;
       tiRenderSaveLabel();
     })
@@ -522,9 +517,9 @@ function tiOpenService(svc) {
   tiState.screen = 'builder';
   tiState.open = {};
   tiState.lastJump = null;
-  tiState.saveLabel = svc.id ? 'Tersimpan' : '';
+  tiState.saveLabel = svc.id ? 'Saved' : '';
   tiState.saveError = false;
-  tiState.dl.error = '';
+  tiState.dl.error = null;
   tiRender();
   window.scrollTo(0, 0);
 }
@@ -540,13 +535,12 @@ function tiGoList() {
 /* Asks before deleting a service (from its row in the list or the builder header). */
 function tiAskDelete(svc) {
   if (!svc) return;
-  tiConfirm({ title: 'Hapus tata ibadah?', text: tiTheme(svc) + ' · ' + tiDateLong(svc.date) + ' akan dihapus' + (svc.status === 'Published' ? ', walaupun sudah diterbitkan' : '') +
-    '. Jadwal di Event input dan Google Doc-nya tidak ikut terhapus. Ini tidak bisa dibatalkan.', ok: 'Hapus', danger: true },
+  tiConfirm({ title: 'Delete this liturgy?', text: tiTheme(svc) + ' · ' + tiDateLong(svc.date) + '. This can\'t be undone. Its Event input entry and Google Doc are kept.', ok: 'Delete', danger: true },
     function () { tiDeleteService(svc); });
 }
 
 function tiTrashHtml(attrs) {
-  return '<span role="button" ' + attrs + ' class="icon-btn ti-trash" title="Hapus tata ibadah" aria-label="Hapus tata ibadah">' + icon('trash', 17) + '</span>';
+  return '<span role="button" ' + attrs + ' class="icon-btn ti-trash" title="Delete liturgy" aria-label="Delete liturgy">' + icon('trash', 17) + '</span>';
 }
 
 function tiDeleteService(svc) {
@@ -564,7 +558,7 @@ function tiDeleteService(svc) {
       drop();
       flash(res.message);
     })
-    .withFailureHandler(function (err) { flash('Gagal menghapus: ' + (err && err.message ? err.message : err)); })
+    .withFailureHandler(function (err) { flash(errText(err, 'delete')); })
     .deleteTataIbadah(svc.id);
 }
 
@@ -590,17 +584,17 @@ function tiRender() {
 }
 
 function tiTabs(active) {
-  return '<div style="display:flex; gap:6px; margin-top:10px;">' + [['list', 'Ibadah'], ['library', 'Perpustakaan lagu']].map(function (t) {
+  return '<div style="display:flex; gap:6px; margin-top:10px;">' + [['list', 'Services'], ['library', 'Song library']].map(function (t) {
     return '<button data-ti="tab" data-v="' + t[0] + '" class="pill-btn' + (active === t[0] ? ' on' : '') + '">' + t[1] + '</button>';
   }).join('') + '</div>';
 }
 
 function tiHeader(eyebrow, title, right) {
-  return '<header class="page-pad" style="background:#F3E9CE; border-bottom:1px solid #e7d9b3; padding:22px 32px 20px;">' +
-    '<div style="max-width:1320px; margin:0 auto; display:flex; align-items:flex-end; justify-content:space-between; gap:24px; flex-wrap:wrap;">' +
+  return '<header class="page-head">' +
+    '<div class="page-head-in">' +
       '<div style="display:flex; flex-direction:column; gap:4px; min-width:0;">' +
         '<span class="ti-eyebrow" style="line-height:1.4;">' + eyebrow + '</span>' +
-        '<h1 style="margin:0; font-weight:800; letter-spacing:-.025em; font-size:34px; line-height:1.15; color:#3a2a15; text-wrap:pretty;">' + title + '</h1>' +
+        '<h1 class="page-title">' + title + '</h1>' +
         tiTabs(tiState.screen === 'library' ? 'library' : 'list') +
       '</div>' + right +
     '</div>' +
@@ -616,45 +610,45 @@ function tiStatusPill(status) {
 
 function tiListHtml() {
   var s = tiState;
-  var html = tiHeader('Tata Ibadah · Pemuda GKI Kota Wisata', 'Ibadah Minggu',
-    '<button data-ti="new" class="ti-btn-orange" style="height:44px; padding:0 20px; font-size:15px;">+ Buat ibadah baru</button>');
+  var sundays = s.loaded ? tiUpcomingServiceDates(6) : [];
+  var nextEmpty = sundays.filter(function (d) { return !tiByDate(d) && tiScheduleOn(d); })[0];
+  /* The notice below offers the same action for the next open date, so it takes the main button. */
+  var html = tiHeader('Pemuda GKI Kota Wisata', 'Sunday services',
+    nextEmpty ? '' : '<button data-ti="new" class="ti-btn-orange" style="height:42px; padding:0 18px;">+ New service</button>');
 
-  html += '<main class="page-pad" style="flex:1; padding:26px 32px 60px;"><div style="max-width:1320px; margin:0 auto; display:flex; flex-direction:column; gap:20px;">';
+  html += '<main class="page-main"><div class="page-wrap">';
 
   if (!s.loaded) {
-    html += '<div style="text-align:center; color:#b3a37c; font-size:14px; padding:30px 0;">' + (s.loadError ? 'Gagal memuat tata ibadah: ' + esc(s.loadError) : 'Memuat tata ibadah…') + '</div>';
+    html += '<div class="empty-msg">' + (s.loadError ? esc(s.loadError) : 'Loading…') + '</div>';
     return html + '</div></main>';
   }
 
-  var sundays = tiUpcomingServiceDates(6);
-  var nextEmpty = sundays.filter(function (d) { return !tiByDate(d) && tiScheduleOn(d); })[0];
   if (!sundays.length) {
-    html += '<div style="background:#fff; border:1px solid #ece0c2; border-radius:16px; padding:14px 18px; font-size:14px; color:#6b5a38; line-height:1.5;">' +
-      'Belum ada <b>Service</b> mendatang di jadwal Event input. Tambahkan event bertag Service di Event input, atau buat tata ibadah langsung.</div>';
+    html += '<div class="notice" style="background:#fff; border-color:#ece0c2; color:#6b5a38;">No upcoming services in Event input.</div>';
   }
 
   if (nextEmpty) {
     var sched = tiScheduleOn(nextEmpty);
-    html += '<div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; background:#fdf0e6; border:1px solid #f6cfb3; border-radius:16px; padding:14px 18px; font-size:14px;">' +
-      '<span style="line-height:1.5;"><strong style="font-weight:800; color:#a3420e;">Belum ada tata ibadah untuk ' + esc(tiShort(nextEmpty)) + '.</strong> ' +
-        (sched ? 'Di jadwal: ' + esc(tiThemeOf(sched) || 'tanpa tema') + (sched.pastor ? ' · ' + esc(sched.pastor) : '') : '') +
+    html += '<div class="notice">' +
+      '<span><strong style="font-weight:800; color:#a3420e;">' + esc(tiShort(nextEmpty)) + ' has no liturgy yet.</strong> ' +
+        (sched ? esc(tiThemeOf(sched) || 'No theme') + (sched.pastor ? ' · ' + esc(sched.pastor) : '') : '') +
         '</span>' +
       '<span style="display:flex; gap:8px;">' +
-        (s.services.length ? '<button data-ti="duplicate" data-date="' + nextEmpty + '" class="ti-btn-outline">Duplikat minggu lalu</button>' : '') +
-        '<button data-ti="new" data-date="' + nextEmpty + '" class="ti-btn-outline" style="background:#6E2621; color:#fff; border-color:#6E2621;">Buat untuk ' + esc(tiShort(nextEmpty)) + '</button>' +
+        (s.services.length ? '<button data-ti="duplicate" data-date="' + nextEmpty + '" class="ti-btn-outline">Copy last week</button>' : '') +
+        '<button data-ti="new" data-date="' + nextEmpty + '" class="ti-btn-orange" style="padding:8px 14px; font-size:13px;">Create for ' + esc(tiShort(nextEmpty)) + '</button>' +
       '</span></div>';
   }
 
   html += '<section style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:10px;">' + sundays.map(function (d) {
     var svc = tiByDate(d);
     var dt = fromIso(d);
-    var st = svc ? tiStatusPill(svc.status) : '<span class="ti-pill" style="background:' + (d === nextEmpty ? '#fbdcc9' : '#F3E9CE') + '; color:' + (d === nextEmpty ? '#a3420e' : '#9a8763') + ';">Belum ada</span>';
+    var st = svc ? tiStatusPill(svc.status) : '<span class="ti-pill" style="background:' + (d === nextEmpty ? '#fbdcc9' : '#F3E9CE') + '; color:' + (d === nextEmpty ? '#a3420e' : '#9a8763') + ';">Not started</span>';
     return '<button data-ti="' + (svc ? 'open' : 'new') + '" data-date="' + d + '" class="ti-tile" style="text-align:left; cursor:pointer; background:#fff; border:1px solid ' + (d === nextEmpty ? '#f6cfb3' : '#ece0c2') + '; border-radius:16px; padding:12px 14px; display:flex; flex-direction:column; gap:6px; min-height:100px;">' +
       '<span class="ti-eyebrow" style="font-size:11px;">' + TI_MON[dt.getMonth()] + '</span>' +
       '<span style="font-weight:800; font-size:30px; line-height:1; color:#6E2621;">' + dt.getDate() + '</span>' +
       '<span style="font-size:12px; font-weight:600; color:#6b5a38; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' +
         esc(svc ? tiTheme(svc) : ((tiScheduleOn(d) || {}).theme || '')) + '</span>' +
-      '<span style="display:flex; gap:4px; flex-wrap:wrap; margin-top:auto;">' + (svc && svc.pk ? '<span class="ti-pill" style="background:#6E2621; color:#fff;">Perjamuan Kudus</span>' : '') + st + '</span>' +
+      '<span style="display:flex; gap:4px; flex-wrap:wrap; margin-top:auto;">' + (svc && svc.pk ? '<span class="ti-pill" style="background:#6E2621; color:#fff;">Communion</span>' : '') + st + '</span>' +
     '</button>';
   }).join('') + '</section>';
 
@@ -663,22 +657,22 @@ function tiListHtml() {
   var monthOpts = Object.keys(months).sort().reverse();
   html += '<div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">' +
     '<select data-tisel="monthF" class="ti-select" style="padding:10px 14px; border:1px solid #e6d8b6; border-radius:11px; font-size:13.5px; font-weight:700; color:#6E2621;">' +
-      '<option value="all"' + (s.monthF === 'all' ? ' selected' : '') + '>Semua bulan</option>' +
+      '<option value="all"' + (s.monthF === 'all' ? ' selected' : '') + '>All months</option>' +
       monthOpts.map(function (m) { return '<option value="' + m + '"' + (s.monthF === m ? ' selected' : '') + '>' + TI_MONTHS[Number(m.slice(5)) - 1] + ' ' + m.slice(0, 4) + '</option>'; }).join('') +
     '</select>' +
-    '<div style="display:flex; gap:6px; flex-wrap:wrap;">' + ['Semua', 'Draft', 'Review', 'Published'].map(function (l) {
+    '<div style="display:flex; gap:6px; flex-wrap:wrap;">' + ['All', 'Draft', 'Published'].map(function (l) {
       return '<button data-ti="statusF" data-v="' + l + '" class="pill-btn' + (s.statusF === l ? ' on' : '') + '">' + l + '</button>';
     }).join('') + '</div>' +
-    '<span style="font-size:13px; color:#9a8763; font-weight:600;">' + s.services.length + ' ibadah tersimpan</span>' +
+    '<span style="font-size:13px; color:#9a8763; font-weight:600;">' + s.services.length + ' saved</span>' +
   '</div>';
 
   var rows = tiSortedServices().filter(function (svc) {
-    return (s.monthF === 'all' || (svc.date || '').slice(0, 7) === s.monthF) && (s.statusF === 'Semua' || svc.status === s.statusF);
+    return (s.monthF === 'all' || (svc.date || '').slice(0, 7) === s.monthF) && (s.statusF === 'All' || svc.status === s.statusF);
   });
   html += '<section style="display:flex; flex-direction:column; gap:10px;">' + rows.map(function (svc) {
     var p = parts(svc.date);
     var chk = svc.status === 'Published' ? null : tiChecks(svc);
-    var warn = chk && (chk.reds.length || chk.ambers.length) ? chk.reds.length + ' pemblokir · ' + chk.ambers.length + ' peringatan' : '';
+    var warn = chk && (chk.reds.length || chk.ambers.length) ? (chk.reds.length ? chk.reds.length + ' to do' : '') + (chk.reds.length && chk.ambers.length ? ' · ' : '') + (chk.ambers.length ? chk.ambers.length + ' to check' : '') : '';
     return '<button data-ti="openSvc" data-idx="' + s.services.indexOf(svc) + '" class="ti-row" style="text-align:left; cursor:pointer; display:grid; grid-template-columns:auto minmax(0,1fr) auto auto; gap:16px; align-items:center; padding:12px 12px 12px 16px; background:#fff; border:1px solid #ece0c2; border-radius:16px;">' +
       '<span style="background:#F3E9CE; border-radius:12px; padding:7px 10px; display:flex; flex-direction:column; align-items:center; line-height:1.02; min-width:58px;">' +
         '<span style="font-weight:800; font-size:24px; color:#6E2621;">' + p.day + '</span>' +
@@ -686,17 +680,17 @@ function tiListHtml() {
       '</span>' +
       '<span style="min-width:0; display:flex; flex-direction:column; gap:3px;">' +
         '<span style="font-weight:700; font-size:15.5px; color:#3a2a15; text-wrap:pretty;">' + esc(tiTheme(svc)) + '</span>' +
-        '<span style="font-size:13px; color:#8a7952; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + esc(svc.pf || 'PF belum dipilih') + (svc.season ? ' · ' + esc(svc.season) : '') + '</span>' +
+        '<span style="font-size:13px; color:#8a7952; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + esc(svc.pf || 'No preacher yet') + (svc.season ? ' · ' + esc(svc.season) : '') + '</span>' +
       '</span>' +
       '<span style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">' + tiStatusPill(svc.status) +
-        (warn ? '<span style="font-size:12px; font-weight:600; color:' + (chk.reds.length ? TI_RED : '#a3420e') + '; white-space:nowrap;">' + warn + '</span>' : '') +
+        (warn ? '<span style="font-size:12px; font-weight:600; color:' + '#8a7952' + '; white-space:nowrap;">' + warn + '</span>' : '') +
       '</span>' +
       tiTrashHtml('data-ti="trashSvc" data-idx="' + s.services.indexOf(svc) + '"') +
     '</button>';
   }).join('') + '</section>';
 
   if (!rows.length) {
-    html += '<div style="text-align:center; color:#b3a37c; font-size:14px; padding:6px 0;">' + (s.services.length ? 'Tidak ada ibadah untuk filter ini.' : 'Belum ada tata ibadah. Mulai dengan “Buat ibadah baru”.') + '</div>';
+    html += '<div class="empty-msg">' + (s.services.length ? 'No services match this filter.' : 'No services yet.') + '</div>';
   }
   return html + '</div></main>';
 }
@@ -714,11 +708,11 @@ function tiDateFieldHtml(svc) {
   var evs = tiServiceEvents(svc), input;
   if (tiState.dateFree || !evs.length) {
     input = '<input id="tiF-date" data-tif="date" type="date" class="ti-field" value="' + esc(svc.date) + '">' +
-      (evs.length ? '<span><span data-ti="dateList" class="ti-link">Pilih dari jadwal</span></span>' : '<span style="font-size:12px; color:#8a7952;">Belum ada ibadah terdaftar di Event input</span>');
+      (evs.length ? '<span><span data-ti="dateList" class="ti-link">Pick from schedule</span></span>' : '');
   } else {
     input = tiComboHtml('date');
   }
-  return '<div id="tiDateField" class="ti-label"><span>Tanggal · ibadah terdaftar</span>' + input + '</div>';
+  return '<div id="tiDateField" class="ti-label"><span>Date</span>' + input + '</div>';
 }
 
 function tiRenderDateField() {
@@ -737,7 +731,7 @@ function tiTakeSchedule(svc) {
 /* Masa is optional: blank by default, with the church-calendar season offered as a one-click suggestion. */
 function tiSeasonHintHtml() {
   var svc = tiState.cur, s = !svc.season && tiSeason(svc.date);
-  return s ? '<span style="font-size:12px; color:#8a7952;">Saran: <span data-ti="seasonUse" class="ti-link">' + esc(s) + '</span></span>' : '';
+  return s ? '<span style="font-size:12px; color:#8a7952;">Suggested: <span data-ti="seasonUse" class="ti-link">' + esc(s) + '</span></span>' : '';
 }
 
 /* ---------- searchable dropdowns ---------- */
@@ -771,16 +765,16 @@ function tiComboSpec(k) {
   if (k === 'date') {
     var sched = tiScheduleOn(svc.date);
     return {
-      ph: 'Cari tanggal atau tema', value: svc.date,
+      ph: 'Search date or theme', value: svc.date,
       text: svc.date ? tiDayLabel(svc.date) + (sched && tiThemeOf(sched) ? ' · ' + tiThemeOf(sched) : '') : '',
       options: function () {
         var evs = tiServiceEvents(svc), items = [];
-        if (svc.date && !evs.some(function (e) { return e.date === svc.date; })) items.push({ v: svc.date, label: tiDayLabel(svc.date), sub: 'belum di jadwal', keep: true });
+        if (svc.date && !evs.some(function (e) { return e.date === svc.date; })) items.push({ v: svc.date, label: tiDayLabel(svc.date), sub: 'not on schedule', keep: true });
         evs.forEach(function (e) {
           var taken = tiByDate(e.date, svc);
-          items.push({ v: e.date, label: tiDayLabel(e.date), sub: (tiThemeOf(e) || 'tanpa tema') + (taken ? ' · sudah ada' : ''), disabled: !!taken });
+          items.push({ v: e.date, label: tiDayLabel(e.date), sub: (tiThemeOf(e) || 'no theme') + (taken ? ' · already made' : ''), disabled: !!taken });
         });
-        return items.concat([{ v: '__free', label: 'Tanggal lain…', keep: true }]);
+        return items.concat([{ v: '__free', label: 'Other date…', keep: true }]);
       },
       pick: function (v) {
         if (v === '__free') { tiState.dateFree = true; tiRenderDateField(); return; }
@@ -792,7 +786,7 @@ function tiComboSpec(k) {
   if (k === 'series' || k === 'pf') {
     return {
       free: true, value: svc[k], text: svc[k] || '',
-      ph: k === 'series' ? 'Cari atau tulis seri' : 'Cari atau tulis nama PF', fresh: k === 'series' ? 'Seri baru' : 'Nama baru',
+      ph: k === 'series' ? 'Search or type a series' : 'Search or type a name', fresh: k === 'series' ? 'New series' : 'New name',
       options: function () {
         return k === 'series'
           ? tiRecent(function (s) { return s.series; }, function (e) { var t = tiThemeOf(e); return t.indexOf(':') !== -1 ? t.split(':')[0] : ''; })
@@ -804,16 +798,16 @@ function tiComboSpec(k) {
   if (k === 'mergeTo') {
     var into = tiState.songById[L.mergeTo];
     return {
-      ph: 'Cari lagu pengganti', value: L.mergeTo, text: into ? (tiSongCode(into) ? tiSongCode(into) + ' · ' : '') + into.title : '',
+      ph: 'Search replacement song', value: L.mergeTo, text: into ? (tiSongCode(into) ? tiSongCode(into) + ' · ' : '') + into.title : '',
       options: function () {
         return tiState.songs.filter(function (o) { return o.id !== L.merge; }).sort(function (a, b) { return a.title.localeCompare(b.title); })
-          .map(function (o) { return { v: o.id, label: o.title, sub: tiSongCode(o) || 'Kontemporer' }; });
+          .map(function (o) { return { v: o.id, label: o.title, sub: tiSongCode(o) || 'Contemporary' }; });
       },
       pick: function (v) { L.mergeTo = v; }
     };
   }
   return { // kpBook, baBook, ofBook
-    ph: 'Cari kitab', value: svc[k], text: svc[k] || '',
+    ph: 'Search book', value: svc[k], text: svc[k] || '',
     options: function () { return TI_BOOKS.map(function (b) { return { v: b, label: b }; }); },
     pick: function (v) { svc[k] = v; tiVerseChanged(k.slice(0, 2)); }
   };
@@ -846,7 +840,7 @@ function tiRenderCombo() {
   box.innerHTML = c.items.length ? c.items.map(function (o, i) {
     return '<div class="ti-combo-opt' + (i === c.hi ? ' on' : '') + (o.disabled ? ' dis' : '') + (o.v === c.value ? ' cur' : '') + '" data-ticopt="' + i + '">' +
       '<span class="ti-combo-l">' + esc(o.label) + '</span>' + (o.sub ? '<small>' + esc(o.sub) + '</small>' : '') + '</div>';
-  }).join('') : '<div class="ti-combo-empty">Tidak ditemukan</div>';
+  }).join('') : '<div class="ti-combo-empty">Nothing found</div>';
   var on = box.querySelector('.on');
   if (on && on.offsetTop < box.scrollTop) box.scrollTop = on.offsetTop;
   else if (on && on.offsetTop + on.offsetHeight > box.scrollTop + box.clientHeight) box.scrollTop = on.offsetTop + on.offsetHeight - box.clientHeight;
@@ -916,21 +910,20 @@ function tiOnMouseDown(e) {
 function tiBuilderHtml() {
   var svc = tiState.cur;
   var right = '<span style="display:flex; align-items:center; gap:10px;"><span id="tiSaveLabel" style="font-size:13px; font-weight:600;"></span>' + tiTrashHtml('data-ti="delete"') + '</span>';
-  var html = '<header class="page-pad" style="background:#F3E9CE; border-bottom:1px solid #e7d9b3; padding:18px 32px 20px;">' +
+  var html = '<header class="page-head" style="padding-top:18px;">' +
     '<div style="max-width:1320px; margin:0 auto; display:flex; flex-direction:column; gap:12px;">' +
       '<div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">' +
-        '<button data-ti="back" style="color:#6E2621; font-size:13.5px; font-weight:700; cursor:pointer; padding:0; display:inline-flex; align-items:center; gap:4px;">' + icon('left', 16) + 'Daftar ibadah</button>' + right +
+        '<button data-ti="back" style="color:#6E2621; font-size:13.5px; font-weight:700; cursor:pointer; padding:0; display:inline-flex; align-items:center; gap:4px;">' + icon('left', 16) + 'All services</button>' + right +
       '</div>' +
       '<div style="display:flex; flex-direction:column; gap:4px; min-width:0;">' +
         '<span id="tiEyebrow" class="ti-eyebrow" style="line-height:1.4;"></span>' +
-        '<h1 id="tiTitle" style="margin:0; font-weight:800; letter-spacing:-.025em; font-size:32px; line-height:1.15; color:#3a2a15; text-wrap:pretty;"></h1>' +
-        '<span style="font-size:12.5px; color:#8a7952; font-weight:600;">Judul seperti tercetak di sampul, kata pembuka dan khotbah</span>' +
+        '<h1 id="tiTitle" class="page-title"></h1>' +
       '</div>' +
     '</div>' +
   '</header>';
 
   var locked = svc.status === 'Published';
-  html += '<main class="page-pad" style="flex:1; padding:24px 32px 80px;"><div style="max-width:1320px; margin:0 auto; display:flex; flex-direction:column; gap:22px;">' +
+  html += '<main class="page-main"><div class="page-wrap">' +
     '<div id="tiBanner"></div>';
 
   var field = function (key, label, attrs) {
@@ -939,14 +932,14 @@ function tiBuilderHtml() {
   html += '<fieldset' + (locked ? ' disabled' : '') + ' style="border:0; padding:0; margin:0; min-width:0;"><section class="ti-card" style="padding:22px 24px; display:flex; flex-direction:column; gap:16px;">' +
     '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:14px;">' +
       tiDateFieldHtml(svc) +
-      '<label class="ti-label"><span>Masa · kalender gerejawi</span><input id="tiF-season" data-tif="season" class="ti-field" value="' + esc(svc.season) + '" placeholder="Opsional"><span id="tiSeasonHint">' + tiSeasonHintHtml() + '</span></label>' +
-      '<div class="ti-label"><span>Seri</span>' + tiComboHtml('series') + '</div>' +
-      field('sub', 'Sub-tema', 'placeholder="Tulis sub-tema"') +
-      '<div class="ti-label"><span>Pelayan Firman</span>' + tiComboHtml('pf') + '</div>' +
+      '<label class="ti-label"><span>Season</span><input id="tiF-season" data-tif="season" class="ti-field" value="' + esc(svc.season) + '" placeholder="Optional"><span id="tiSeasonHint">' + tiSeasonHintHtml() + '</span></label>' +
+      '<div class="ti-label"><span>Series</span>' + tiComboHtml('series') + '</div>' +
+      field('sub', 'Sub-theme', 'placeholder="Sub-theme"') +
+      '<div class="ti-label"><span>Preacher</span>' + tiComboHtml('pf') + '</div>' +
     '</div>' +
     '<div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; border-top:1px solid #f1e7cd; padding-top:14px;">' +
       '<label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:14px; font-weight:700; color:#3a2a15;">' +
-        '<input type="checkbox" data-tif="pk"' + (svc.pk ? ' checked' : '') + ' style="width:18px; height:18px; accent-color:#6E2621;">Minggu ini Perjamuan Kudus</label>' +
+        '<input type="checkbox" data-tif="pk"' + (svc.pk ? ' checked' : '') + ' style="width:18px; height:18px; accent-color:#6E2621;">Communion this Sunday</label>' +
       '<span id="tiSchedHint"></span>' +
     '</div>' +
   '</section></fieldset>';
@@ -954,12 +947,8 @@ function tiBuilderHtml() {
   html += '<div style="display:flex; gap:22px; flex-wrap:wrap; align-items:flex-start;">' +
     '<fieldset' + (locked ? ' disabled' : '') + ' style="border:0; padding:0; margin:0; flex:1 1 600px; min-width:0; display:flex; flex-direction:column; gap:26px;">' +
     TI_TPL.map(function (sec) {
-      var slotN = sec.blocks.filter(function (b) { return b.kind !== 'fixed'; }).length;
       return '<div style="display:flex; flex-direction:column; gap:7px;">' +
-        '<div style="display:flex; align-items:baseline; justify-content:space-between; gap:10px; padding:0 2px 8px; border-bottom:1px solid #e7d9b3; margin-bottom:3px;">' +
-          '<h2 style="margin:0; font-weight:800; font-size:20px; letter-spacing:-.015em; color:#3a2a15;">' + esc(sec.name) + '</h2>' +
-          '<span style="font-size:12px; font-weight:600; color:#9a8763;">' + slotN + ' diisi · ' + (sec.blocks.length - slotN) + ' tetap</span>' +
-        '</div>' +
+        '<h2 style="margin:0 0 3px; padding:0 2px 8px; border-bottom:1px solid #e7d9b3; font-weight:800; font-size:20px; letter-spacing:-.015em; color:#3a2a15;">' + esc(sec.name) + '</h2>' +
         sec.blocks.map(function (b) { return '<div id="tiBlk-' + b.k + '">' + tiBlockHtml(b) + '</div>'; }).join('') +
       '</div>';
     }).join('') +
@@ -997,19 +986,17 @@ function tiBlockParts(b) {
   var isSong = b.kind === 'song';
   var song = isSong ? tiState.songById[svc.slots[b.k]] : null;
   var hasToggle = !!(b.optional || b.kind === 'optional');
-  var typeLabel = b.kind === 'variant' ? (b.verse ? 'Slot + variasi' : 'Variasi') : hasToggle ? 'Opsional' : b.kind === 'auto' ? 'Otomatis' : b.kind === 'text' ? 'Teks liturgos' : 'Slot';
-  var border = !on ? '1px solid #f1e7cd' : (isSong && !song) ? '1px dashed #E85511' : '1px solid #ece0c2';
+  var border = !on ? '1px solid #f1e7cd' : '1px solid #ece0c2';
   var pad = 'padding-left:34px;';
   var tx = tiTexts(svc);
 
   var h = '<div style="display:grid; grid-template-columns:24px minmax(0,1fr) auto; gap:10px; align-items:center;">' +
-      '<span style="font-size:12px; font-weight:800; color:#E85511; font-variant-numeric:tabular-nums;">' + n + '</span>' +
+      '<span style="font-size:12px; font-weight:700; color:#b3a37c; font-variant-numeric:tabular-nums;">' + n + '</span>' +
       '<span style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; min-width:0;">' +
         '<span style="font-size:14.5px; font-weight:700; color:#3a2a15;">' + esc(b.title) + '</span>' +
-        '<span style="font-size:10.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:#E85511;">' + typeLabel + '</span>' +
       '</span>' +
       '<span style="display:flex; align-items:center; gap:8px;">' +
-        (hasToggle ? '<button data-ti="toggle" data-k="' + b.k + '" aria-label="Aktifkan blok" style="width:36px; height:21px; border-radius:20px; background:' + (on ? '#E85511' : '#d9c79b') + '; position:relative; cursor:pointer; padding:0; flex-shrink:0;"><span style="position:absolute; top:2.5px; left:' + (on ? '17px' : '3px') + '; width:16px; height:16px; border-radius:50%; background:#fff; transition:left .15s;"></span></button>' : '') +
+        (hasToggle ? '<button data-ti="toggle" data-k="' + b.k + '" aria-label="Turn on" style="width:36px; height:21px; border-radius:20px; background:' + (on ? '#E85511' : '#d9c79b') + '; position:relative; cursor:pointer; padding:0; flex-shrink:0;"><span style="position:absolute; top:2.5px; left:' + (on ? '17px' : '3px') + '; width:16px; height:16px; border-radius:50%; background:#fff; transition:left .15s;"></span></button>' : '') +
         '<span class="ti-posture">' + esc(b.posture) + '</span>' +
       '</span>' +
     '</div>';
@@ -1023,21 +1010,21 @@ function tiBlockParts(b) {
         '<div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">' +
           (tiSongCode(song) ? '<span style="font-size:12px; font-weight:700; background:#F3E9CE; color:#6E2621; padding:2px 7px; border-radius:6px;">' + esc(tiSongCode(song)) + '</span>' : '') +
           '<span style="font-size:17px; font-weight:700; color:#3a2a15;">' + esc(song.title) + '</span>' +
-          (recent ? '<span class="ti-pill" style="background:#fdf0e6; color:#a3420e; font-weight:600;">Dipakai ' + esc(tiShort(u.date)) + '</span>' : '') +
+          (recent ? '<span class="ti-pill" style="background:#fdf0e6; color:#a3420e; font-weight:600;">Used ' + esc(tiShort(u.date)) + '</span>' : '') +
         '</div>' +
         (song.credits ? '<span style="font-size:12.5px; color:#8a7952;">' + esc(song.credits) + '</span>' : '') +
         '<div style="display:flex; gap:10px; align-items:baseline; flex-wrap:wrap; margin-top:2px;">' +
-          (arr ? '<span style="font-size:12.5px; font-weight:600; color:#6b5a38;">' + (b.cue ? tiArrWithBreak(svc, b.k, arr) : esc(arr)) + '</span>' : '<span style="font-size:12.5px; font-weight:600; color:#a3420e;">Urutan belum diisi</span>') +
-          '<span data-ti="pick" data-k="' + b.k + '" class="ti-link">Ubah urutan</span>' +
+          (arr ? '<span style="font-size:12.5px; font-weight:600; color:#6b5a38;">' + (b.cue ? tiArrWithBreak(svc, b.k, arr) : esc(arr)) + '</span>' : '<span style="font-size:12.5px; font-weight:600; color:#a3420e;">No order yet</span>') +
+          '<span data-ti="pick" data-k="' + b.k + '" class="ti-link">Change order</span>' +
         '</div>' +
         (b.cue ? tiBreakHtml(b, svc, arr) : '') +
       '</div>' +
-      '<button data-ti="pick" data-k="' + b.k + '" class="ti-btn-outline">Ganti lagu</button>' +
+      '<button data-ti="pick" data-k="' + b.k + '" class="ti-btn-outline">Change song</button>' +
     '</div>';
   } else if (isSong && on) {
-    h += '<div style="' + pad + '"><button data-ti="pick" data-k="' + b.k + '" style="width:100%; border:1px dashed #E85511; background:#fdf0e6; color:#a3420e; font-size:13.5px; font-weight:700; padding:12px; border-radius:10px; cursor:pointer; text-align:left;">+ Pilih lagu</button></div>';
+    h += '<div style="' + pad + '"><button data-ti="pick" data-k="' + b.k + '" style="width:100%; border:1px dashed #d9c79b; background:#FEFBF2; color:#6E2621; font-size:13.5px; font-weight:700; padding:12px; border-radius:10px; cursor:pointer; text-align:left;">+ Choose song</button></div>';
   } else if (isSong) {
-    h += '<span style="' + pad + ' font-size:13px; color:#9a8763; font-weight:600;">Tidak dipakai minggu ini</span>';
+    h += '<span style="' + pad + ' font-size:13px; color:#9a8763; font-weight:600;">Not used this week</span>';
   }
 
   if (b.kind === 'variant') {
@@ -1045,24 +1032,20 @@ function tiBlockParts(b) {
       '<div class="ti-seg">' + b.opts.map(function (o) {
         return '<button data-ti="variant" data-k="' + b.k + '" data-v="' + esc(o[0]) + '" class="' + (svc.variants[b.k] === o[0] ? 'on' : '') + '">' + esc(o[1]) + '</button>';
       }).join('') + '</div>' +
-      '<span style="font-size:12.5px; color:#8a7952;">' + esc(b.notes[svc.variants[b.k]] || '') + '</span>' +
+      (b.notes ? '<span style="font-size:12.5px; color:#8a7952;">' + esc(b.notes[svc.variants[b.k]] || '') + '</span>' : '') +
     '</div>';
-  }
-
-  if (b.k === 'b17') {
-    h += '<span style="' + pad + ' font-size:12.5px; color:#8a7952; line-height:1.5;">Dicetak setelah ajakan: <b>Dasar Persembahan kita adalah ' + esc(tiRef(svc, 'of') || '…') + '</b>, lalu teks ayatnya</span>';
   }
 
   if (b.kind === 'auto' || b.kind === 'optional') {
     var theme = tiTheme(svc), main = theme, note = '';
-    if (b.k === 'b0') note = [tiDateLong(svc.date), svc.season, svc.pf || 'PF belum dipilih'].filter(Boolean).join(' · ');
-    if (b.k === 'b4') note = 'Liturgos menyampaikan tema dan nas ' + (tiRef(svc, 'kp') || svc.kp || '(belum dipilih)');
-    if (b.k === 'b12') note = 'Judul khotbah otomatis dari tema · ' + (svc.pf || 'PF belum dipilih');
+    if (b.k === 'b0') note = [tiDateLong(svc.date), svc.season, svc.pf || 'No preacher yet'].filter(Boolean).join(' · ');
+    if (b.k === 'b4') note = tiRef(svc, 'kp') || svc.kp || 'No verse yet';
+    if (b.k === 'b12') note = svc.pf || 'No preacher yet';
     if (b.k === 'b15') {
       var nextPk = svc.date ? tiByDate(tiAddDays(svc.date, 7)) : null;
       nextPk = nextPk && nextPk.pk ? nextPk : null;
-      main = on ? 'Dipakai minggu ini' : 'Tidak dipakai minggu ini';
-      note = nextPk ? 'Minggu depan (' + tiShort(nextPk.date) + ') Perjamuan Kudus' : 'Nyalakan bila Minggu depan Perjamuan Kudus';
+      main = on ? 'Used this week' : 'Not used this week';
+      note = nextPk ? 'Communion next week (' + tiShort(nextPk.date) + ')' : '';
     }
     h += '<div style="' + pad + ' display:flex; flex-direction:column; gap:2px;">' +
       '<span style="font-size:16px; font-weight:700; color:' + (on ? '#3a2a15' : '#9a8763') + ';">' + esc(main) + '</span>' +
@@ -1074,9 +1057,9 @@ function tiBlockParts(b) {
   var area = function (key, label, rows, placeholder) {
     return '<label class="ti-label"><span>' + label + '</span><textarea id="tiF-' + key + '" data-tit="' + key + '" rows="' + rows + '" placeholder="' + esc(placeholder || '') + '" class="ti-field" style="resize:vertical; line-height:1.5; font-family:inherit; font-size:14px;">' + esc(tx[key]) + '</textarea></label>';
   };
-  if (b.field) inputs += area(b.field, b.fieldLabel, b.field === 'call' ? 2 : 5, b.field === 'call' ? 'Ajakan singkat liturgos sebelum lagu' : '');
+  if (b.field) inputs += area(b.field, b.fieldLabel, b.field === 'call' ? 2 : 5, '');
   if (b.reading) {
-    inputs += '<label class="ti-label"><span>Bacaan Alkitab (dibacakan PF)</span><input id="tiF-reading" data-tit="reading" value="' + esc(tx.reading) + '" placeholder="mis. Roma 12:1-8" class="ti-field" style="padding:9px 12px; font-size:14px;"></label>';
+    inputs += '<label class="ti-label"><span>Bible reading</span><input id="tiF-reading" data-tit="reading" value="' + esc(tx.reading) + '" placeholder="e.g. Roma 12:1-8" class="ti-field" style="padding:9px 12px; font-size:14px;"></label>';
   }
   if (b.verse) inputs += tiVerseHtml(b.verse, area);
 
@@ -1097,7 +1080,7 @@ function tiBreakAt(svc, k, order) {
 
 function tiArrWithBreak(svc, k, arr) {
   var order = arr.split(' → '), at = tiBreakAt(svc, k, order);
-  var mark = '<span style="color:#31536f; font-style:italic;">persembahan diedarkan</span>';
+  var mark = '<span style="color:#31536f; font-style:italic;">offering bags</span>';
   return esc(order.slice(0, at).join(' → ')) + ' → ' + mark + (at < order.length ? ' → ' + esc(order.slice(at).join(' → ')) : '');
 }
 
@@ -1108,7 +1091,7 @@ function tiBreakHtml(b, svc, arr) {
   var at = tiBreakAt(svc, b.k, order);
   var dup = order.some(function (l, i) { return order.indexOf(l) !== i; });
   return cue + '<div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:2px;">' +
-    '<span style="font-size:12.5px; font-weight:600; color:#8a7952;">Kantong diedarkan setelah</span>' +
+    '<span style="font-size:12.5px; font-weight:600; color:#8a7952;">Bags go round after</span>' +
     '<div class="ti-seg">' + order.map(function (l, i) {
       return '<button data-ti="break" data-k="' + b.k + '" data-v="' + (i + 1) + '" class="' + (at === i + 1 ? 'on' : '') + '">' + esc((dup ? (i + 1) + '. ' : '') + l) + '</button>';
     }).join('') + '</div></div>';
@@ -1126,35 +1109,35 @@ function tiBlockHtml(b) {
 function tiVerseHtml(p, area) {
   var svc = tiState.cur, sm = 'padding:9px 12px; font-size:14px;';
   return '<div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">' +
-      '<span style="font-size:12.5px; font-weight:700; color:#8a7952;">Nas</span>' +
+      '<span style="font-size:12.5px; font-weight:700; color:#8a7952;">Verse</span>' +
       tiComboHtml(p + 'Book', 'flex:1 1 170px;', sm) +
-      '<input data-tif="' + p + 'Ch" type="number" min="1" value="' + esc(svc[p + 'Ch']) + '" placeholder="Pasal" class="ti-field" style="width:84px; ' + sm + '">' +
+      '<input data-tif="' + p + 'Ch" type="number" min="1" value="' + esc(svc[p + 'Ch']) + '" placeholder="Ch." class="ti-field" style="width:84px; ' + sm + '">' +
       '<span style="color:#8a7952; font-weight:700;">:</span>' +
-      '<input data-tif="' + p + 'Vs" value="' + esc(svc[p + 'Vs']) + '" placeholder="Ayat, mis. 1-2" class="ti-field" style="width:130px; ' + sm + '">' +
+      '<input data-tif="' + p + 'Vs" value="' + esc(svc[p + 'Vs']) + '" placeholder="Verses, e.g. 1-2" class="ti-field" style="width:130px; ' + sm + '">' +
       '<span style="font-size:11px; font-weight:700; padding:3px 7px; border:1px solid #e6d8b6; border-radius:6px; color:#8a7952;">TB</span>' +
     '</div>' +
     '<span id="tiVMsg-' + p + '">' + tiVerseMsgHtml(p) + '</span>' +
-    area(p + 'Text', p === 'kp' ? 'Teks ayat (opsional, dicetak di liturgi)' : 'Teks ayat (dicetak di liturgi)', 3, 'Terisi otomatis dari Alkitab TB setelah nas lengkap') +
+    area(p + 'Text', p === 'kp' ? 'Verse text (optional)' : 'Verse text', 3, '') +
     '<span id="tiVFetch-' + p + '">' + tiVerseFetchHtml(p) + '</span>';
 }
 
 function tiVerseMsgHtml(p) {
   var svc = tiState.cur, vs = String(svc[p + 'Vs'] || '').trim(), ref = tiRef(svc, p);
-  if (vs && !TI_VS_RE.test(vs)) return '<span style="font-size:12.5px; font-weight:600; color:#a3420e;">Format ayat: 1, 1-3, atau 1,4</span>';
-  if (!ref && p === 'kp' && svc.kp) return '<span style="font-size:12.5px; font-weight:600; color:#a3420e;">Tertulis “' + esc(svc.kp) + '”. Pilih kitab, pasal, dan ayat.</span>';
-  return ref ? '<span class="ti-pill" style="background:#F3E9CE; color:#6E2621;">' + esc(ref) + ' · Alkitab TB</span>' : '';
+  if (vs && !TI_VS_RE.test(vs)) return '<span style="font-size:12.5px; font-weight:600; color:#a3420e;">Use 1, 1-3 or 1,4</span>';
+  if (!ref && p === 'kp' && svc.kp) return '<span style="font-size:12.5px; font-weight:600; color:#a3420e;">“' + esc(svc.kp) + '”: pick book, chapter and verses.</span>';
+  return ref ? '<span class="ti-pill" style="background:#F3E9CE; color:#6E2621;">' + esc(ref) + ' · TB</span>' : '';
 }
 
 function tiVerseFetchHtml(p) {
   var f = tiState.vFetch[p], tx = tiTexts(tiState.cur), ref = tiRef(tiState.cur, p), text = tx[p + 'Text'], from = tx[p + 'TextRef'];
   var link = function (label) { return '<span data-ti="fetchVerse" data-k="' + p + '" class="ti-link">' + label + '</span>'; };
-  if (f.busy) return '<span style="font-size:12px; color:#9a8763;">Mengambil teks ' + esc(ref) + '…</span>';
-  if (f.error) return '<span style="font-size:12px; font-weight:600; color:#a3420e;">' + esc(f.error) + '</span> ' + link('Coba lagi');
+  if (f.busy) return '<span style="font-size:12px; color:#9a8763;">Fetching ' + esc(ref) + '…</span>';
+  if (f.error) return '<span style="font-size:12px; font-weight:600; color:#a3420e;">' + esc(f.error) + '</span> ' + link('Try again');
   if (!ref) return '';
   var stale = text && from && from !== ref;
   return '<span style="font-size:12px; color:' + (stale ? '#a3420e' : '#9a8763') + ';">' +
-    (stale ? 'Teks ini untuk ' + esc(from) + ', bukan ' + esc(ref) + '. ' : text ? 'Sumber: Alkitab TB (SABDA) · bisa diedit. ' : '') +
-    '</span>' + link(text ? 'Ambil ulang teks' : 'Ambil teks');
+    (stale ? 'This text is for ' + esc(from) + ', not ' + esc(ref) + '. ' : '') +
+    '</span>' + link(text ? 'Fetch again' : 'Fetch text');
 }
 
 function tiVerseChanged(p) {
@@ -1185,7 +1168,7 @@ function tiFetchVerse(p, force) {
       }
       tiRenderVerse(p);
     })
-    .withFailureHandler(function (err) { tiState.vFetch[p] = { error: err && err.message ? err.message : String(err) }; tiRenderVerse(p); })
+    .withFailureHandler(function (err) { tiState.vFetch[p] = { error: errText(err, 'fetch the verse') }; tiRenderVerse(p); })
     .fetchBibleText(svc[p + 'Book'], svc[p + 'Ch'], String(svc[p + 'Vs'] || '').trim());
 }
 
@@ -1200,16 +1183,16 @@ function tiRenderBanner() {
   var el = document.getElementById('tiBanner'), svc = tiState.cur;
   if (!el || !svc) return;
   var box = function (bg, bd, fg, text, buttons) {
-    return '<div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; background:' + bg + '; border:1px solid ' + bd + '; border-radius:16px; padding:14px 18px; font-size:14px;">' +
-      '<span style="line-height:1.5; color:' + fg + ';">' + text + '</span><span style="display:flex; gap:8px; flex-wrap:wrap;">' + buttons + '</span></div>';
+    return '<div class="notice" style="background:' + bg + '; border-color:' + bd + ';">' +
+      '<span style="color:' + fg + ';">' + text + '</span><span style="display:flex; gap:8px; flex-wrap:wrap;">' + buttons + '</span></div>';
   };
   var c = tiState.conflict;
   if (c && c.svc === svc) {
-    el.innerHTML = box('#fdf0e6', '#f6cfb3', '#a3420e', '<strong>Tata ibadah ini baru disimpan dari perangkat lain' + (c.latest && c.latest.updatedAt ? '' : '') + '.</strong> Perubahan Anda belum tersimpan.',
-      '<button data-ti="conflictLoad" class="ti-btn-outline">Muat versi terbaru</button><button data-ti="conflictForce" class="ti-btn-outline" style="background:#6E2621; color:#fff; border-color:#6E2621;">Simpan versi saya</button>');
+    el.innerHTML = box('#fdf0e6', '#f6cfb3', '#a3420e', '<strong>Saved from another device.</strong> Your changes are not saved.',
+      '<button data-ti="conflictLoad" class="ti-btn-outline">Load latest</button><button data-ti="conflictForce" class="ti-btn-outline" style="background:#6E2621; color:#fff; border-color:#6E2621;">Keep mine</button>');
   } else if (svc.status === 'Published') {
-    el.innerHTML = box('#e3ebdc', '#c5d4b8', '#24401F', '<strong>Sudah diterbitkan.</strong> Terkunci agar tidak berubah tanpa sengaja. Ubah status ke Review untuk mengedit.',
-      '<button data-ti="status" data-v="Review" class="ti-btn-outline">Buka kunci (Review)</button>');
+    el.innerHTML = box('#e3ebdc', '#c5d4b8', '#24401F', '<strong>Published</strong> and locked.',
+      '<button data-ti="status" data-v="Draft" class="ti-btn-outline">Back to draft</button>');
   } else el.innerHTML = '';
 }
 
@@ -1250,9 +1233,9 @@ function tiRenderSchedHint() {
   if (!svc || !hint) return;
   var sched = tiScheduleOn(svc.date);
   var inner = sched
-    ? '<span style="color:#24401F;">🔗 Terhubung ke jadwal Event input</span> · ' + esc(tiThemeOf(sched) || 'tanpa tema') + (sched.pastor ? ' · ' + esc(sched.pastor) : '')
-    : (svc.sub ? 'Ditambahkan ke jadwal Event input saat disimpan' : 'Isi sub-tema untuk menambahkannya ke jadwal Event input');
-  hint.innerHTML = '<span style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; font-size:13px; color:#8a7952; font-weight:600;" title="Tema dan Pelayan Firman otomatis sama dengan jadwal Event input">' + inner + '</span>';
+    ? '<span style="color:#24401F;">Linked to Event input</span>'
+    : 'Not in Event input yet';
+  hint.innerHTML = '<span style="font-size:13px; color:#8a7952; font-weight:600;" title="Theme and preacher stay in sync with Event input">' + inner + '</span>';
 }
 
 /* After Event input saves a row (it may have changed a service's theme or PF). */
@@ -1260,77 +1243,94 @@ function tiAfterScheduleChange() {
   if (tiState.loaded) tiAfterSave(tiLoad);
 }
 
+/* One checklist row: a jump to the item, or a group that opens to its items. */
+function tiCheckRowHtml(c) {
+  var mark = c.todo ? '<span style="width:17px; height:17px; border-radius:50%; border:1.5px solid #cdbd96; margin-top:1px;"></span>'
+    : '<span style="width:17px; height:17px; border-radius:50%; background:' + (c.red ? TI_RED : TI_AMBER) + '; color:#fff; font-size:10px; display:flex; align-items:center; justify-content:center; margin-top:1px; font-weight:800;">!</span>';
+  var act = c.group ? 'data-ti="chkGroup" data-v="' + c.group + '"' : 'data-ti="jump" data-to="' + c.to + '"';
+  return '<button ' + act + ' class="ti-hover" style="width:100%; text-align:left; cursor:pointer; display:grid; grid-template-columns:18px minmax(0,1fr) auto; gap:9px; align-items:start; font-size:13.5px; line-height:1.4; padding:5px 7px; border-radius:9px;">' + mark +
+    '<span style="display:flex; flex-direction:column; gap:1px; min-width:0;"><span style="color:#3a2a15; font-weight:600;">' + esc(c.text) + '</span>' + (c.sub ? '<span style="font-size:12px; color:#8a7952;">' + esc(c.sub) + '</span>' : '') + '</span>' +
+    '<span style="color:#c6b58c; padding-top:2px;">' + icon(c.group ? (c.open ? 'down' : 'right') : 'right', 14) + '</span>' +
+  '</button>';
+}
+
+/* The checklist in order: real problems, what is left to fill, then things to double-check. Similar items share one row. */
+function tiChecklistHtml(chk) {
+  var items = chk.reds.filter(function (c) { return !c.todo; }).map(function (c) { c.red = true; return c; })
+    .concat(chk.reds.filter(function (c) { return c.todo; }), chk.ambers);
+  var seen = {}, html = '';
+  items.forEach(function (c) {
+    if (!c.g) { html += tiCheckRowHtml(c); return; }
+    if (seen[c.g]) return;
+    seen[c.g] = true;
+    var same = items.filter(function (x) { return x.g === c.g; });
+    if (same.length === 1) { html += tiCheckRowHtml(c); return; }
+    var open = !!tiState.chkOpen[c.g];
+    html += tiCheckRowHtml({ group: c.g, open: open, todo: c.todo, red: c.red, text: TI_CHECK_GROUPS[c.g](same.length) });
+    if (open) html += '<div style="padding-left:20px; display:flex; flex-direction:column;">' + same.map(function (x) { return tiCheckRowHtml({ to: x.to, todo: x.todo, red: x.red, text: x.sub || x.text }); }).join('') + '</div>';
+  });
+  return html;
+}
+
 function tiRenderAside() {
   var svc = tiState.cur, el = document.getElementById('tiAside');
   if (!svc || !el) return;
   var chk = tiChecks(svc);
-  var redN = chk.reds.length, ambN = chk.ambers.length;
+  var redN = chk.reds.length;
   var todos = tiTodos(svc);
   var li = -1;
   todos.forEach(function (t, i) { if (t.id === tiState.lastJump) li = i; });
   var nextT = todos.length ? todos[(li + 1) % todos.length] : null;
 
-  var checks = chk.reds.map(function (c) { c.color = TI_RED; c.icon = '!'; return c; })
-    .concat(chk.ambers.map(function (c) { c.color = TI_AMBER; c.icon = '!'; return c; }))
-    .concat(chk.greens.map(function (c) { c.color = TI_GREEN; c.icon = '✓'; return c; }));
-
-  var statusNote = redN ? 'Selesaikan ' + redN + ' pemblokir merah untuk menerbitkan.' : svc.status === 'Published' ? 'Sudah diterbitkan.' : 'Siap diterbitkan.';
+  var left = redN + chk.ambers.length;
+  var list = tiChecklistHtml(chk);
+  var statusNote = svc.status === 'Published' ? '' : redN ? 'Finish ' + redN + ' more to publish.' : 'Ready to publish.';
   var card = 'class="ti-card" style="padding:16px 18px; display:flex; flex-direction:column; gap:12px;"';
 
   el.innerHTML =
     '<div ' + card + '>' +
-      '<div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;"><span class="ti-eyebrow">Perlu diisi</span><span style="font-size:12.5px; font-weight:600; color:#8a7952;">' + (todos.length ? todos.length + ' tersisa' : 'Lengkap') + '</span></div>' +
-      '<span style="font-size:13.5px; font-weight:600; color:#3a2a15;">' + (nextT ? 'Berikutnya: ' + esc(nextT.label) : 'Semua kolom dan slot sudah terisi.') + '</span>' +
-      (nextT ? '<button data-ti="jump" data-to="' + nextT.id + '" class="ti-btn-orange" style="display:inline-flex; align-items:center; justify-content:center; gap:6px;">Isi berikutnya ' + icon('arrowDown', 16) + '</button>'
-             : '<span style="background:#e3ebdc; color:#24401F; font-weight:700; font-size:14px; padding:12px 14px; border-radius:12px; text-align:center;">Semua terisi ✓</span>') +
+      '<div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;"><span class="ti-eyebrow">Checklist</span><span style="font-size:12.5px; font-weight:600; color:#8a7952;">' + (left ? left + ' left' : 'All done') + '</span></div>' +
+      (nextT ? '<button data-ti="jump" data-to="' + nextT.id + '" class="ti-btn-orange" style="display:inline-flex; align-items:center; justify-content:center; gap:6px;">Next: ' + esc(nextT.label) + ' ' + icon('arrowDown', 16) + '</button>' : '') +
+      (list ? '<div style="display:flex; flex-direction:column; gap:2px; margin:0 -7px;">' + list + '</div>'
+        : '<span style="background:#e3ebdc; color:#24401F; font-weight:700; font-size:14px; padding:12px 14px; border-radius:12px; text-align:center;">All done ✓</span>') +
     '</div>' +
     '<div ' + card + '>' +
       '<span class="ti-eyebrow">Status</span>' +
-      '<div class="ti-seg" style="display:grid; grid-template-columns:repeat(3, 1fr);">' + ['Draft', 'Review', 'Published'].map(function (v) {
+      '<div class="ti-seg" style="display:grid; grid-template-columns:repeat(2, 1fr);">' + ['Draft', 'Published'].map(function (v) {
         var blocked = v === 'Published' && redN > 0;
         return '<button data-ti="status" data-v="' + v + '" class="' + (svc.status === v ? 'on' : '') + '"' + (blocked ? ' disabled' : '') + '>' + v + '</button>';
       }).join('') + '</div>' +
-      '<span style="font-size:12.5px; color:#8a7952;">' + statusNote + '</span>' +
+      (statusNote ? '<span style="font-size:12.5px; color:#8a7952;">' + statusNote + '</span>' : '') +
     '</div>' +
-    '<div ' + card + '>' +
-      '<div style="display:flex; justify-content:space-between; align-items:baseline;"><span class="ti-eyebrow">Pemeriksaan</span><span style="font-size:12.5px; font-weight:600; color:#8a7952;">' + redN + ' merah · ' + ambN + ' kuning</span></div>' +
-      '<div style="display:flex; flex-direction:column; gap:4px;">' + checks.map(function (c) {
-        return '<button ' + (c.to ? 'data-ti="jump" data-to="' + c.to + '" class="ti-hover"' : '') + ' style="text-align:left; cursor:' + (c.to ? 'pointer' : 'default') + '; display:grid; grid-template-columns:18px minmax(0,1fr) auto; gap:9px; align-items:start; font-size:13.5px; line-height:1.4; padding:5px 7px; margin:0 -7px; border-radius:9px;">' +
-          '<span style="width:17px; height:17px; border-radius:50%; background:' + c.color + '; color:#fff; font-size:10px; display:flex; align-items:center; justify-content:center; margin-top:1px; font-weight:800;">' + c.icon + '</span>' +
-          '<span style="display:flex; flex-direction:column; gap:1px; min-width:0;"><span style="color:#3a2a15; font-weight:600;">' + esc(c.text) + '</span>' + (c.sub ? '<span style="font-size:12px; color:#8a7952;">' + esc(c.sub) + '</span>' : '') + '</span>' +
-          '<span style="color:#c6b58c; padding-top:2px;">' + (c.to ? icon('right', 14) : '') + '</span>' +
-        '</button>';
-      }).join('') + '</div>' +
-    '</div>' +
-    '<div ' + card + '>' + tiOutputHtml(svc, redN) + '</div>' +
-    '<button data-ti="delete" style="align-self:flex-start; color:' + TI_RED + '; font-size:13px; font-weight:700; cursor:pointer; padding:2px 4px;">Hapus tata ibadah ini</button>';
+    '<div ' + card + '>' + tiOutputHtml(svc, !nextT) + '</div>';
 }
 
 /* ---------- liturgy download (.docx / .pdf) ---------- */
 
-function tiOutputHtml(svc, redN) {
+var TI_BUSY_MSG = { pdf: 'Building your PDF…', docx: 'Building your Word file…', gdoc: 'Creating the Google Doc…', gdocUpdate: 'Updating the Google Doc…' };
+
+/* primary: the PDF button takes the main style only once nothing is left to fill in. */
+function tiOutputHtml(svc, primary) {
   var busy = tiState.dl.busy, err = tiState.dl.error;
-  var btn = function (fmt, label, primary) {
+  var btn = function (fmt, label, main) {
     var dis = !svc.id || busy;
-    return '<button data-ti="download" data-v="' + fmt + '" class="' + (primary ? 'ti-btn-orange' : 'ti-btn-outline') + '" style="flex:1;' + (dis ? ' opacity:.5; cursor:not-allowed;' : '') + '"' + (dis ? ' disabled' : '') + '>' +
-      (busy === fmt ? (fmt === 'gdocUpdate' ? 'Memperbarui…' : 'Menyiapkan…') : label) + '</button>';
+    return '<button data-ti="download" data-v="' + fmt + '" class="' + (main ? 'ti-btn-orange' : 'ti-btn-outline') + '" style="flex:1;' + (dis ? ' opacity:.5; cursor:not-allowed;' : '') + '"' + (dis ? ' disabled' : '') + '>' + label + '</button>';
   };
-  return '<div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;"><span class="ti-eyebrow">Liturgi</span>' +
-      '<span style="font-size:12px; font-weight:600; color:#9a8763;">A5 · format Pemuda</span></div>' +
-    '<div style="display:flex; gap:8px;">' + btn('pdf', 'Unduh PDF', true) + btn('docx', 'Unduh .docx', false) + '</div>' +
+  return '<span class="ti-eyebrow">Booklet</span>' +
+    '<div style="display:flex; gap:8px;">' + btn('pdf', 'Download PDF', primary) + btn('docx', 'Download .docx', false) + '</div>' +
     (svc.doc
       ? '<div style="display:flex; flex-direction:column; gap:10px; padding-top:10px; border-top:1px solid #f1e7cd;">' +
           '<div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">' +
             '<span style="display:flex; flex-direction:column; gap:1px; min-width:0;"><span style="font-size:14px; font-weight:700; color:#3a2a15;">Google Doc</span>' +
-            '<span style="font-size:12px; color:#8a7952;">' + (svc.doc.updatedAt ? 'Diperbarui ' + esc(svc.doc.updatedAt) : 'Dibuat ' + esc(svc.doc.at)) + ' · <a href="https://drive.google.com/drive/folders/1TWKE5taosfH3N5Dy9iyXRZGtFMkRH9dM" target="_blank" rel="noopener" style="color:inherit;">folder Drive</a></span></span>' +
-            '<a href="' + esc(svc.doc.url) + '" target="_blank" style="font-size:13px; font-weight:700; color:#E85511; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;">Buka ' + icon('external', 14) + '</a>' +
+            '<span style="font-size:12px; color:#8a7952;">' + (svc.doc.updatedAt ? 'Updated ' + esc(svc.doc.updatedAt) : 'Created ' + esc(svc.doc.at)) + ' · <a href="https://drive.google.com/drive/folders/1TWKE5taosfH3N5Dy9iyXRZGtFMkRH9dM" target="_blank" rel="noopener" style="color:inherit;">Drive folder</a></span></span>' +
+            '<a href="' + esc(svc.doc.url) + '" target="_blank" style="font-size:13px; font-weight:700; color:#E85511; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;">Open ' + icon('external', 14) + '</a>' +
           '</div>' +
-          btn('gdocUpdate', 'Perbarui Google Doc', false).replace('flex:1;', 'width:100%;') +
-          '<span data-ti="download" data-v="gdoc" class="ti-link" style="align-self:flex-start;' + (busy ? ' pointer-events:none; opacity:.5;' : '') + '">' + (busy === 'gdoc' ? 'Membuat…' : 'Buat Google Doc baru') + '</span>' +
+          btn('gdocUpdate', 'Update Google Doc', false).replace('flex:1;', 'width:100%;') +
+          '<span data-ti="download" data-v="gdoc" class="ti-link" style="align-self:flex-start;' + (busy ? ' pointer-events:none; opacity:.5;' : '') + '">Create a new Google Doc</span>' +
         '</div>'
-      : btn('gdoc', 'Buat Google Doc', false).replace('flex:1;', 'width:100%;')) +
-    '<span style="font-size:12px; color:#8a7952; line-height:1.5;">Dokumen lengkap dari tata ibadah ini: sampul, liturgi dan lirik lagu. ' + (svc.doc ? 'Perbarui mengganti isi Doc yang sama (link tetap); versi lama ada di Riwayat versi Google Docs.' : 'Google Doc bisa diedit lalu diunduh dari Docs.') + ' Butuh beberapa detik.</span>' +
-    (err ? '<span style="font-size:12.5px; font-weight:600; color:' + TI_RED + '; line-height:1.5;">' + esc(err) + '</span>' : '');
+      : btn('gdoc', 'Create Google Doc', false).replace('flex:1;', 'width:100%;')) +
+    (busy ? '<span role="status" style="font-size:13px; font-weight:600; color:#6E2621; line-height:1.5;">' + esc(TI_BUSY_MSG[busy]) + ' This can take up to a minute.</span>' : '') +
+    (err ? errHtml(err) : '');
 }
 
 /* Builds the liturgy on the server (after any pending autosave): saves .pdf/.docx in the browser, or makes a Google Doc. */
@@ -1338,21 +1338,21 @@ function tiDownload(fmt, confirmed) {
   var svc = tiState.cur, dl = tiState.dl;
   if (!confirmed) {
     var reds = tiChecks(svc).reds.length, warn = [];
-    if (fmt === 'gdocUpdate') warn.push('Isi Google Doc akan ditulis ulang dari tata ibadah ini. Perubahan manual di Doc itu tertimpa; versi lama tetap ada di File › Riwayat versi.');
-    if (reds) warn.push('Masih ada ' + reds + ' pemblokir merah di pemeriksaan.');
+    if (fmt === 'gdocUpdate') warn.push('Edits made in the Doc will be replaced. Older versions stay in its version history.');
+    if (reds) warn.push(reds + ' checklist items are still open.');
     if (warn.length) {
-      tiConfirm({ title: fmt === 'gdocUpdate' ? 'Perbarui Google Doc?' : 'Tetap buat liturgi?', text: warn.join(' '), ok: fmt === 'gdocUpdate' ? 'Perbarui' : 'Tetap buat' },
+      tiConfirm({ title: fmt === 'gdocUpdate' ? 'Update the Google Doc?' : 'Create it anyway?', text: warn.join(' '), ok: fmt === 'gdocUpdate' ? 'Update' : 'Create anyway' },
         function () { tiDownload(fmt, true); });
       return;
     }
   }
-  dl.busy = fmt; dl.error = '';
+  dl.busy = fmt; dl.error = null;
   tiRenderAside();
   tiAfterSave(function () {
     google.script.run
       .withSuccessHandler(function (res) {
         dl.busy = '';
-        if (!res.success) { if (res.gone) svc.doc = null; dl.error = res.message; tiRenderAside(); return; }
+        if (!res.success) { if (res.gone) svc.doc = null; dl.error = { text: res.message }; tiRenderAside(); return; }
         if (fmt === 'gdoc' || fmt === 'gdocUpdate') { svc.doc = res.doc; flash(res.message); tiRenderAside(); return; }
         var bin = atob(res.base64), bytes = new Uint8Array(bin.length);
         for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
@@ -1361,10 +1361,10 @@ function tiDownload(fmt, confirmed) {
         a.href = url; a.download = res.filename;
         document.body.appendChild(a); a.click(); a.remove();
         setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
-        flash(res.filename + ' diunduh');
+        flash(res.filename + ' downloaded');
         tiRenderAside();
       })
-      .withFailureHandler(function (err) { dl.busy = ''; dl.error = err && err.message ? err.message : String(err); tiRenderAside(); })
+      .withFailureHandler(function (err) { dl.busy = ''; dl.error = errInfo(err, { pdf: 'create the PDF', docx: 'create the Word file', gdoc: 'create the Google Doc', gdocUpdate: 'update the Google Doc' }[fmt]); tiRenderAside(); })
       [{ gdoc: 'createLiturgyDoc', gdocUpdate: 'updateLiturgyDoc' }[fmt] || 'downloadLiturgy'](svc.id, fmt);
   });
 }
@@ -1372,7 +1372,7 @@ function tiDownload(fmt, confirmed) {
 /* ---------- song library ---------- */
 
 var TI_LIB_BOOKS = ['KJ', 'KK', 'PKJ', 'NKB', ''];
-var TI_LIB_SORTS = [['number', 'Nomor'], ['title', 'Judul'], ['recent', 'Terakhir dipakai'], ['used', 'Paling sering']];
+var TI_LIB_SORTS = [['number', 'Number'], ['title', 'Title'], ['recent', 'Last used'], ['used', 'Most used']];
 
 /* Services using a song: { count, last, uses: [{ date, slots: ['Panggilan beribadah', …] }] } newest first. */
 function tiSongStats(id) {
@@ -1389,34 +1389,33 @@ function tiLibraryHtml() {
   var L = tiState.lib;
   var hymnCount = tiState.songs.filter(function (s) { return s.hymnal; }).length;
   var imported = hymnCount >= 1000;
-  var importLabel = L.importing ? 'Mengimpor…' : 'Impor semua judul KJ, KK, PKJ, NKB';
-  var html = tiHeader('Tata Ibadah · Pemuda GKI Kota Wisata', 'Perpustakaan lagu',
+  var importLabel = L.importing ? 'Importing…' : 'Import all KJ, KK, PKJ, NKB titles';
+  var html = tiHeader('Pemuda GKI Kota Wisata', 'Song library',
     '<span style="display:flex; gap:8px; align-items:center; position:relative;">' +
-      '<button data-ti="newSong" class="ti-btn-orange" style="height:44px; padding:0 20px; font-size:15px;">+ Lagu baru</button>' +
-      (imported ? '<button data-ti="libMenu" class="ti-btn-outline" aria-label="Menu lain" style="height:44px; width:44px; padding:0; display:inline-flex; align-items:center; justify-content:center;">' + icon('more', 20) + '</button>' +
+      '<button data-ti="newSong" class="ti-btn-orange" style="height:42px; padding:0 18px;">+ New song</button>' +
+      (imported ? '<button data-ti="libMenu" class="ti-btn-outline" aria-label="More" style="height:42px; width:42px; padding:0; display:inline-flex; align-items:center; justify-content:center;">' + icon('more', 20) + '</button>' +
         (L.menu ? '<div style="position:absolute; right:0; top:52px; z-index:20; background:#fff; border:1px solid #ece0c2; border-radius:12px; box-shadow:0 16px 36px rgba(74,59,23,.2); padding:6px; min-width:260px;">' +
           '<button data-ti="libImportAll" class="ti-hover" style="width:100%; text-align:left; padding:10px 12px; border-radius:8px; font-size:13.5px; font-weight:600; color:#3a2a15; cursor:pointer;"' + (L.importing ? ' disabled' : '') + '>' + importLabel + '</button>' +
-          '<span style="display:block; padding:0 12px 8px; font-size:12px; color:#8a7952;">Menambah judul yang belum ada. Lagu yang ada tidak diubah.</span>' +
         '</div>' : '') : '') +
     '</span>');
-  html += '<main class="page-pad" style="flex:1; padding:22px 32px 60px;"><div style="max-width:1320px; margin:0 auto; display:flex; flex-direction:column; gap:14px;">';
-  if (!tiState.loaded) return html + '<div style="text-align:center; color:#b3a37c; font-size:14px; padding:30px 0;">' + (tiState.loadError ? esc(tiState.loadError) : 'Memuat…') + '</div></div></main>';
+  html += '<main class="page-main"><div class="page-wrap" style="gap:14px;">';
+  if (!tiState.loaded) return html + '<div class="empty-msg">' + (tiState.loadError ? esc(tiState.loadError) : 'Loading…') + '</div></div></main>';
   if (!imported) {
-    html += '<div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; background:#fff; border:1px solid #ece0c2; border-radius:14px; padding:12px 16px;">' +
-      '<span style="font-size:13px; color:#6b5a38; line-height:1.5;">Tambahkan semua judul KJ, KK, PKJ dan NKB dari Alkitab SABDA (±1.790 lagu). Lirik tiap lagu diambil otomatis saat pertama dibuka.</span>' +
-      '<button data-ti="libImportAll" class="ti-btn-outline"' + (L.importing ? ' disabled' : '') + '>' + (L.importing ? 'Mengimpor…' : 'Impor semua judul') + '</button></div>';
+    html += '<div class="notice" style="background:#fff; border-color:#ece0c2;">' +
+      '<span style="color:#6b5a38;">Add all KJ, KK, PKJ and NKB titles (about 1,790 songs).</span>' +
+      '<button data-ti="libImportAll" class="ti-btn-outline"' + (L.importing ? ' disabled' : '') + '>' + (L.importing ? 'Importing…' : 'Import all titles') + '</button></div>';
   }
   html += '<div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">' +
-      '<div style="display:flex; align-items:center; gap:8px; background:#fff; border:1px solid #e6d8b6; border-radius:12px; padding:0 14px; height:42px; flex:1 1 240px; max-width:380px;">' +
-        '<span style="color:#b3a37c;">' + icon('search', 16) + '</span><input id="tiLibQ" data-tilib="q" value="' + esc(L.q) + '" placeholder="Cari judul, nomor atau lirik" autocomplete="off" style="border:none; outline:none; background:transparent; width:100%; font-size:14px;"></div>' +
+      '<div class="search-box" style="flex:1 1 240px; max-width:380px;">' +
+        '<span style="color:#b3a37c;">' + icon('search', 16) + '</span><input id="tiLibQ" data-tilib="q" value="' + esc(L.q) + '" placeholder="Search title, number or lyrics" autocomplete="off"></div>' +
       '<div id="tiLibChips" style="display:flex; gap:6px; flex-wrap:wrap;"></div>' +
-      '<label style="margin-left:auto; display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:700; color:#8a7952;">Urutkan' +
+      '<label style="margin-left:auto; display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:700; color:#8a7952;">Sort' +
         '<select data-tilib="sort" class="ti-field" style="width:auto; padding:8px 10px; font-size:13px;">' +
           TI_LIB_SORTS.map(function (o) { return '<option value="' + o[0] + '"' + (L.sort === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') +
         '</select></label>' +
     '</div>' +
     '<div class="ti-card" style="border-radius:16px;">' +
-      '<div class="ti-lib-row ti-lib-head"><span>No.</span><span>Judul</span><span class="c-credits">Pencipta</span><span>Lirik</span><span class="c-used">Dipakai</span></div>' +
+      '<div class="ti-lib-row ti-lib-head"><span>No.</span><span>Title</span><span class="c-credits">Author</span><span>Lyrics</span><span class="c-used">Used</span></div>' +
       '<div id="tiLibList"></div>' +
     '</div>' +
     '<div id="tiLibPanel"></div>';
@@ -1428,8 +1427,8 @@ function tiLibraryRows() {
   var L = tiState.lib, q = L.q.trim().toLowerCase();
   var num = /^\d+[a-z]?$/.test(q) ? q : '';
   var match = function (s, h) {
-    if (h === 'Lirik kosong') return !tiHasLyrics(s);
-    return h === 'Semua' || (h === 'Kontemporer' ? !s.hymnal : s.hymnal === h);
+    if (h === 'No lyrics') return !tiHasLyrics(s);
+    return h === 'All' || (h === 'Contemporary' ? !s.hymnal : s.hymnal === h);
   };
   var ranks = !num && q ? tiSearchRanks(q).ranks : null;
   var matchQ = function (s) {
@@ -1459,7 +1458,7 @@ function tiRenderLibraryList() {
   var list = document.getElementById('tiLibList'), chips = document.getElementById('tiLibChips');
   if (!list) return;
   var L = tiState.lib, r = tiLibraryRows();
-  chips.innerHTML = TI_HYMNALS.concat(['Lirik kosong']).map(function (h) {
+  chips.innerHTML = TI_HYMNALS.concat(['No lyrics']).map(function (h) {
     var n = tiState.songs.filter(function (s) { return r.match(s, h) && r.matchQ(s); }).length;
     return '<button data-ti="libH" data-v="' + h + '" class="pill-btn' + (L.h === h ? ' on' : '') + '" style="border-radius:20px; padding:6px 11px; font-size:12.5px;">' + h + ' <span style="opacity:.7;">' + n + '</span></button>';
   }).join('');
@@ -1469,23 +1468,23 @@ function tiRenderLibraryList() {
     if (L.sort === 'number' && s.hymnal !== group) {
       group = s.hymnal;
       var total = r.rows.filter(function (x) { return x.hymnal === group; }).length;
-      html += '<div class="ti-lib-group">' + (group || 'Kontemporer') + ' <span style="font-weight:600; color:#9a8763;">· ' + total + ' lagu</span></div>';
+      html += '<div class="ti-lib-group">' + (group || 'Contemporary') + ' <span style="font-weight:600; color:#9a8763;">· ' + total + ' songs</span></div>';
     }
     var st = r.stat(s), lyr = tiHasLyrics(s);
     html += '<div data-ti="libOpen" data-id="' + esc(s.id) + '" class="ti-lib-row' + (L.sel === s.id ? ' on' : '') + '">' +
       '<span style="font-weight:700; color:#6E2621; font-variant-numeric:tabular-nums;">' + esc(s.hymnal ? s.hymnal + ' ' + s.number : '—') + '</span>' +
       '<span style="font-weight:700; color:#3a2a15; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + esc(s.title) + '</span>' +
       '<span class="c-credits" style="color:#8a7952; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="' + esc(s.credits) + '">' + esc(s.credits || '—') + '</span>' +
-      '<span>' + (lyr ? '<span class="ti-badge" style="background:#e3ebdc; color:#24401F;">Lirik ✓</span>'
-        : '<span class="ti-badge" style="background:#F3E9CE; color:#8a7952;">' + (s.hymnal ? 'Belum diambil' : 'Kosong') + '</span>') + '</span>' +
+      '<span>' + (lyr ? '<span class="ti-badge" style="background:#e3ebdc; color:#24401F;">Lyrics ✓</span>'
+        : '<span class="ti-badge" style="background:#F3E9CE; color:#8a7952;">' + (s.hymnal ? 'Not fetched' : 'Empty') + '</span>') + '</span>' +
       '<span class="c-used" style="color:' + (st.count ? '#6b5a38' : '#c0ad82') + '; font-weight:600;">' + (st.count ? st.count + '× · ' + esc(tiShort(st.last)) : '—') + '</span>' +
     '</div>';
   });
-  if (!shown.length) html = '<div style="text-align:center; color:#b3a37c; font-size:14px; padding:22px 0;">Tidak ada lagu.</div>';
+  if (!shown.length) html = '<div class="empty-msg">No songs.</div>';
   if (r.rows.length > shown.length) {
     html += '<div style="display:flex; justify-content:center; align-items:center; gap:12px; padding:14px; border-top:1px solid #f4ecd8;">' +
-      '<span style="font-size:12.5px; color:#9a8763;">' + shown.length + ' dari ' + r.rows.length + ' lagu</span>' +
-      '<button data-ti="libMore" class="ti-btn-outline">Tampilkan lebih banyak</button></div>';
+      '<span style="font-size:12.5px; color:#9a8763;">' + shown.length + ' of ' + r.rows.length + ' songs</span>' +
+      '<button data-ti="libMore" class="ti-btn-outline">Show more</button></div>';
   }
   list.innerHTML = html;
 }
@@ -1499,11 +1498,11 @@ function tiRenderLibPanel() {
   var st = tiSongStats(s.id), f = L.fetch && L.fetch.id === s.id ? L.fetch : null;
   var body;
   if (f && f.busy) {
-    body = '<span style="font-size:13.5px; color:#8a7952; font-weight:600;">Mengambil lirik dari Alkitab SABDA…</span>' +
-      (f.slow ? '<span style="font-size:13px; color:#a3420e;">Lebih lama dari biasanya. Server mungkin sedang sibuk.</span>' +
-        '<button data-ti="libRetry" class="ti-btn-outline" style="align-self:flex-start;">Coba lagi</button>' : '');
+    body = '<span style="font-size:13.5px; color:#8a7952; font-weight:600;">Fetching lyrics…</span>' +
+      (f.slow ? '<span style="font-size:13px; color:#a3420e;">Taking longer than usual.</span>' +
+        '<button data-ti="libRetry" class="ti-btn-outline" style="align-self:flex-start;">Try again</button>' : '');
   } else if (f && f.variants) {
-    body = '<span style="font-size:13.5px; color:#3a2a15; font-weight:600;">' + esc(tiSongCode(s)) + ' punya ' + f.variants.length + ' versi. Pilih yang ditambahkan:</span>' +
+    body = '<span style="font-size:13.5px; color:#3a2a15; font-weight:600;">' + esc(tiSongCode(s)) + ' has ' + f.variants.length + ' versions. Pick one:</span>' +
       f.variants.map(function (v) {
         return '<button data-ti="libVariant" data-n="' + esc(v.number) + '" class="ti-hover" style="text-align:left; cursor:pointer; display:grid; grid-template-columns:64px minmax(0,1fr); gap:10px; align-items:center; padding:9px 10px; border-radius:11px; border:1px solid #ece0c2; background:#fff;">' +
           '<span style="font-size:12px; font-weight:700; color:#E85511;">' + esc(s.hymnal + ' ' + v.number) + '</span>' +
@@ -1511,43 +1510,43 @@ function tiRenderLibPanel() {
           (v.credits ? '<span style="font-size:12px; color:#8a7952;">' + esc(v.credits) + '</span>' : '') + '</span></button>';
       }).join('');
   } else if (!tiHasLyrics(s)) {
-    body = (f && f.error ? '<span style="font-size:13px; font-weight:600; color:' + TI_RED + ';">' + esc(f.error) + '</span>' : '<span style="font-size:13.5px; color:#8a7952;">Lirik belum ada.</span>') +
-      (s.hymnal ? '<button data-ti="libFetch" data-id="' + esc(s.id) + '" class="ti-btn-outline" style="align-self:flex-start;">Ambil lirik</button>' : '');
+    body = (f && f.error ? '<span style="font-size:13px; font-weight:600; color:' + TI_RED + ';">' + esc(f.error) + '</span>' : '<span style="font-size:13.5px; color:#8a7952;">No lyrics yet.</span>') +
+      (s.hymnal ? '<button data-ti="libFetch" data-id="' + esc(s.id) + '" class="ti-btn-outline" style="align-self:flex-start;">Fetch lyrics</button>' : '');
   } else {
-    body = (s.arr ? '<div style="display:flex; flex-direction:column; gap:3px;"><span class="ti-eyebrow">Urutan default</span><span style="font-size:13px; font-weight:600; color:#6b5a38;">' + esc(s.arr) + '</span></div>' : '') +
+    body = (s.arr ? '<div style="display:flex; flex-direction:column; gap:3px;"><span class="ti-eyebrow">Default order</span><span style="font-size:13px; font-weight:600; color:#6b5a38;">' + esc(s.arr) + '</span></div>' : '') +
       s.sections.map(function (sec) {
         return '<div style="display:flex; flex-direction:column; gap:3px;"><span style="font-size:12px; font-weight:800; color:#E85511; letter-spacing:.04em;">' + esc(sec.label) + '</span>' +
-          '<span style="font-size:14.5px; line-height:1.6; color:' + (sec.text ? '#3a2a15' : '#b3a37c') + '; white-space:pre-line;">' + esc(sec.text || 'Lirik belum diisi') + '</span></div>';
+          '<span style="font-size:14.5px; line-height:1.6; color:' + (sec.text ? '#3a2a15' : '#b3a37c') + '; white-space:pre-line;">' + esc(sec.text || 'No lyrics yet') + '</span></div>';
       }).join('');
   }
   var merging = L.merge === s.id;
   host.innerHTML = '<aside class="ti-lib-panel">' +
-    '<div style="flex-shrink:0; background:#F3E9CE; border-bottom:1px solid #e7d9b3; padding:18px 22px 16px; display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">' +
+    '<div class="drawer-head">' +
       '<div style="display:flex; flex-direction:column; gap:3px; min-width:0;">' +
-        '<span class="ti-eyebrow">' + esc(s.hymnal ? s.hymnal + ' ' + s.number : 'Kontemporer') + (s.language ? ' · ' + esc(s.language) : '') + '</span>' +
+        '<span class="ti-eyebrow">' + esc(s.hymnal ? s.hymnal + ' ' + s.number : 'Contemporary') + (s.language ? ' · ' + esc(s.language) : '') + '</span>' +
         '<h2 style="margin:0; font-weight:800; font-size:22px; letter-spacing:-.02em; line-height:1.2;">' + esc(s.title) + '</h2>' +
         (s.credits ? '<span style="font-size:12.5px; color:#8a7952; line-height:1.45;">' + esc(s.credits) + '</span>' : '') +
       '</div>' +
-      '<button data-ti="libClose" class="icon-btn" aria-label="Tutup" style="width:36px; height:36px; border-radius:11px; background:rgba(58,42,21,.08); cursor:pointer; flex-shrink:0;">' + icon('x', 18) + '</button>' +
+      '<button data-ti="libClose" class="icon-btn close-btn" aria-label="Close">' + icon('x', 18) + '</button>' +
     '</div>' +
     '<div style="flex:1; overflow-y:auto; padding:18px 22px 24px; display:flex; flex-direction:column; gap:16px;">' + body +
       '<div style="display:flex; flex-direction:column; gap:6px; border-top:1px solid #f1e7cd; padding-top:14px;">' +
-        '<span class="ti-eyebrow">Dipakai</span>' +
+        '<span class="ti-eyebrow">Used in</span>' +
         (st.uses.length ? st.uses.slice(0, 8).map(function (u) {
           return '<span style="font-size:13px; color:#3a2a15;"><b>' + esc(tiShort(u.date)) + ' ' + u.date.slice(0, 4) + '</b> · ' + esc(u.slots.join(', ')) + '</span>';
-        }).join('') + (st.uses.length > 8 ? '<span style="font-size:12px; color:#9a8763;">dan ' + (st.uses.length - 8) + ' lagi</span>' : '')
-          : '<span style="font-size:13px; color:#9a8763;">Belum pernah dipakai</span>') +
+        }).join('') + (st.uses.length > 8 ? '<span style="font-size:12px; color:#9a8763;">and ' + (st.uses.length - 8) + ' more</span>' : '')
+          : '<span style="font-size:13px; color:#9a8763;">Not used yet</span>') +
       '</div>' +
     '</div>' +
-    '<div style="flex-shrink:0; border-top:1px solid #e7d9b3; background:#F3E9CE; padding:12px 22px; display:flex; flex-direction:column; gap:10px;">' +
+    '<div class="drawer-foot" style="flex-direction:column; align-items:stretch;">' +
       (merging ? '<div style="display:flex; flex-direction:column; gap:8px;">' +
-          '<span style="font-size:13px; color:#a3420e; font-weight:600;">Dipakai di ' + st.count + ' tata ibadah. Ganti dengan:</span>' +
+          '<span style="font-size:13px; color:#a3420e; font-weight:600;">Used in ' + st.count + ' services. Replace with:</span>' +
           tiComboHtml('mergeTo', '', 'padding:8px 12px; font-size:13px;') +
-          '<span style="display:flex; gap:8px;"><button data-ti="libMerge" data-id="' + esc(s.id) + '" class="ti-btn-outline" style="color:#fff; background:' + TI_RED + '; border-color:' + TI_RED + ';">Gabungkan & hapus</button>' +
-          '<button data-ti="libCancel" class="ti-btn-outline">Batal</button></span></div>'
+          '<span style="display:flex; gap:8px;"><button data-ti="libMerge" data-id="' + esc(s.id) + '" class="ti-btn-outline" style="color:#fff; background:' + TI_RED + '; border-color:' + TI_RED + ';">Merge and delete</button>' +
+          '<button data-ti="libCancel" class="ti-btn-outline">Cancel</button></span></div>'
         : '<span style="display:flex; gap:8px;">' +
-            '<button data-ti="libEdit" data-id="' + esc(s.id) + '" class="ti-btn-orange" style="flex:1; padding:10px 14px; font-size:14px;">Edit lagu</button>' +
-            '<button data-ti="libDelete" data-id="' + esc(s.id) + '" class="ti-btn-outline" style="color:' + TI_RED + ';">Hapus</button>' +
+            '<button data-ti="libEdit" data-id="' + esc(s.id) + '" class="ti-btn-orange" style="flex:1; padding:10px 14px; font-size:14px;">Edit song</button>' +
+            '<button data-ti="libDelete" data-id="' + esc(s.id) + '" class="ti-btn-outline" style="color:' + TI_RED + ';">Delete</button>' +
           '</span>') +
     '</div>' +
   '</aside>';
@@ -1563,7 +1562,7 @@ function tiLibOpen(id) {
 
 function tiImportAllTitles(confirmed) {
   if (!confirmed) {
-    tiConfirm({ title: 'Impor semua judul?', text: 'Semua judul KJ, KK, PKJ dan NKB yang belum ada ditambahkan ke perpustakaan. Lagu yang sudah ada tidak diubah.', ok: 'Impor' },
+    tiConfirm({ title: 'Import all titles?', text: 'Adds the KJ, KK, PKJ and NKB titles you don\'t have yet.', ok: 'Import' },
       function () { tiImportAllTitles(true); });
     return;
   }
@@ -1574,10 +1573,10 @@ function tiImportAllTitles(confirmed) {
     .withSuccessHandler(function (res) {
       tiState.lib.importing = false;
       var a = res.added || {};
-      flash(res.total ? res.total + ' lagu ditambahkan (KJ ' + (a.KJ || 0) + ', KK ' + (a.KK || 0) + ', PKJ ' + (a.PKJ || 0) + ', NKB ' + (a.NKB || 0) + ')' : 'Semua judul sudah ada di perpustakaan');
+      flash(res.total ? res.total + ' songs added (KJ ' + (a.KJ || 0) + ', KK ' + (a.KK || 0) + ', PKJ ' + (a.PKJ || 0) + ', NKB ' + (a.NKB || 0) + ')' : 'All titles are already in the library');
       tiLoad();
     })
-    .withFailureHandler(function (err) { tiState.lib.importing = false; tiRender(); flash('Impor gagal: ' + (err && err.message ? err.message : err)); })
+    .withFailureHandler(function (err) { tiState.lib.importing = false; tiRender(); flash(errText(err, 'import the titles')); })
     .importHymnalIndex();
 }
 
@@ -1598,14 +1597,14 @@ function tiLibFetchLyrics(id, number) {
         L.fetch = null;
         tiSetSongs(tiState.songs.filter(function (s) { return s.id !== res.song.id; }).concat([res.song]));
         if (L.sel === id) L.sel = res.song.id;
-        if (res.ms != null) console.info('Lirik ' + res.song.title + ' diambil dalam ' + res.ms + ' ms');
+        if (res.ms != null) console.info('Lyrics for ' + res.song.title + ' fetched in ' + res.ms + ' ms');
       }
       tiRenderLibraryList();
       tiRenderLibPanel();
     })
     .withFailureHandler(function (err) {
       if (!L.fetch || L.fetch.token !== token) return;
-      L.fetch = { id: id, busy: false, error: err && err.message ? err.message : String(err), variants: null };
+      L.fetch = { id: id, busy: false, error: errText(err, 'fetch the lyrics'), variants: null };
       tiRenderLibPanel();
     })
     .importHymnalSong(song.hymnal, number || song.number);
@@ -1624,7 +1623,7 @@ function tiDeleteSong(id, replaceWith) {
       flash(res.message);
       tiLoad();
     })
-    .withFailureHandler(function (err) { flash('Gagal: ' + (err && err.message ? err.message : err)); })
+    .withFailureHandler(function (err) { flash(errText(err, 'delete the song')); })
     .deleteSong(id, replaceWith || '');
 }
 
@@ -1633,7 +1632,7 @@ function tiDeleteSong(id, replaceWith) {
 function tiOpenPicker(k) {
   var svc = tiState.cur, id = svc.slots[k];
   var song = tiState.songById[id];
-  tiState.picker = { k: k, q: '', h: 'Semua', sel: song ? id : null, seq: song ? (tiArr(svc, k).length ? tiArr(svc, k) : song.arr.split(' → ')) : [], chipSel: null, addMenu: false, secOpen: {}, secEdit: {}, dragI: null, lyrics: {},
+  tiState.picker = { k: k, q: '', h: 'All', sel: song ? id : null, seq: song ? (tiArr(svc, k).length ? tiArr(svc, k) : song.arr.split(' → ')) : [], chipSel: null, addMenu: false, secOpen: {}, secEdit: {}, dragI: null, lyrics: {},
     online: { key: '', loading: false, results: [], error: '', importing: '', variants: {} } };
   tiRenderModal();
   var q = document.getElementById('tiPkQ');
@@ -1673,7 +1672,7 @@ function tiFetchLyrics(id, number) {
     })
     .withFailureHandler(function (err) {
       if (tiState.picker !== pk || !pk.fetch || pk.fetch.token !== token) return;
-      pk.fetch = { id: id, busy: false, error: err && err.message ? err.message : String(err), variants: null };
+      pk.fetch = { id: id, busy: false, error: errText(err, 'fetch the lyrics'), variants: null };
       tiRenderPickerParts();
     })
     .importHymnalSong(song.hymnal, number || song.number);
@@ -1685,10 +1684,10 @@ function tiFetchDetailHtml(song) {
   if (!f || f.id !== song.id) return '';
   var head = '<div style="display:flex; flex-direction:column; gap:4px;"><span style="font-size:12px; font-weight:700; color:#8a7952;">' + esc(tiSongCode(song)) + '</span>' +
     '<span style="font-size:24px; font-weight:800; line-height:1.2; color:#3a2a15;">' + esc(song.title) + '</span></div>';
-  if (f.busy) return head + '<span style="font-size:13.5px; color:#8a7952; font-weight:600;">Mengambil lirik dari Alkitab SABDA…</span>' +
-    (f.slow ? '<span style="font-size:13px; color:#a3420e;">Lebih lama dari biasanya. Server mungkin sedang sibuk.</span> <span data-ti="retryLyrics" class="ti-link">Coba lagi</span>' : '');
+  if (f.busy) return head + '<span style="font-size:13.5px; color:#8a7952; font-weight:600;">Fetching lyrics…</span>' +
+    (f.slow ? '<span style="font-size:13px; color:#a3420e;">Taking longer than usual.</span> <span data-ti="retryLyrics" class="ti-link">Try again</span>' : '');
   if (f.variants) {
-    return head + '<span style="font-size:13.5px; color:#3a2a15; font-weight:600;">' + esc(tiSongCode(song)) + ' punya ' + f.variants.length + ' versi. Pilih yang dipakai:</span>' +
+    return head + '<span style="font-size:13.5px; color:#3a2a15; font-weight:600;">' + esc(tiSongCode(song)) + ' has ' + f.variants.length + ' versions. Pick one:</span>' +
       '<div style="display:flex; flex-direction:column; gap:6px;">' + f.variants.map(function (v) {
         return '<button data-ti="pickVariant" data-n="' + esc(v.number) + '" class="ti-hover" style="text-align:left; cursor:pointer; display:grid; grid-template-columns:64px minmax(0,1fr); gap:10px; align-items:center; padding:9px 10px; border-radius:11px; border:1px solid #ece0c2; background:#fff;">' +
           '<span style="font-size:12px; font-weight:700; color:#E85511;">' + esc(song.hymnal + ' ' + v.number) + '</span>' +
@@ -1696,7 +1695,7 @@ function tiFetchDetailHtml(song) {
             (v.credits ? '<span style="font-size:12px; color:#8a7952;">' + esc(v.credits) + '</span>' : '') + '</span></button>';
       }).join('') + '</div>';
   }
-  if (f.error) return head + '<span style="font-size:13px; font-weight:600; color:' + TI_RED + ';">' + esc(f.error) + '</span> <span data-ti="retryLyrics" class="ti-link">Coba lagi</span>';
+  if (f.error) return head + '<span style="font-size:13px; font-weight:600; color:' + TI_RED + ';">' + esc(f.error) + '</span> <span data-ti="retryLyrics" class="ti-link">Try again</span>';
   return '';
 }
 
@@ -1794,7 +1793,7 @@ function tiLyricHit(s, toks) {
 
 function tiPickerMatches() {
   var pk = tiState.picker, sr = tiSearchRanks(pk.q), ranks = sr.ranks;
-  var matchH = function (s, h) { return h === 'Semua' || (h === 'Kontemporer' ? !s.hymnal : s.hymnal === h); };
+  var matchH = function (s, h) { return h === 'All' || (h === 'Contemporary' ? !s.hymnal : s.hymnal === h); };
   if (!pk.sorted || pk.sorted.sr !== sr) {
     pk.sorted = { sr: sr, list: tiState.songs.filter(function (s) { return ranks[s.id] != null; })
       .sort(function (a, b) { return ranks[a.id] - ranks[b.id] || a.title.localeCompare(b.title); }) };
@@ -1820,19 +1819,16 @@ function tiRenderModal() {
       '<div style="position:relative; background:#FBF6E7; border-radius:22px; width:100%; max-width:1080px; height:calc(100vh - 40px); display:flex; flex-direction:column; overflow:hidden; box-shadow:0 30px 70px rgba(58,42,21,.4);">' +
         '<div style="flex-shrink:0; background:#F3E9CE; border-bottom:1px solid #e7d9b3; padding:16px 22px; display:flex; justify-content:space-between; align-items:center; gap:12px;">' +
           '<div style="display:flex; flex-direction:column; gap:2px; min-width:0;"><span class="ti-eyebrow">' + tiN(b.n) + ' · ' + esc(b.title) + '</span>' +
-          '<h2 style="margin:0; font-weight:800; font-size:22px; letter-spacing:-.02em;">Pilih lagu</h2></div>' +
-          '<button data-ti="closePicker" class="icon-btn" aria-label="Tutup" style="width:36px; height:36px; border-radius:11px; background:rgba(58,42,21,.08); cursor:pointer;">' + icon('x', 18) + '</button>' +
+          '<h2 style="margin:0; font-weight:800; font-size:22px; letter-spacing:-.02em;">Choose a song</h2></div>' +
+          '<button data-ti="closePicker" class="icon-btn close-btn" aria-label="Close">' + icon('x', 18) + '</button>' +
         '</div>' +
         '<div style="display:flex; flex-wrap:wrap; min-height:0; flex:1; overflow:auto;">' +
           '<div style="flex:1 1 340px; min-width:0; padding:16px 20px; display:flex; flex-direction:column; gap:12px; border-right:1px solid #ece0c2; overflow:auto; max-height:100%;">' +
-            '<div style="display:flex; flex-direction:column; gap:5px;">' +
-              '<input id="tiPkQ" data-tipk="q" value="' + esc(pk.q) + '" placeholder="Cari judul, nomor, atau penggalan lirik" autocomplete="off" class="ti-field">' +
-              '<span style="font-size:11.5px; color:#b3a37c; font-weight:600;">↑ ↓ untuk memilih · Enter untuk memakai · Esc untuk menutup</span>' +
-            '</div>' +
+            '<input id="tiPkQ" data-tipk="q" value="' + esc(pk.q) + '" placeholder="Search title, number or lyrics" autocomplete="off" class="ti-field">' +
             '<div id="tiPkChips" style="display:flex; gap:6px; flex-wrap:wrap;"></div>' +
             '<div id="tiPkResults" style="display:flex; flex-direction:column; gap:4px;"></div>' +
             '<div id="tiPkOnline" style="display:flex; flex-direction:column; gap:6px; border-top:1px solid #ece0c2; padding-top:12px;"></div>' +
-            '<span data-ti="newSong" class="ti-link" style="font-size:13px;">+ Tambah lagu baru ke perpustakaan</span>' +
+            '<span data-ti="newSong" class="ti-link" style="font-size:13px;">+ Add a new song</span>' +
           '</div>' +
           '<div id="tiPkDetail" style="flex:1.3 1 420px; min-width:0; padding:18px 22px; display:flex; flex-direction:column; gap:22px; background:#fff; overflow:auto; max-height:100%;"></div>' +
         '</div>' +
@@ -1850,14 +1846,14 @@ function tiRenderPickerList() {
   var pk = tiState.picker, svc = tiState.cur, m = tiPickerMatches();
   document.getElementById('tiPkChips').innerHTML = TI_HYMNALS.map(function (h) {
     var on = pk.h === h;
-    var count = h === 'Semua' ? m.all.length : m.all.filter(function (s) { return m.matchH(s, h); }).length;
+    var count = h === 'All' ? m.all.length : m.all.filter(function (s) { return m.matchH(s, h); }).length;
     return '<button data-ti="hymnal" data-v="' + h + '" class="pill-btn' + (on ? ' on' : '') + '" style="display:flex; gap:6px; align-items:baseline; border-radius:20px; padding:6px 11px; font-size:12.5px;">' + h +
       '<span style="font-size:11px; opacity:.7;">' + count + '</span></button>';
   }).join('');
 
   document.getElementById('tiPkResults').innerHTML = m.results.slice(0, TI_LIST_CAP).map(function (s) {
     var on = pk.sel === s.id, u = tiSongUsage(s.id, svc), recent = u && u.weeks <= TI_RECENT_WEEKS;
-    var last = recent ? 'Dipakai ' + u.weeks + ' minggu lalu' : u ? 'Terakhir ' + tiShort(u.date) : 'Belum pernah';
+    var last = recent ? 'Used ' + u.weeks + ' wk ago' : u ? 'Last ' + tiShort(u.date) : 'Not used yet';
     return '<button data-ti="selSong" data-id="' + esc(s.id) + '" id="tiPkRow-' + esc(s.id) + '" class="' + (on ? '' : 'ti-hover') + '" style="text-align:left; cursor:pointer; display:grid; grid-template-columns:58px minmax(0,1fr); gap:10px; align-items:center; padding:9px 10px; border-radius:11px; background:' + (on ? '#fdf0e6' : 'transparent') + '; border:1px solid ' + (on ? '#E85511' : 'transparent') + ';">' +
       '<span style="font-size:12px; font-weight:700; color:#6E2621;">' + esc(tiSongCode(s)) + '</span>' +
       '<span style="display:flex; flex-direction:column; gap:1px; min-width:0;"><span style="font-size:14px; font-weight:700; color:#3a2a15;">' + esc(s.title) + '</span>' +
@@ -1866,8 +1862,8 @@ function tiRenderPickerList() {
         '<span style="display:flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600; color:' + (recent ? '#a3420e' : '#9a8763') + ';">' +
           (recent ? '<span style="width:6px; height:6px; border-radius:50%; background:' + TI_AMBER + ';"></span>' : '') + last + '</span></span>' +
     '</button>';
-  }).join('') + (m.results.length ? '' : '<span style="font-size:13px; color:#9a8763; padding:10px;">Lagu tidak ditemukan.</span>') +
-    (m.results.length > TI_LIST_CAP ? '<span style="font-size:12px; color:#9a8763; padding:6px 10px;">' + (m.results.length - TI_LIST_CAP) + ' lagu lagi. Ketik judul atau nomor untuk mempersempit.</span>' : '');
+  }).join('') + (m.results.length ? '' : '<span style="font-size:13px; color:#9a8763; padding:10px;">No songs found.</span>') +
+    (m.results.length > TI_LIST_CAP ? '<span style="font-size:12px; color:#9a8763; padding:6px 10px;">' + (m.results.length - TI_LIST_CAP) + ' more. Search to narrow down.</span>' : '');
 
   tiRenderOnline();
 }
@@ -1882,7 +1878,7 @@ function tiRenderPickerParts() {
   var detail = document.getElementById('tiPkDetail');
   var fetchHtml = song ? tiFetchDetailHtml(song) : '';
   if (!song) {
-    detail.innerHTML = '<span style="font-size:13.5px; color:#8a7952; font-weight:600;">Pilih lagu di kiri untuk melihat urutan dan liriknya.</span>';
+    detail.innerHTML = '<span style="font-size:13.5px; color:#8a7952; font-weight:600;">Pick a song on the left.</span>';
   } else if (fetchHtml) {
     detail.innerHTML = fetchHtml;
   } else {
@@ -1890,52 +1886,51 @@ function tiRenderPickerParts() {
     var cs = pk.chipSel;
     detail.innerHTML =
       '<div style="display:flex; flex-direction:column; gap:4px;">' +
-        '<span style="font-size:12px; font-weight:700; color:#8a7952;">' + esc(tiSongCode(song) || 'Kontemporer') + (song.language ? ' · ' + esc(song.language) : '') + ' · <span data-ti="editSong" class="ti-link" style="font-size:12px;">Edit di perpustakaan</span></span>' +
+        '<span style="font-size:12px; font-weight:700; color:#8a7952;">' + esc(tiSongCode(song) || 'Contemporary') + (song.language ? ' · ' + esc(song.language) : '') + ' · <span data-ti="editSong" class="ti-link" style="font-size:12px;">Edit in library</span></span>' +
         '<span style="font-size:24px; font-weight:800; line-height:1.2; color:#3a2a15;">' + esc(song.title) + '</span>' +
         (song.credits ? '<span style="font-size:13px; color:#8a7952;">' + esc(song.credits) + '</span>' : '') +
       '</div>' +
       '<div style="display:flex; flex-direction:column; gap:10px;">' +
         '<div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px; flex-wrap:wrap;">' +
-          '<span class="ti-eyebrow">Urutan · ' + pk.seq.length + ' bagian</span>' +
+          '<span class="ti-eyebrow">Order · ' + pk.seq.length + ' parts</span>' +
           '<span style="display:flex; gap:14px; align-items:baseline;">' +
-            (pk.seq.join('|') !== defSeq.join('|') ? '<span data-ti="seqReset" class="ti-link" style="color:#8a7952;">Kembali ke default</span>' : '') +
-            '<span data-ti="seqRepeat" class="ti-link" style="color:#31536f;">Ulangi semua ×2</span>' +
+            (pk.seq.join('|') !== defSeq.join('|') ? '<span data-ti="seqReset" class="ti-link" style="color:#8a7952;">Reset</span>' : '') +
+            '<span data-ti="seqRepeat" class="ti-link" style="color:#31536f;">Repeat all ×2</span>' +
           '</span>' +
         '</div>' +
         '<div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">' + pk.seq.map(function (label, i) {
           var sel = cs === i;
           return '<div draggable="true" data-ti-seq="' + i + '" data-ti="chip" data-i="' + i + '" class="ti-seq-chip" style="border:1px solid ' + (sel ? '#E85511' : '#ecd2bd') + '; background:' + (sel ? '#fdf0e6' : '#fff') + '; opacity:' + (pk.dragI === i ? 0.4 : 1) + ';">' +
             '<span style="font-size:11px; font-weight:800; color:#E85511;">' + (i + 1) + '</span>' + esc(label) +
-            '<button data-ti="chipRemove" data-i="' + i + '" aria-label="Hapus" class="icon-btn" style="color:#b3a37c; cursor:pointer; width:22px; height:22px; padding:0; border-radius:6px;">' + icon('x', 13) + '</button>' +
+            '<button data-ti="chipRemove" data-i="' + i + '" aria-label="Remove" class="icon-btn" style="color:#b3a37c; cursor:pointer; width:22px; height:22px; padding:0; border-radius:6px;">' + icon('x', 13) + '</button>' +
           '</div>';
         }).join('') +
-        '<button data-ti="addMenu" style="border:1px dashed #d9c79b; background:#fff; color:#6E2621; font-size:13px; font-weight:700; padding:7px 11px; border-radius:10px; cursor:pointer; white-space:nowrap;">+ Bagian</button></div>' +
+        '<button data-ti="addMenu" style="border:1px dashed #d9c79b; background:#fff; color:#6E2621; font-size:13px; font-weight:700; padding:7px 11px; border-radius:10px; cursor:pointer; white-space:nowrap;">+ Part</button></div>' +
         (pk.addMenu ? '<div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; background:#FBF6E7; border:1px solid #ece0c2; border-radius:11px; padding:8px 10px;">' +
-          '<span style="font-size:12px; font-weight:600; color:#8a7952;">Tambahkan:</span>' +
+          '<span style="font-size:12px; font-weight:600; color:#8a7952;">Add:</span>' +
           song.sections.map(function (s) { return '<button data-ti="seqAdd" data-v="' + esc(s.label) + '" class="ti-btn-outline" style="padding:5px 10px; font-size:12.5px;">' + esc(s.label) + '</button>'; }).join('') +
         '</div>' : '') +
         (cs != null && cs < pk.seq.length ? '<div style="display:flex; gap:5px; flex-wrap:wrap; align-items:center; font-size:12.5px;">' +
-          '<span style="color:#8a7952; font-weight:600; margin-right:6px;">Bagian ' + (cs + 1) + ' · ' + esc(pk.seq[cs]) + '</span>' +
-          '<button data-ti="chipLeft" class="ti-btn-outline" style="padding:5px 9px; font-size:12.5px; display:inline-flex; align-items:center; gap:4px;"' + (cs === 0 ? ' disabled' : '') + '>' + icon('left', 14) + 'Geser</button>' +
-          '<button data-ti="chipRight" class="ti-btn-outline" style="padding:5px 9px; font-size:12.5px; display:inline-flex; align-items:center; gap:4px;"' + (cs === pk.seq.length - 1 ? ' disabled' : '') + '>Geser' + icon('right', 14) + '</button>' +
-          '<button data-ti="chipDup" class="ti-btn-outline" style="padding:5px 9px; font-size:12.5px;">Ulangi bagian ini</button>' +
-          '<button data-ti="chipRemove" data-i="' + cs + '" class="ti-btn-outline" style="padding:5px 9px; font-size:12.5px; color:' + TI_RED + ';">Hapus</button>' +
+          '<span style="color:#8a7952; font-weight:600; margin-right:6px;">Part ' + (cs + 1) + ' · ' + esc(pk.seq[cs]) + '</span>' +
+          '<button data-ti="chipLeft" class="ti-btn-outline" style="padding:5px 9px; font-size:12.5px; display:inline-flex; align-items:center; gap:4px;"' + (cs === 0 ? ' disabled' : '') + '>' + icon('left', 14) + 'Move</button>' +
+          '<button data-ti="chipRight" class="ti-btn-outline" style="padding:5px 9px; font-size:12.5px; display:inline-flex; align-items:center; gap:4px;"' + (cs === pk.seq.length - 1 ? ' disabled' : '') + '>Move' + icon('right', 14) + '</button>' +
+          '<button data-ti="chipDup" class="ti-btn-outline" style="padding:5px 9px; font-size:12.5px;">Repeat this part</button>' +
+          '<button data-ti="chipRemove" data-i="' + cs + '" class="ti-btn-outline" style="padding:5px 9px; font-size:12.5px; color:' + TI_RED + ';">Remove</button>' +
         '</div>' : '') +
-        (pk.seq.length ? '' : '<span style="font-size:13px; font-weight:600; color:#a3420e; background:#fdf0e6; padding:8px 10px; border-radius:9px;">Urutan kosong. Tambahkan bagian dengan + Bagian.</span>') +
-        '<span style="font-size:11.5px; color:#b3a37c; font-weight:600;">Seret untuk mengubah urutan · klik bagian untuk opsi lain</span>' +
+        (pk.seq.length ? '' : '<span style="font-size:13px; font-weight:600; color:#a3420e; background:#fdf0e6; padding:8px 10px; border-radius:9px;">No parts yet.</span>') +
       '</div>' +
       '<div style="display:flex; flex-direction:column;">' +
-        '<div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px; flex-wrap:wrap; padding-bottom:6px;"><span class="ti-eyebrow">Lirik</span><span style="font-size:12px; color:#8a7952;">Perubahan berlaku untuk ibadah ini</span></div>' +
+        '<div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px; flex-wrap:wrap; padding-bottom:6px;"><span class="ti-eyebrow">Lyrics</span><span style="font-size:12px; color:#8a7952;">Edits apply to this service only</span></div>' +
         song.sections.map(function (sx) {
           var text = tiLyric(song, sx.label), open = !!pk.secOpen[sx.label], editing = !!pk.secEdit[sx.label];
           return '<div style="border-top:1px solid #f1e7cd;">' +
             '<button data-ti="secToggle" data-v="' + esc(sx.label) + '" style="width:100%; cursor:pointer; display:grid; grid-template-columns:80px minmax(0,1fr) 20px; gap:10px; align-items:baseline; padding:10px 2px; text-align:left;">' +
               '<span style="font-size:13.5px; font-weight:700; color:#3a2a15;">' + esc(sx.label) + '</span>' +
-              '<span style="font-size:14px; color:#8a7952; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + (open ? '' : esc(text.split('\n')[0] || 'Lirik belum diisi')) + '</span>' +
+              '<span style="font-size:14px; color:#8a7952; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + (open ? '' : esc(text.split('\n')[0] || 'No lyrics yet')) + '</span>' +
               '<span style="color:#b3a37c; display:flex; justify-content:flex-end;">' + icon(open ? 'minus' : 'plus', 15) + '</span>' +
             '</button>' +
-            (open && !editing ? '<div style="padding:0 2px 12px 92px; display:flex; flex-direction:column; gap:6px;"><span style="font-size:14.5px; line-height:1.6; color:' + (text ? '#3a2a15' : '#b3a37c') + '; white-space:pre-line;">' + esc(text || 'Lirik belum diisi') + '</span><span data-ti="secEdit" data-v="' + esc(sx.label) + '" class="ti-link" style="align-self:flex-start;">Edit lirik</span></div>' : '') +
-            (open && editing ? '<div style="padding:0 2px 12px 92px; display:flex; flex-direction:column; gap:6px;"><textarea data-tipk="lyric" data-v="' + esc(sx.label) + '" rows="' + Math.max(3, text.split('\n').length) + '" class="ti-field" style="resize:vertical; line-height:1.5; font-family:inherit;">' + esc(text) + '</textarea><span data-ti="secDone" data-v="' + esc(sx.label) + '" class="ti-link" style="align-self:flex-start;">Selesai</span></div>' : '') +
+            (open && !editing ? '<div style="padding:0 2px 12px 92px; display:flex; flex-direction:column; gap:6px;"><span style="font-size:14.5px; line-height:1.6; color:' + (text ? '#3a2a15' : '#b3a37c') + '; white-space:pre-line;">' + esc(text || 'No lyrics yet') + '</span><span data-ti="secEdit" data-v="' + esc(sx.label) + '" class="ti-link" style="align-self:flex-start;">Edit lyrics</span></div>' : '') +
+            (open && editing ? '<div style="padding:0 2px 12px 92px; display:flex; flex-direction:column; gap:6px;"><textarea data-tipk="lyric" data-v="' + esc(sx.label) + '" rows="' + Math.max(3, text.split('\n').length) + '" class="ti-field" style="resize:vertical; line-height:1.5; font-family:inherit;">' + esc(text) + '</textarea><span data-ti="secDone" data-v="' + esc(sx.label) + '" class="ti-link" style="align-self:flex-start;">Done</span></div>' : '') +
           '</div>';
         }).join('') +
       '</div>';
@@ -1945,13 +1940,13 @@ function tiRenderPickerParts() {
   var u = song && tiSongUsage(song.id, svc);
   document.getElementById('tiPkFoot').innerHTML =
     '<div style="display:flex; flex-direction:column; gap:2px; min-width:0;">' +
-      '<span style="font-size:13.5px; font-weight:700; color:#3a2a15;">' + (song ? esc((tiSongCode(song) ? tiSongCode(song) + ' · ' : '') + song.title) + ' · ' + pk.seq.length + ' bagian' : 'Belum ada lagu dipilih') + '</span>' +
-      (u && u.weeks <= TI_RECENT_WEEKS ? '<span style="font-size:12px; font-weight:600; color:#a3420e;">Dipakai ' + u.weeks + ' minggu lalu (' + tiShort(u.date) + ') · tetap bisa dipilih</span>' : '') +
-      (song && otherIds.indexOf(song.id) !== -1 ? '<span style="font-size:12px; font-weight:600; color:' + TI_RED + ';">Sudah dipakai di slot lain ibadah ini</span>' : '') +
+      '<span style="font-size:13.5px; font-weight:700; color:#3a2a15;">' + (song ? esc((tiSongCode(song) ? tiSongCode(song) + ' · ' : '') + song.title) + ' · ' + pk.seq.length + ' parts' : 'No song chosen') + '</span>' +
+      (u && u.weeks <= TI_RECENT_WEEKS ? '<span style="font-size:12px; font-weight:600; color:#a3420e;">Used ' + u.weeks + ' wk ago (' + tiShort(u.date) + ')</span>' : '') +
+      (song && otherIds.indexOf(song.id) !== -1 ? '<span style="font-size:12px; font-weight:600; color:' + TI_RED + ';">Already used in this service</span>' : '') +
     '</div>' +
     '<div style="display:flex; gap:8px;">' +
-      '<button data-ti="closePicker" class="ti-btn-outline" style="padding:11px 16px; font-size:14px;">Batal</button>' +
-      '<button data-ti="confirmPick" class="ti-btn-orange"' + (song ? '' : ' disabled style="opacity:.5; cursor:not-allowed;"') + '>' + (song && song.id === svc.slots[pk.k] ? 'Simpan perubahan' : 'Gunakan lagu') + '</button>' +
+      '<button data-ti="closePicker" class="ti-btn-outline" style="padding:11px 16px; font-size:14px;">Cancel</button>' +
+      '<button data-ti="confirmPick" class="ti-btn-orange"' + (song ? '' : ' disabled style="opacity:.5; cursor:not-allowed;"') + '>' + (song && song.id === svc.slots[pk.k] ? 'Save changes' : 'Use this song') + '</button>' +
     '</div>';
 }
 
@@ -1979,7 +1974,7 @@ function tiOnlineSearchSoon() {
       .withFailureHandler(function (err) {
         if (tiState.picker !== pk || pk.online.key !== key) return;
         pk.online.loading = false;
-        pk.online.error = err && err.message ? err.message : String(err);
+        pk.online.error = errText(err, 'search online');
         tiRenderOnline();
       })
       .searchHymnalOnline(q, book);
@@ -2005,7 +2000,7 @@ function tiOnlineImport(hymnal, number, rowKey) {
     .withFailureHandler(function (err) {
       if (tiState.picker !== pk) return;
       on.importing = '';
-      on.error = err && err.message ? err.message : String(err);
+      on.error = errText(err, 'import the song');
       tiRenderOnline();
     })
     .importHymnalSong(hymnal, number);
@@ -2024,9 +2019,9 @@ function tiHasLyrics(song) { return !!song && song.sections.some(function (s) { 
 function tiOnlineButton(hymnal, number, rowKey) {
   var on = tiState.picker.online, key = hymnal + '|' + number;
   var have = tiState.songs.filter(function (s) { return s.hymnal === hymnal && s.number.toLowerCase() === number.toLowerCase(); })[0];
-  if (have && tiHasLyrics(have)) return '<button data-ti="selSong" data-id="' + esc(have.id) + '" class="ti-btn-outline" style="padding:5px 10px; font-size:12px; color:#24401F;">Di perpustakaan</button>';
-  if (on.importing === key) return '<span style="font-size:12px; font-weight:700; color:#9a8763; white-space:nowrap;">Mengimpor…</span>';
-  return '<button data-ti="onlineImport" data-h="' + hymnal + '" data-n="' + esc(number) + '" data-row="' + esc(rowKey) + '" class="ti-btn-outline" style="padding:5px 10px; font-size:12px;"' + (on.importing ? ' disabled' : '') + '>Impor</button>';
+  if (have && tiHasLyrics(have)) return '<button data-ti="selSong" data-id="' + esc(have.id) + '" class="ti-btn-outline" style="padding:5px 10px; font-size:12px; color:#24401F;">In library</button>';
+  if (on.importing === key) return '<span style="font-size:12px; font-weight:700; color:#9a8763; white-space:nowrap;">Importing…</span>';
+  return '<button data-ti="onlineImport" data-h="' + hymnal + '" data-n="' + esc(number) + '" data-row="' + esc(rowKey) + '" class="ti-btn-outline" style="padding:5px 10px; font-size:12px;"' + (on.importing ? ' disabled' : '') + '>Import</button>';
 }
 
 function tiRenderOnline() {
@@ -2035,12 +2030,12 @@ function tiRenderOnline() {
   var on = pk.online, q = pk.q.trim();
   var head = '<div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px; flex-wrap:wrap;">' +
     '<span class="ti-eyebrow">Online · KJ, KK, PKJ, NKB</span>' +
-    '<span style="font-size:11px; font-weight:600; color:#b3a37c;">Sumber: Alkitab Mobile SABDA</span></div>';
+    '</div>';
   var body;
-  if (!q) body = '<span style="font-size:12.5px; color:#9a8763;">Ketik judul atau nomor (mis. “KJ 392”) untuk mencari dan mengimpor lagu.</span>';
-  else if (on.loading) body = '<span style="font-size:12.5px; color:#9a8763;">Mencari…</span>';
-  else if (!on.results.length) body = '<span style="font-size:12.5px; color:#9a8763; line-height:1.5;">Tidak ditemukan di KJ, KK, PKJ atau NKB. ' +
-    (tiTypedTitle(q) ? '<span data-ti="newSong" class="ti-link">Tambah “' + esc(tiTypedTitle(q)) + '” sebagai lagu baru</span> lalu tempel liriknya.' : '') + '</span>';
+  if (!q) body = '<span style="font-size:12.5px; color:#9a8763;">Type a title or number, e.g. “KJ 392”.</span>';
+  else if (on.loading) body = '<span style="font-size:12.5px; color:#9a8763;">Searching…</span>';
+  else if (!on.results.length) body = '<span style="font-size:12.5px; color:#9a8763; line-height:1.5;">Not found. ' +
+    (tiTypedTitle(q) ? '<span data-ti="newSong" class="ti-link">Add “' + esc(tiTypedTitle(q)) + '” as a new song</span>' : '') + '</span>';
   else body = on.results.map(function (r) {
     var rowKey = r.hymnal + '|' + r.number;
     var vars = on.variants[rowKey];
@@ -2048,7 +2043,7 @@ function tiRenderOnline() {
       '<div style="display:grid; grid-template-columns:58px minmax(0,1fr) auto; gap:10px; align-items:center;">' +
         '<span style="font-size:12px; font-weight:700; color:#6E2621;">' + esc(r.hymnal + ' ' + r.number) + '</span>' +
         '<span style="font-size:13.5px; font-weight:600; color:#3a2a15;">' + esc(r.title) + '</span>' +
-        (vars ? '<span style="font-size:11.5px; font-weight:700; color:#9a8763;">' + vars.length + ' versi</span>' : tiOnlineButton(r.hymnal, r.number, rowKey)) +
+        (vars ? '<span style="font-size:11.5px; font-weight:700; color:#9a8763;">' + vars.length + ' versions</span>' : tiOnlineButton(r.hymnal, r.number, rowKey)) +
       '</div>' +
       (vars ? vars.map(function (v) {
         return '<div style="display:grid; grid-template-columns:58px minmax(0,1fr) auto; gap:10px; align-items:center; padding-top:6px; border-top:1px dashed #ece0c2;">' +
@@ -2212,13 +2207,13 @@ function tiTypedTitle(q) {
 
 function tiParsePaste() {
   var f = tiState.songForm, r = tiParseLyrics(f.paste);
-  if (!r.sections.length) { f.error = 'Tidak ada lirik yang terbaca dari teks yang ditempel.'; f.pasteNote = ''; tiRenderModal(); return; }
+  if (!r.sections.length) { f.error = 'No lyrics found in the pasted text.'; f.pasteNote = ''; tiRenderModal(); return; }
   f.sections = r.sections;
   f.arr = r.arr;
   if (r.title && !f.title.trim()) f.title = r.title;
   if (r.credits && !f.credits.trim()) f.credits = r.credits;
   f.error = '';
-  f.pasteNote = r.sections.length + ' bagian terbaca · urutan: ' + r.arr;
+  f.pasteNote = r.sections.length + ' parts · order: ' + r.arr;
   tiRenderModal();
 }
 
@@ -2230,48 +2225,47 @@ function tiSongFormHtml() {
   return '<div style="position:fixed; inset:0; z-index:100; display:flex; justify-content:flex-end;">' +
     '<div data-ti="closeSongForm" style="position:absolute; inset:0; background:rgba(58,42,21,.38);"></div>' +
     '<section style="position:relative; width:520px; max-width:100%; height:100%; background:#FBF6E7; box-shadow:-24px 0 60px rgba(74,59,23,.3); display:flex; flex-direction:column;">' +
-      '<div style="flex-shrink:0; background:#F3E9CE; border-bottom:1px solid #e7d9b3; padding:22px 26px 20px; display:flex; align-items:flex-start; justify-content:space-between; gap:16px;">' +
-        '<div style="display:flex; flex-direction:column; gap:3px;"><span class="ti-eyebrow">Perpustakaan lagu</span><h2 style="margin:0; font-weight:800; font-size:24px; letter-spacing:-.02em;">' + (f.id ? 'Edit lagu' : 'Lagu baru') + '</h2></div>' +
-        '<button data-ti="closeSongForm" class="icon-btn" aria-label="Tutup" style="width:36px; height:36px; border-radius:11px; background:rgba(58,42,21,.08); cursor:pointer;">' + icon('x', 18) + '</button>' +
+      '<div class="drawer-head">' +
+        '<div style="display:flex; flex-direction:column; gap:3px;"><span class="ti-eyebrow">Song library</span><h2 style="margin:0; font-weight:800; font-size:24px; letter-spacing:-.02em;">' + (f.id ? 'Edit song' : 'New song') + '</h2></div>' +
+        '<button data-ti="closeSongForm" class="icon-btn close-btn" aria-label="Close">' + icon('x', 18) + '</button>' +
       '</div>' +
       '<div style="flex:1; overflow-y:auto; padding:22px 26px 28px; display:flex; flex-direction:column; gap:16px;">' +
         (f.pasteOpen
           ? '<div class="ti-card" style="border-radius:16px; padding:14px; display:flex; flex-direction:column; gap:9px; background:#FEFBF2;">' +
-              '<span style="font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;">Tempel lirik</span>' +
-              '<span style="font-size:12.5px; color:#8a7952; line-height:1.5;">Dari website, slide, atau file TXT/ChordPro SongSelect. Judul bagian seperti Verse 1, Reff, Chorus, Bridge, (2x) dan kunci gitar dikenali otomatis.</span>' +
-              '<textarea data-tisf="paste" rows="8" placeholder="Tempel seluruh lirik di sini" class="ti-field" style="resize:vertical; line-height:1.5; font-family:inherit; padding:10px 12px;">' + esc(f.paste) + '</textarea>' +
+              '<span class="ti-label-t">Paste lyrics</span>' +
+              '<textarea data-tisf="paste" rows="8" placeholder="Paste the whole song here" class="ti-field" style="resize:vertical; line-height:1.5; font-family:inherit; padding:10px 12px;">' + esc(f.paste) + '</textarea>' +
               '<div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">' +
-                '<button data-ti="sfParse" class="ti-btn-outline" style="background:#6E2621; color:#fff; border-color:#6E2621;">Pisahkan jadi bagian</button>' +
+                '<button data-ti="sfParse" class="ti-btn-outline" style="background:#6E2621; color:#fff; border-color:#6E2621;">Split into parts</button>' +
                 (f.pasteNote ? '<span style="font-size:12.5px; font-weight:600; color:#24401F;">✓ ' + esc(f.pasteNote) + '</span>' : '') +
               '</div>' +
             '</div>'
-          : '<span data-ti="sfPasteOpen" class="ti-link" style="align-self:flex-start;">Tempel ulang lirik dari teks</span>') +
+          : '<span data-ti="sfPasteOpen" class="ti-link" style="align-self:flex-start;">Paste lyrics again</span>') +
         '<div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">' +
-          '<label class="ti-label"><span>Buku</span><select data-tisf="hymnal" class="ti-field">' + [['', 'Kontemporer'], ['KK', 'KK'], ['KJ', 'KJ'], ['NKB', 'NKB'], ['PKJ', 'PKJ']].map(function (o) {
+          '<label class="ti-label"><span>Book</span><select data-tisf="hymnal" class="ti-field">' + [['', 'Contemporary'], ['KK', 'KK'], ['KJ', 'KJ'], ['NKB', 'NKB'], ['PKJ', 'PKJ']].map(function (o) {
             return '<option value="' + o[0] + '"' + (f.hymnal === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
           }).join('') + '</select></label>' +
-          input('number', 'Nomor', 'placeholder="mis. 392"') +
+          input('number', 'Number', 'placeholder="e.g. 392"') +
         '</div>' +
-        input('title', 'Judul', 'placeholder="Judul lagu"') +
-        input('credits', 'Pencipta / penerjemah', 'placeholder="Opsional"') +
-        input('language', 'Bahasa', 'list="tiLangList"') +
+        input('title', 'Title', '') +
+        input('credits', 'Author / translator', 'placeholder="Optional"') +
+        input('language', 'Language', 'list="tiLangList"') +
         '<datalist id="tiLangList"><option value="Indonesia"></option><option value="Inggris"></option><option value="Jawa"></option></datalist>' +
-        input('arr', 'Urutan default', 'placeholder="Kosongkan untuk mengikuti urutan bagian di bawah"') +
+        input('arr', 'Default order', 'placeholder="Optional"') +
         '<div style="display:flex; flex-direction:column; gap:10px;">' +
-          '<span style="font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;">Bagian & lirik</span>' +
+          '<span class="ti-label-t">Parts and lyrics</span>' +
           f.sections.map(function (s, i) {
             return '<div class="ti-card" style="border-radius:14px; padding:12px; display:flex; flex-direction:column; gap:8px;">' +
-              '<div style="display:flex; gap:8px; align-items:center;"><input data-tisf="label" data-i="' + i + '" value="' + esc(s.label) + '" placeholder="mis. Bait 1, Ref, Chorus" class="ti-field" style="padding:9px 12px; font-weight:700;">' +
-              '<button data-ti="sfRemove" data-i="' + i + '" class="icon-btn" aria-label="Hapus bagian" style="width:34px; height:34px; border-radius:10px; color:#b3a37c; cursor:pointer; flex-shrink:0;">' + icon('x', 15) + '</button></div>' +
-              '<textarea data-tisf="text" data-i="' + i + '" rows="4" placeholder="Lirik" class="ti-field" style="resize:vertical; line-height:1.5; font-family:inherit; padding:9px 12px;">' + esc(s.text) + '</textarea>' +
+              '<div style="display:flex; gap:8px; align-items:center;"><input data-tisf="label" data-i="' + i + '" value="' + esc(s.label) + '" placeholder="e.g. Bait 1, Ref, Chorus" class="ti-field" style="padding:9px 12px; font-weight:700;">' +
+              '<button data-ti="sfRemove" data-i="' + i + '" class="icon-btn" aria-label="Remove part" style="width:34px; height:34px; border-radius:10px; color:#b3a37c; cursor:pointer; flex-shrink:0;">' + icon('x', 15) + '</button></div>' +
+              '<textarea data-tisf="text" data-i="' + i + '" rows="4" placeholder="Lyrics" class="ti-field" style="resize:vertical; line-height:1.5; font-family:inherit; padding:9px 12px;">' + esc(s.text) + '</textarea>' +
             '</div>';
           }).join('') +
-          '<button data-ti="sfAdd" style="border:1px dashed #d9c79b; background:#fff; color:#6E2621; font-size:13.5px; font-weight:700; padding:11px; border-radius:12px; cursor:pointer;">+ Tambah bagian</button>' +
+          '<button data-ti="sfAdd" style="border:1px dashed #d9c79b; background:#fff; color:#6E2621; font-size:13.5px; font-weight:700; padding:11px; border-radius:12px; cursor:pointer;">+ Add part</button>' +
         '</div>' +
-        (f.error ? '<div style="background:#fbe6e2; border:1px solid #f0c8c1; color:#8c2b20; font-size:13px; font-weight:600; padding:11px 14px; border-radius:12px;">' + esc(f.error) + '</div>' : '') +
+        (f.error ? '<div class="err-box">' + esc(f.error) + '</div>' : '') +
       '</div>' +
-      '<div style="flex-shrink:0; border-top:1px solid #e7d9b3; background:#F3E9CE; padding:16px 26px;">' +
-        '<button data-ti="sfSave" class="ti-btn-orange" style="width:100%; padding:15px; font-size:15.5px;"' + (f.saving ? ' disabled' : '') + '>' + (f.saving ? 'Menyimpan…' : f.id ? 'Simpan lagu' : 'Tambah ke perpustakaan') + '</button>' +
+      '<div class="drawer-foot">' +
+        '<button data-ti="sfSave" class="ti-btn-orange" style="width:100%; padding:15px; font-size:15.5px;"' + (f.saving ? ' disabled' : '') + '>' + (f.saving ? 'Saving…' : f.id ? 'Save song' : 'Add to library') + '</button>' +
       '</div>' +
     '</section>' +
   '</div>';
@@ -2279,7 +2273,7 @@ function tiSongFormHtml() {
 
 function tiSaveSongForm() {
   var f = tiState.songForm;
-  if (!f.title.trim()) { f.error = 'Judul lagu wajib diisi.'; tiRenderModal(); return; }
+  if (!f.title.trim()) { f.error = 'Enter a song title.'; tiRenderModal(); return; }
   f.saving = true; f.error = '';
   tiRenderModal();
   google.script.run
@@ -2297,7 +2291,7 @@ function tiSaveSongForm() {
     })
     .withFailureHandler(function (err) {
       f.saving = false;
-      f.error = err && err.message ? err.message : String(err);
+      f.error = errText(err, 'save the song');
       tiRenderModal();
     })
     .saveSong({ id: f.id, hymnal: f.hymnal, number: f.number, title: f.title, credits: f.credits, language: f.language, arr: f.arr, sections: f.sections });
@@ -2317,11 +2311,11 @@ function tiConfirm(opts, onOk) {
   host.innerHTML = '<div style="position:fixed; inset:0; z-index:200; display:flex; align-items:center; justify-content:center; padding:20px;">' +
     '<div data-ti="dialogCancel" style="position:absolute; inset:0; background:rgba(58,42,21,.45);"></div>' +
     '<div role="dialog" aria-modal="true" style="position:relative; width:100%; max-width:420px; background:#FBF6E7; border-radius:20px; box-shadow:0 30px 70px rgba(58,42,21,.4); padding:22px 22px 18px; display:flex; flex-direction:column; gap:10px;">' +
-      '<h2 style="margin:0; font-weight:800; font-size:20px; letter-spacing:-.02em; color:#3a2a15;">' + esc(opts.title || 'Lanjutkan?') + '</h2>' +
+      '<h2 style="margin:0; font-weight:800; font-size:20px; letter-spacing:-.02em; color:#3a2a15;">' + esc(opts.title || 'Continue?') + '</h2>' +
       (opts.text ? '<p style="margin:0; font-size:14px; line-height:1.55; color:#6b5a38;">' + esc(opts.text) + '</p>' : '') +
       '<div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">' +
-        '<button data-ti="dialogCancel" class="ti-btn-outline" style="padding:10px 16px; font-size:14px;">' + esc(opts.cancel || 'Batal') + '</button>' +
-        '<button id="tiDialogOk" data-ti="dialogOk" style="padding:10px 18px; border-radius:12px; background:' + okBg + '; color:#fff; font-weight:700; font-size:14px; cursor:pointer;">' + esc(opts.ok || 'Lanjutkan') + '</button>' +
+        '<button data-ti="dialogCancel" class="ti-btn-outline" style="padding:10px 16px; font-size:14px;">' + esc(opts.cancel || 'Cancel') + '</button>' +
+        '<button id="tiDialogOk" data-ti="dialogOk" style="padding:10px 18px; border-radius:12px; background:' + okBg + '; color:#fff; font-weight:700; font-size:14px; cursor:pointer;">' + esc(opts.ok || 'Continue') + '</button>' +
       '</div>' +
     '</div>' +
   '</div>';
@@ -2350,7 +2344,7 @@ function tiOnClick(e) {
   var i = Number(el.getAttribute('data-i'));
 
   var editing = { toggle: 1, variant: 1, break: 1, pick: 1, fetchVerse: 1, seasonUse: 1, dateList: 1 };
-  if (editing[a] && svc && svc.status === 'Published' && tiState.screen === 'builder') { flash('Terkunci: ubah status ke Review untuk mengedit'); return; }
+  if (editing[a] && svc && svc.status === 'Published' && tiState.screen === 'builder') { flash('Locked: set back to draft to edit'); return; }
 
   switch (a) {
     case 'dialogOk': tiCloseDialog(true); return;
@@ -2365,12 +2359,12 @@ function tiOnClick(e) {
     case 'libDelete':
       var sid = el.getAttribute('data-id'), stats = tiSongStats(sid);
       if (stats.count) { tiState.lib.merge = sid; tiState.lib.mergeTo = ''; tiRenderLibPanel(); }
-      else tiConfirm({ title: 'Hapus lagu?', text: '“' + tiState.songById[sid].title + '” dihapus dari perpustakaan.', ok: 'Hapus', danger: true }, function () { tiDeleteSong(sid); });
+      else tiConfirm({ title: 'Delete this song?', text: '“' + tiState.songById[sid].title + '” will be removed from the library.', ok: 'Delete', danger: true }, function () { tiDeleteSong(sid); });
       break;
     case 'libMerge':
-      if (!tiState.lib.mergeTo) { flash('Pilih lagu pengganti dulu'); return; }
+      if (!tiState.lib.mergeTo) { flash('Choose a replacement first'); return; }
       var mid = el.getAttribute('data-id'), into = tiState.lib.mergeTo;
-      tiConfirm({ title: 'Gabungkan lagu?', text: '“' + tiState.songById[mid].title + '” diganti dengan “' + tiState.songById[into].title + '” di semua tata ibadah, lalu dihapus.', ok: 'Gabungkan & hapus', danger: true },
+      tiConfirm({ title: 'Merge songs?', text: '“' + tiState.songById[mid].title + '” becomes “' + tiState.songById[into].title + '” everywhere, then is deleted.', ok: 'Merge and delete', danger: true },
         function () { tiDeleteSong(mid, into); });
       break;
     case 'libCancel': tiState.lib.merge = null; tiRenderLibPanel(); break;
@@ -2387,7 +2381,7 @@ function tiOnClick(e) {
       var latest = tiState.conflict && tiState.conflict.latest;
       if (latest) Object.keys(latest).forEach(function (key) { svc[key] = latest[key]; });
       tiState.conflict = null; tiState.pending = null;
-      tiState.saveLabel = 'Versi terbaru dimuat'; tiState.saveError = false;
+      tiState.saveLabel = 'Latest version loaded'; tiState.saveError = false;
       tiRender();
       break;
     case 'conflictForce':
@@ -2404,6 +2398,7 @@ function tiOnClick(e) {
     case 'delete': tiAskDelete(svc); break;
     case 'trashSvc': tiAskDelete(tiState.services[Number(el.getAttribute('data-idx'))]); break;
     case 'jump': tiJumpTo(el.getAttribute('data-to')); break;
+    case 'chkGroup': tiState.chkOpen[v] = !tiState.chkOpen[v]; tiRenderAside(); break;
     case 'expand': tiState.open[k] = !tiState.open[k]; tiRenderBlock(k); break;
     case 'toggle': svc.enabled[k] = !svc.enabled[k]; tiRenderDynamic(); tiQueueSave(); break;
     case 'variant': svc.variants[k] = v; tiRenderBlock(k); tiRenderAside(); tiQueueSave(); break;

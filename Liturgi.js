@@ -56,7 +56,7 @@ function exportDocx_(fileId) {
   var res = UrlFetchApp.fetch('https://docs.google.com/document/d/' + fileId + '/export?format=docx', {
     headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() }, muteHttpExceptions: true
   });
-  if (res.getResponseCode() !== 200) throw new Error('Ekspor .docx gagal (HTTP ' + res.getResponseCode() + ').');
+  if (res.getResponseCode() !== 200) throw new Error('.docx export failed (HTTP ' + res.getResponseCode() + ').');
   return res.getBlob().setContentType(DOCX_MIME);
 }
 
@@ -119,8 +119,8 @@ function stripPageMark_(fileId) {
 function litLocated_(e) {
   var where = String(e && e.stack || '').split('\n').filter(function (l) { return /^\s*at /.test(l); }).slice(0, 3)
     .map(function (l) { return l.trim().replace(/^at /, ''); }).join(' < ');
-  if (!where || /\[di /.test(e.message)) return e;
-  return new Error(e.message + ' [di ' + where + ']');
+  if (!where || /\[at /.test(e.message)) return e;
+  return new Error(e.message + ' [at ' + where + ']');
 }
 
 /*
@@ -162,7 +162,7 @@ function produceLiturgy_(svc, name, kind) {
 function downloadLiturgy(serviceId, format) {
   format = format === 'pdf' ? 'pdf' : 'docx';
   var found = findService_(serviceId);
-  if (!found) return { success: false, message: 'Simpan tata ibadah ini dulu.' };
+  if (!found) return { success: false, message: 'Save this liturgy first.' };
   var name = 'Liturgi Pemuda ' + idDate_(found.svc.date);
   var blob = produceLiturgy_(found.svc, name, format);
   return {
@@ -179,14 +179,14 @@ function downloadLiturgy(serviceId, format) {
  */
 function createLiturgyDoc(serviceId) {
   var found = findService_(serviceId);
-  if (!found) return { success: false, message: 'Simpan tata ibadah ini dulu.' };
+  if (!found) return { success: false, message: 'Save this liturgy first.' };
   var folder = outputFolder_();
   var file = produceLiturgy_(found.svc, 'Liturgi Pemuda ' + idDate_(found.svc.date), 'gdoc');
-  try { file.moveTo(folder); } catch (e) { file.setTrashed(true); throw new Error('Tidak bisa menyimpan ke folder Drive tata ibadah: ' + e.message); }
+  try { file.moveTo(folder); } catch (e) { file.setTrashed(true); throw new Error('Couldn\'t save to the liturgy Drive folder: ' + e.message); }
   var doc = { id: file.getId(), url: file.getUrl(), at: Utilities.formatDate(new Date(), TZ, 'd MMM, HH.mm') };
   found.data.doc = doc;
   found.sheet.getRange(found.row, 11).setValue(JSON.stringify(found.data));
-  return { success: true, message: 'Google Doc dibuat di folder Drive tata ibadah', doc: doc };
+  return { success: true, message: 'Google Doc created in the Drive folder', doc: doc };
 }
 
 /**
@@ -197,15 +197,15 @@ function createLiturgyDoc(serviceId) {
  */
 function updateLiturgyDoc(serviceId) {
   var found = findService_(serviceId);
-  if (!found) return { success: false, message: 'Simpan tata ibadah ini dulu.' };
+  if (!found) return { success: false, message: 'Save this liturgy first.' };
   var doc = found.data.doc;
-  if (!doc || !doc.id) return { success: false, message: 'Belum ada Google Doc. Buat dulu.' };
+  if (!doc || !doc.id) return { success: false, message: 'No Google Doc yet. Create one first.' };
   var file;
   try {
     file = DriveApp.getFileById(doc.id);
-    if (file.isTrashed()) return { success: false, gone: true, message: 'Google Doc itu ada di sampah. Buat Google Doc baru.' };
+    if (file.isTrashed()) return { success: false, gone: true, message: 'That Google Doc is in the trash. Create a new one.' };
   } catch (e) {
-    return { success: false, gone: true, message: 'Google Doc tidak ditemukan. Buat Google Doc baru.' };
+    return { success: false, gone: true, message: 'Google Doc not found. Create a new one.' };
   }
   var gdoc = DocumentApp.openById(doc.id);
   emptyBody_(gdoc.getBody());
@@ -216,7 +216,7 @@ function updateLiturgyDoc(serviceId) {
   doc.updatedAt = Utilities.formatDate(new Date(), TZ, 'd MMM, HH.mm');
   found.data.doc = doc;
   found.sheet.getRange(found.row, 11).setValue(JSON.stringify(found.data));
-  return { success: true, message: 'Google Doc diperbarui', doc: doc };
+  return { success: true, message: 'Google Doc updated', doc: doc };
 }
 
 /*
@@ -234,7 +234,7 @@ function outputFolder_() {
   try {
     return DriveApp.getFolderById(TI_OUTPUT_FOLDER_ID);
   } catch (e) {
-    throw new Error('Folder Drive tata ibadah tidak bisa dibuka. Pastikan akun web app punya akses edit ke folder itu.');
+    throw new Error('Couldn\'t open the liturgy Drive folder. Check the web app account can edit it.');
   }
 }
 

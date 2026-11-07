@@ -2,7 +2,7 @@ var TI_SHEET = 'TataIbadah';
 var SONGS_SHEET = 'Songs';
 var TI_HEADERS = ['ID', 'Date', 'Season', 'Series', 'Sub-theme', 'Pelayan Firman', 'Nas kata pembuka', 'Nas berita anugerah', 'Perjamuan Kudus', 'Status', 'Data', 'Updated at'];
 var SONG_HEADERS = ['ID', 'Hymnal', 'Number', 'Title', 'Credits', 'Language', 'Sections', 'Arrangement'];
-var TI_STATUSES = ['Draft', 'Review', 'Published'];
+var TI_STATUSES = ['Draft', 'Published'];
 
 /* Starter library so the picker isn't empty on first use. Lyrics are left blank to be filled in from the songbook. */
 var SONG_SEED = [
@@ -136,7 +136,7 @@ function saveTataIbadah(p) {
   var id = p.id ? String(p.id) : '';
   var date = String(p.date || '').trim();
   var dateObj = new Date(date + 'T00:00:00');
-  if (!date || isNaN(dateObj)) return { success: false, message: 'Tanggal belum valid.' };
+  if (!date || isNaN(dateObj)) return { success: false, message: 'That date isn\'t valid.' };
   var status = TI_STATUSES.indexOf(p.status) !== -1 ? p.status : 'Draft';
   var ba = p.baBook && p.baCh && p.baVs ? p.baBook + ' ' + p.baCh + ':' + p.baVs : '';
   var data = {
@@ -160,10 +160,10 @@ function saveTataIbadah(p) {
       if (!isNaN(n) && n > maxId) maxId = n;
       if (id && rowId === id) { rowIndex = i; continue; }
       if (rowId && fmtDate_(keys[i][1]) === date) {
-        return { success: false, message: 'Sudah ada tata ibadah untuk tanggal ' + date + '.' };
+        return { success: false, message: 'A liturgy already exists for ' + date + '.' };
       }
     }
-    if (id && rowIndex === -1) return { success: false, message: 'Tata ibadah ini sudah dihapus.' };
+    if (id && rowIndex === -1) return { success: false, message: 'This liturgy was deleted.' };
 
     var now = new Date(Math.floor(Date.now() / 1000) * 1000);
     var newId = id || String(maxId + 1);
@@ -171,7 +171,7 @@ function saveTataIbadah(p) {
       var current = sheet.getRange(rowIndex + 2, 1, 1, TI_HEADERS.length).getValues()[0];
       // Someone else saved since this browser loaded the service: hand back their version instead of overwriting it.
       if (!p.force && p.baseUpdatedAt && stamp_(current[11]) && stamp_(current[11]) !== p.baseUpdatedAt) {
-        return { success: false, conflict: true, message: 'Tata ibadah ini baru disimpan dari perangkat lain.', latest: serviceFromRow_(current) };
+        return { success: false, conflict: true, message: 'Saved from another device.', latest: serviceFromRow_(current) };
       }
       var prev = parseJson_(current[10], {});
       if (prev.doc) data.doc = prev.doc;
@@ -190,21 +190,21 @@ function saveTataIbadah(p) {
 
 function deleteTataIbadah(id) {
   id = String(id || '').trim();
-  if (!id) return { success: false, message: 'ID tidak ada.' };
+  if (!id) return { success: false, message: 'Missing id.' };
   var lock = LockService.getScriptLock();
   lock.waitLock(30000);
   try {
     var sheet = getOrCreateSheet_(TI_SHEET, TI_HEADERS);
     var last = sheet.getLastRow();
-    if (last < 2) return { success: false, message: 'Tata ibadah tidak ditemukan.' };
+    if (last < 2) return { success: false, message: 'Liturgy not found.' };
     var ids = sheet.getRange(2, 1, last - 1, 1).getValues();
     for (var i = ids.length - 1; i >= 0; i--) {
       if (String(ids[i][0]) === id) {
         sheet.deleteRow(i + 2);
-        return { success: true, message: 'Tata ibadah dihapus' };
+        return { success: true, message: 'Liturgy deleted' };
       }
     }
-    return { success: false, message: 'Tata ibadah tidak ditemukan.' };
+    return { success: false, message: 'Liturgy not found.' };
   } finally {
     lock.releaseLock();
   }
@@ -214,11 +214,11 @@ function deleteTataIbadah(id) {
 function saveSong(p) {
   p = p || {};
   var title = String(p.title || '').trim();
-  if (!title) return { success: false, message: 'Judul lagu wajib diisi.' };
+  if (!title) return { success: false, message: 'Enter a song title.' };
   var sections = (Array.isArray(p.sections) ? p.sections : []).map(function (s) {
     return { label: String(s.label || '').trim(), text: String(s.text || '') };
   }).filter(function (s) { return s.label; });
-  if (!sections.length) return { success: false, message: 'Tambahkan minimal satu bagian lagu.' };
+  if (!sections.length) return { success: false, message: 'Add at least one part.' };
   var arr = String(p.arr || '').trim() || sections.map(function (s) { return s.label; }).join(' → ');
   var hymnal = String(p.hymnal || '').trim();
   var number = String(p.number || '').trim();
@@ -231,7 +231,7 @@ function saveSong(p) {
     var ids = last > 1 ? sheet.getRange(2, 1, last - 1, 1).getValues().map(function (r) { return String(r[0]); }) : [];
     var id = p.id ? String(p.id) : '';
     var rowIndex = id ? ids.indexOf(id) : -1;
-    if (id && rowIndex === -1) return { success: false, message: 'Lagu tidak ditemukan.' };
+    if (id && rowIndex === -1) return { success: false, message: 'Song not found.' };
     if (!id) {
       var base = (hymnal ? hymnal + number : title).toLowerCase().replace(/[^a-z0-9]+/g, '') || 'lagu';
       id = base;
@@ -240,7 +240,7 @@ function saveSong(p) {
     var row = [id, hymnal, number, title, String(p.credits || '').trim(), String(p.language || '').trim(), JSON.stringify(sections), arr];
     if (rowIndex !== -1) sheet.getRange(rowIndex + 2, 1, 1, row.length).setValues([row]);
     else sheet.appendRow(row);
-    return { success: true, message: rowIndex !== -1 ? 'Lagu diperbarui' : 'Lagu ditambahkan ke perpustakaan', song: songFromRow_(row) };
+    return { success: true, message: rowIndex !== -1 ? 'Song updated' : 'Song added to library', song: songFromRow_(row) };
   } finally {
     lock.releaseLock();
   }
@@ -416,7 +416,7 @@ function importHymnalSong(hymnal, number) {
   var code = HYMNAL_CODES[hymnal];
   number = String(number || '').trim().toLowerCase();
   var nm = number.match(/^(\d+)([a-z]?)$/);
-  if (!code || !nm) return { success: false, message: 'Nomor lagu tidak valid.' };
+  if (!code || !nm) return { success: false, message: 'That song number isn\'t valid.' };
 
   var sheet = getSongsSheet_();
   var findRow = function () {
@@ -430,13 +430,13 @@ function importHymnalSong(hymnal, number) {
   var found = findRow();
   var existing = found.index !== -1 ? songFromRow_(sheet.getRange(found.index + 2, 1, 1, SONG_HEADERS.length).getValues()[0]) : null;
   var hasLyrics = existing && existing.sections.some(function (s) { return String(s.text || '').trim(); });
-  if (hasLyrics) return { success: true, message: 'Lagu sudah ada di perpustakaan', song: existing, ms: Date.now() - started };
+  if (hasLyrics) return { success: true, message: 'Song is already in the library', song: existing, ms: Date.now() - started };
 
   var page = hymnalPage_(code, nm[1]);
-  if (page.code !== 200) return { success: false, message: 'Gagal mengambil ' + hymnal + ' ' + number + ' (HTTP ' + page.code + ').' };
+  if (page.code !== 200) return { success: false, message: 'Couldn\'t fetch ' + hymnal + ' ' + number + ' (HTTP ' + page.code + ').' };
   var parsed = parseHymnalPage_(page.html, nm[2] ? number : '');
-  if (parsed && parsed.variants) return { success: false, message: hymnal + ' ' + nm[1] + ' punya beberapa versi. Pilih salah satu.', title: hymnalTitle_(parsed.title), variants: parsed.variants };
-  if (!parsed) return { success: false, message: 'Lirik ' + hymnal + ' ' + number + ' tidak ditemukan di sumber.' };
+  if (parsed && parsed.variants) return { success: false, message: hymnal + ' ' + nm[1] + ' has several versions. Pick one.', title: hymnalTitle_(parsed.title), variants: parsed.variants };
+  if (!parsed) return { success: false, message: 'No lyrics found for ' + hymnal + ' ' + number + '.' };
 
   var lock = LockService.getScriptLock();
   lock.waitLock(15000);
@@ -458,7 +458,7 @@ function importHymnalSong(hymnal, number) {
       JSON.stringify(parsed.sections), parsed.arr];
     if (found.index !== -1) sheet.getRange(found.index + 2, 1, 1, row.length).setValues([row]);
     else sheet.appendRow(row);
-    return { success: true, message: found.index !== -1 ? 'Lirik diambil' : 'Lagu ditambahkan ke perpustakaan', song: songFromRow_(row), ms: Date.now() - started };
+    return { success: true, message: found.index !== -1 ? 'Lyrics fetched' : 'Song added to library', song: songFromRow_(row), ms: Date.now() - started };
   } finally {
     lock.releaseLock();
   }
@@ -490,16 +490,16 @@ function fetchBibleText(book, ch, vs) {
   var i = BIBLE_BOOKS.indexOf(String(book || ''));
   ch = parseInt(ch, 10);
   vs = String(vs || '').replace(/\s+/g, '').replace(/–/g, '-');
-  if (i === -1 || !(ch > 0) || !/^\d+(-\d+)?(,\d+(-\d+)?)*$/.test(vs)) return { success: false, message: 'Nas belum lengkap.' };
+  if (i === -1 || !(ch > 0) || !/^\d+(-\d+)?(,\d+(-\d+)?)*$/.test(vs)) return { success: false, message: 'The verse isn\'t complete.' };
   var nums = [];
   vs.split(',').forEach(function (part) {
     var ab = part.split('-').map(Number);
     for (var n = ab[0]; n <= (ab[1] || ab[0]) && nums.length < 60; n++) nums.push(n);
   });
   var chapter = bibleChapter_(BIBLE_ABBR[i], ch);
-  if (!chapter) return { success: false, message: 'Teks Alkitab tidak bisa diambil sekarang.' };
+  if (!chapter) return { success: false, message: 'Couldn\'t fetch the Bible text right now.' };
   var verses = nums.filter(function (n) { return chapter[n]; }).map(function (n) { return { n: n, text: chapter[n] }; });
-  if (!verses.length) return { success: false, message: BIBLE_BOOKS[i] + ' ' + ch + ':' + vs + ' tidak ditemukan.' };
+  if (!verses.length) return { success: false, message: BIBLE_BOOKS[i] + ' ' + ch + ':' + vs + ' not found.' };
   return { success: true, ref: BIBLE_BOOKS[i] + ' ' + ch + ':' + vs, text: verses.map(function (v) { return v.text; }).join(' '), verses: verses };
 }
 
@@ -531,8 +531,8 @@ function deleteSong(id, replaceWith) {
     var lastSong = songSheet.getLastRow();
     var ids = lastSong > 1 ? songSheet.getRange(2, 1, lastSong - 1, 1).getValues().map(function (r) { return String(r[0]); }) : [];
     var at = ids.indexOf(id);
-    if (at === -1) return { success: false, message: 'Lagu tidak ditemukan.' };
-    if (replaceWith && (replaceWith === id || ids.indexOf(replaceWith) === -1)) return { success: false, message: 'Lagu pengganti tidak valid.' };
+    if (at === -1) return { success: false, message: 'Song not found.' };
+    if (replaceWith && (replaceWith === id || ids.indexOf(replaceWith) === -1)) return { success: false, message: 'That replacement song isn\'t valid.' };
 
     var tiSheet = getOrCreateSheet_(TI_SHEET, TI_HEADERS);
     var last = tiSheet.getLastRow();
@@ -550,10 +550,10 @@ function deleteSong(id, replaceWith) {
       if (hit) used++;
       return [hit && replaceWith ? JSON.stringify(data) : c[0]];
     });
-    if (used && !replaceWith) return { success: false, used: used, message: 'Lagu dipakai di ' + used + ' tata ibadah. Pilih lagu pengganti dulu.' };
+    if (used && !replaceWith) return { success: false, used: used, message: 'Used in ' + used + ' services. Choose a replacement first.' };
     if (used) tiSheet.getRange(2, 11, updated.length, 1).setValues(updated);
     songSheet.deleteRow(at + 2);
-    return { success: true, message: used ? 'Lagu digabungkan ke pengganti (' + used + ' tata ibadah diperbarui)' : 'Lagu dihapus' };
+    return { success: true, message: used ? 'Song merged (' + used + ' services updated)' : 'Song deleted' };
   } finally {
     lock.releaseLock();
   }

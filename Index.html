@@ -29,6 +29,44 @@
   .tb-group { height: 40px; display: inline-flex; align-items: center; gap: 2px; padding: 3px; border: 1px solid #e6d8b6; border-radius: 11px; background: #fff; }
   .tb-group > button { height: 32px; }
 
+
+  /* Shared controls and page frame: every tab draws its buttons, cards, fields and spacing from these */
+  .ti-field { width: 100%; padding: 11px 13px; border-radius: 12px; border: 1px solid #e6d8b6; background: #fff; font-size: 14.5px; }
+  .ti-label { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+  .ti-label > span:first-child, .ti-label-t { font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #3a2a15; }
+  .ti-eyebrow { font-size: 11.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: #8a7952; }
+  .ti-card { background: #fff; border: 1px solid #ece0c2; border-radius: 20px; }
+  .ti-pill { font-size: 11.5px; font-weight: 700; padding: 3px 9px; border-radius: 7px; white-space: nowrap; }
+  .ti-btn-outline { border: 1px solid #e6d8b6; background: #fff; color: #6E2621; font-size: 13px; font-weight: 700; padding: 8px 13px; border-radius: 10px; cursor: pointer; white-space: nowrap; }
+  .ti-btn-outline:hover { border-color: #6E2621; }
+  .ti-btn-orange { white-space: nowrap; background: #E85511; color: #fff; font-weight: 700; font-size: 14.5px; padding: 12px 18px; border-radius: 12px; cursor: pointer; box-shadow: 0 10px 24px -12px rgba(232,85,17,.6); }
+  .ti-btn-orange:hover { background: #d44c0e; }
+  .ti-link { color: #E85511; font-size: 12.5px; font-weight: 700; cursor: pointer; }
+  .ti-link:hover { text-decoration: underline; }
+  .ti-seg { display: inline-flex; flex-wrap: wrap; gap: 2px; background: #F3E9CE; border-radius: 11px; padding: 3px; }
+  .ti-seg button { padding: 7px 12px; border-radius: 9px; font-size: 13px; font-weight: 700; color: #6E2621; cursor: pointer; }
+  .ti-seg button.on { background: #6E2621; color: #fff; }
+  .ti-seg button:disabled { color: #c9b88f; cursor: not-allowed; }
+  .page-head { background: #F3E9CE; border-bottom: 1px solid #e7d9b3; padding: 22px 32px 20px; }
+  .page-head-in { max-width: 1320px; margin: 0 auto; display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+  .page-title { margin: 0; font-weight: 800; letter-spacing: -.025em; font-size: 34px; line-height: 1.15; color: #3a2a15; text-wrap: pretty; }
+  .page-main { flex: 1; padding: 24px 32px 60px; }
+  .page-wrap { max-width: 1320px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+  .notice { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; border-radius: 16px; padding: 14px 18px; font-size: 14px; line-height: 1.5; background: #fdf0e6; border: 1px solid #f6cfb3; }
+  .search-box { display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid #e6d8b6; border-radius: 12px; padding: 0 14px; height: 42px; }
+  .search-box input { border: none; outline: none; background: transparent; width: 100%; font-size: 14px; }
+  .drawer-head { flex-shrink: 0; background: #F3E9CE; border-bottom: 1px solid #e7d9b3; padding: 18px 22px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .drawer-foot { flex-shrink: 0; border-top: 1px solid #e7d9b3; background: #F3E9CE; padding: 14px 22px; display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+  .close-btn { width: 36px; height: 36px; flex-shrink: 0; border-radius: 11px; background: rgba(58,42,21,.08); cursor: pointer; }
+  .empty-msg { text-align: center; color: #b3a37c; font-size: 14px; padding: 24px 0; }
+  .err-box { background: #fbe6e2; border: 1px solid #f0c8c1; color: #8c2b20; font-size: 13px; font-weight: 600; padding: 11px 14px; border-radius: 12px; }
+  .err-detail { font-size: 12px; font-weight: 500; margin-top: 6px; color: #8a7952; }
+  .err-detail summary { cursor: pointer; font-weight: 700; }
+  .err-detail code { display: block; margin-top: 4px; white-space: pre-wrap; word-break: break-word; font-size: 11.5px; }
+  .tb-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 12px 2px 0; font-size: 12px; font-weight: 600; color: #8a7952; }
+  .tb-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .tb-legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
   /* App shell: sidebar on wide screens, bottom bar on phones */
   .app-shell { display: flex; min-height: 100vh; }
   .side-nav { width: 232px; flex-shrink: 0; position: sticky; top: 0; height: 100vh; background: #F3E9CE; border-right: 1px solid #e7d9b3; display: flex; flex-direction: column; gap: 26px; padding: 22px 14px; }
@@ -48,7 +86,8 @@
     .bottom-nav { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 70; height: 64px; background: #fff; border-top: 1px solid #ece0c2; box-shadow: 0 -10px 30px -18px rgba(74,59,23,.4); }
     .app-view { padding-bottom: 64px; }
     #toastEl { bottom: 84px !important; }
-    .page-pad { padding-left: 18px !important; padding-right: 18px !important; }
+    .page-pad, .page-head, .page-main { padding-left: 18px !important; padding-right: 18px !important; }
+    .page-title { font-size: 28px; }
   }
 </style>
 </head>
@@ -66,15 +105,15 @@
     <div style="display:flex; flex-direction:column; gap:4px;">
       <span style="padding:0 10px 6px; font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:#9a8763;">Menu</span>
       <button class="nav-link" data-view="events"><span class="nav-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block; flex-shrink:0;"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><line x1="16" y1="3" x2="16" y2="7"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="3.5" y1="10.5" x2="20.5" y2="10.5"/></svg></span>Event input</button>
-      <button class="nav-link" data-view="tata"><span class="nav-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block; flex-shrink:0;"><line x1="12" y1="3" x2="12" y2="21"/><line x1="6.5" y1="8.5" x2="17.5" y2="8.5"/></svg></span>Tata Ibadah</button>
-      <button class="nav-link" data-view="keuangan"><span class="nav-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block; flex-shrink:0;"><rect x="3" y="6" width="18" height="13" rx="2.5"/><line x1="3" y1="10.5" x2="21" y2="10.5"/><line x1="15" y1="15" x2="17.5" y2="15"/></svg></span>Keuangan</button>
+      <button class="nav-link" data-view="tata"><span class="nav-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block; flex-shrink:0;"><line x1="12" y1="3" x2="12" y2="21"/><line x1="6.5" y1="8.5" x2="17.5" y2="8.5"/></svg></span>Liturgy</button>
+      <button class="nav-link" data-view="keuangan"><span class="nav-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block; flex-shrink:0;"><rect x="3" y="6" width="18" height="13" rx="2.5"/><line x1="3" y1="10.5" x2="21" y2="10.5"/><line x1="15" y1="15" x2="17.5" y2="15"/></svg></span>Finance</button>
     </div>
   </nav>
 
   <nav class="bottom-nav">
     <button class="bottom-link" data-view="events"><span class="nav-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block; flex-shrink:0;"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><line x1="16" y1="3" x2="16" y2="7"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="3.5" y1="10.5" x2="20.5" y2="10.5"/></svg></span>Event input</button>
-    <button class="bottom-link" data-view="tata"><span class="nav-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block; flex-shrink:0;"><line x1="12" y1="3" x2="12" y2="21"/><line x1="6.5" y1="8.5" x2="17.5" y2="8.5"/></svg></span>Tata Ibadah</button>
-    <button class="bottom-link" data-view="keuangan"><span class="nav-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block; flex-shrink:0;"><rect x="3" y="6" width="18" height="13" rx="2.5"/><line x1="3" y1="10.5" x2="21" y2="10.5"/><line x1="15" y1="15" x2="17.5" y2="15"/></svg></span>Keuangan</button>
+    <button class="bottom-link" data-view="tata"><span class="nav-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block; flex-shrink:0;"><line x1="12" y1="3" x2="12" y2="21"/><line x1="6.5" y1="8.5" x2="17.5" y2="8.5"/></svg></span>Liturgy</button>
+    <button class="bottom-link" data-view="keuangan"><span class="nav-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block; flex-shrink:0;"><rect x="3" y="6" width="18" height="13" rx="2.5"/><line x1="3" y1="10.5" x2="21" y2="10.5"/><line x1="15" y1="15" x2="17.5" y2="15"/></svg></span>Finance</button>
   </nav>
 
   <div id="viewTata" class="app-view" style="display:none;"></div>
@@ -82,24 +121,24 @@
 
 <div id="viewEvents" class="app-view">
 
-  <header class="page-pad" style="background:#F3E9CE; border-bottom:1px solid #e7d9b3; padding:22px 32px 20px;">
-    <div style="max-width:1320px; margin:0 auto; display:flex; align-items:flex-end; justify-content:space-between; gap:24px; flex-wrap:wrap;">
+  <header class="page-head">
+    <div class="page-head-in">
       <div style="display:flex; flex-direction:column; gap:4px;">
-        <span style="color:#8a7952; font-size:12px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; line-height:1.4;">Service schedule</span>
-        <h1 style="margin:0; font-weight:800; letter-spacing:-.025em; font-size:34px; line-height:1.15; color:#3a2a15;">Event input</h1>
+        <span class="ti-eyebrow" style="line-height:1.4;">Service schedule</span>
+        <h1 class="page-title">Event input</h1>
       </div>
-      <div style="display:flex; align-items:center; gap:10px;">
-        <div style="display:flex; align-items:center; gap:8px; background:#fff; border:1px solid #e6d8b6; border-radius:12px; padding:0 14px; height:44px; min-width:240px;">
+      <div style="display:flex; align-items:center; gap:10px; flex:0 1 460px; min-width:0;">
+        <div class="search-box" style="flex:1 1 240px; min-width:0;">
           <span style="color:#b3a37c;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block; flex-shrink:0;"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.2" y2="16.2"/></svg></span>
-          <input id="searchInput" placeholder="Search theme, pastor, tag" style="border:none; outline:none; background:transparent; width:100%; font-size:14px;">
+          <input id="searchInput" placeholder="Search theme, pastor, tag">
         </div>
-        <button id="newEventBtn" style="height:44px; padding:0 20px; border-radius:12px; background:#E85511; color:#fff; font-weight:700; font-size:15px; cursor:pointer; box-shadow:0 10px 24px -12px rgba(232,85,17,.6);">+ New event</button>
+        <button id="newEventBtn" class="ti-btn-orange" style="height:42px; padding:0 18px;">+ New event</button>
       </div>
     </div>
   </header>
 
-  <main class="page-pad" style="flex:1; padding:26px 32px 60px;">
-    <div style="max-width:1320px; margin:0 auto; display:flex; flex-direction:column; gap:20px;">
+  <main class="page-main">
+    <div class="page-wrap">
 
       <div id="highlightCard"></div>
 
@@ -129,75 +168,74 @@
         </div>
       </div>
 
-      <div id="emptyState" style="display:none; text-align:center; color:#b3a37c; font-size:14px; padding:10px 0 0;">No events match this filter.</div>
-      <div id="loadingState" style="text-align:center; color:#b3a37c; font-size:14px; padding:30px 0;">Loading schedule…</div>
+      <div id="emptyState" class="empty-msg" style="display:none;">No events match this filter.</div>
+      <div id="loadingState" class="empty-msg">Loading schedule…</div>
     </div>
   </main>
 
   <div id="drawerOverlay" style="display:none; position:fixed; inset:0; z-index:80; justify-content:flex-end;">
     <div id="drawerScrim" style="position:absolute; inset:0; background:rgba(58,42,21,.38);"></div>
     <section style="position:relative; width:480px; max-width:100%; height:100%; background:#FBF6E7; box-shadow:-24px 0 60px rgba(74,59,23,.3); display:flex; flex-direction:column;">
-      <div style="flex-shrink:0; background:#F3E9CE; border-bottom:1px solid #e7d9b3; padding:22px 26px 20px; display:flex; align-items:flex-start; justify-content:space-between; gap:16px;">
-        <div style="display:flex; flex-direction:column; gap:3px;">
-          <span id="drawerEyebrow" style="color:#8a7952; font-size:11.5px; font-weight:700; letter-spacing:.07em; text-transform:uppercase;"></span>
-          <h2 id="drawerTitle" style="margin:0; font-weight:800; font-size:24px; letter-spacing:-.02em;"></h2>
+      <div class="drawer-head">
+        <div style="display:flex; flex-direction:column; gap:2px; min-width:0;">
+          <span id="drawerEyebrow" class="ti-eyebrow"></span>
+          <h2 id="drawerTitle" style="margin:0; font-weight:800; font-size:21px; letter-spacing:-.02em;"></h2>
         </div>
-        <button id="drawerCloseBtn" class="icon-btn" style="width:36px; height:36px; border-radius:11px; background:rgba(58,42,21,.08); cursor:pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block; flex-shrink:0;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        <button id="drawerCloseBtn" class="icon-btn close-btn" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block; flex-shrink:0;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
 
-      <div style="flex:1; overflow-y:auto; padding:22px 26px 28px; display:flex; flex-direction:column; gap:18px;">
-        <label style="display:flex; flex-direction:column; gap:7px;">
-          <span style="font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;">Date</span>
-          <input id="formDate" type="date" style="width:100%; padding:13px 14px; border-radius:12px; border:1px solid #e6d8b6; background:#fff; font-size:14.5px;">
+      <div style="flex:1; overflow-y:auto; padding:20px 22px 24px; display:flex; flex-direction:column; gap:16px;">
+        <label class="ti-label">
+          <span class="ti-label-t">Date</span>
+          <input id="formDate" type="date" class="ti-field">
         </label>
 
         <div style="display:flex; gap:12px;">
-          <label style="flex:1; display:flex; flex-direction:column; gap:7px;">
-            <span style="font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;">Time start</span>
-            <input id="formTimeStart" type="time" style="width:100%; padding:13px 14px; border-radius:12px; border:1px solid #e6d8b6; background:#fff; font-size:14.5px;">
+          <label class="ti-label" style="flex:1;">
+            <span class="ti-label-t">Time start</span>
+            <input id="formTimeStart" type="time" class="ti-field">
           </label>
-          <label style="flex:1; display:flex; flex-direction:column; gap:7px;">
-            <span style="font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;">Time end</span>
-            <input id="formTimeEnd" type="time" style="width:100%; padding:13px 14px; border-radius:12px; border:1px solid #e6d8b6; background:#fff; font-size:14.5px;">
+          <label class="ti-label" style="flex:1;">
+            <span class="ti-label-t">Time end</span>
+            <input id="formTimeEnd" type="time" class="ti-field">
           </label>
         </div>
 
-        <label style="display:flex; flex-direction:column; gap:7px;">
-          <span style="font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;">Theme</span>
-          <input id="formTheme" placeholder="e.g. A Prayer for Surrender" style="width:100%; padding:13px 14px; border-radius:12px; border:1px solid #e6d8b6; background:#fff; font-size:14.5px;">
+        <label class="ti-label">
+          <span class="ti-label-t">Theme</span>
+          <input id="formTheme" placeholder="e.g. A Prayer for Surrender" class="ti-field">
         </label>
 
         <div style="display:flex; flex-direction:column; gap:9px;">
-          <span style="font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;">Tag</span>
-          <input id="formTag" placeholder="e.g. Service" style="width:100%; padding:13px 14px; border-radius:12px; border:1px solid #e6d8b6; background:#fff; font-size:14.5px;">
+          <span class="ti-label-t">Tag</span>
+          <input id="formTag" placeholder="e.g. Service" class="ti-field">
           <div id="tagChips" style="display:flex; flex-wrap:wrap; gap:7px;"></div>
         </div>
 
         <div style="display:flex; flex-direction:column; gap:9px;">
-          <span style="font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;">PIC</span>
+          <span class="ti-label-t">PIC</span>
           <div id="picChips" style="display:flex; flex-wrap:wrap; gap:7px;"></div>
-          <input id="formPicSearch" placeholder="Search or add a name" autocomplete="off" style="width:100%; padding:13px 14px; border-radius:12px; border:1px solid #e6d8b6; background:#fff; font-size:14.5px;">
+          <input id="formPicSearch" placeholder="Search or add a name" autocomplete="off" class="ti-field">
           <div id="picResults" style="display:flex; flex-direction:column; gap:6px;"></div>
         </div>
 
-        <label style="display:flex; flex-direction:column; gap:7px;">
-          <span style="font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;">Pastor · Pelayan Firman</span>
-          <input id="formPastor" placeholder="e.g. Pnt. Yuana, SFL, Pak Anto" style="width:100%; padding:13px 14px; border-radius:12px; border:1px solid #e6d8b6; background:#fff; font-size:14.5px;">
+        <label class="ti-label">
+          <span class="ti-label-t">Pastor</span>
+          <input id="formPastor" placeholder="e.g. Pnt. Yuana, SFL, Pak Anto" class="ti-field">
         
-          <span style="font-size:12px; color:#8a7952; line-height:1.4;">Untuk event Service, sama dengan Pelayan Firman dan tema di Tata Ibadah (tersinkron otomatis).</span>
         </label>
 
-        <label style="display:flex; flex-direction:column; gap:7px;">
-          <span style="font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;">Notes</span>
-          <textarea id="formNotes" rows="3" placeholder="Optional context — changes, reminders" style="width:100%; padding:13px 14px; border-radius:12px; border:1px solid #e6d8b6; background:#fff; font-size:14.5px; font-family:inherit; resize:vertical;"></textarea>
+        <label class="ti-label">
+          <span class="ti-label-t">Notes</span>
+          <textarea id="formNotes" rows="3" placeholder="Optional context — changes, reminders" class="ti-field" style="resize:vertical;"></textarea>
         </label>
 
-        <div id="formError" style="display:none; margin:0; background:#fbe6e2; border:1px solid #f0c8c1; color:#8c2b20; font-size:13px; font-weight:600; padding:11px 14px; border-radius:12px;"></div>
+        <div id="formError" class="err-box" style="display:none;"></div>
       </div>
 
-      <div style="flex-shrink:0; border-top:1px solid #e7d9b3; background:#F3E9CE; padding:16px 26px; display:flex; align-items:center; gap:10px;">
-        <button id="saveBtn" style="flex:1; padding:15px; border-radius:13px; background:#E85511; color:#fff; font-weight:700; font-size:15.5px; cursor:pointer; box-shadow:0 10px 24px -12px rgba(232,85,17,.6);"></button>
-        <button id="deleteBtn" style="display:none; padding:15px 18px; border:1px solid #e6c9c3; border-radius:13px; background:#fff; color:#8c2b20; font-weight:700; font-size:14px; cursor:pointer;">Delete</button>
+      <div class="drawer-foot">
+        <button id="deleteBtn" class="ti-btn-outline" style="display:none; padding:12px 16px; font-size:14px; margin-right:auto; color:#8c2b20;">Delete</button>
+        <button id="saveBtn" class="ti-btn-orange"></button>
       </div>
     </section>
   </div>
@@ -305,6 +343,17 @@ var state = {
 };
 
 function blankForm() { return { date: '', theme: '', tag: '', pastor: '', notes: '', pic: [], timeStart: '', timeEnd: '' }; }
+
+/* What a failed server call tells the user: a plain sentence; the raw error goes to the console and, where shown, behind Details. */
+function errInfo(err, what) {
+  var detail = err && err.message ? err.message : String(err);
+  console.error(what + ': ' + detail);
+  return { text: "Couldn't " + what + '. Please try again.', detail: detail };
+}
+function errText(err, what) { return errInfo(err, what).text; }
+function errHtml(info) {
+  return '<div class="err-box">' + esc(info.text) + (info.detail ? '<details class="err-detail"><summary>Details</summary><code>' + esc(info.detail) + '</code></details>' : '') + '</div>';
+}
 
 function flash(msg) {
   state.toast = msg;
@@ -436,8 +485,8 @@ function renderHighlightCard() {
         (thenLabel ? '<span style="font-size:12px; color:#e0b5af; font-weight:600; margin-top:4px;">' + thenLabel + '</span>' : '') +
       '</div>' +
       '<div style="display:flex; flex-direction:column; gap:8px;">' +
-        '<button id="highlightOpenBtn" style="padding:13px 20px; border-radius:12px; background:#E85511; color:#fff; font-weight:700; font-size:14.5px; cursor:pointer; white-space:nowrap;">Open event</button>' +
-        '<button id="highlightCalBtn" style="padding:13px 20px; border-radius:12px; border:1px solid rgba(255,255,255,.35); background:transparent; color:#fff; font-size:13.5px; font-weight:700; cursor:pointer; white-space:nowrap;">Show on calendar</button>' +
+        '<button id="highlightOpenBtn" style="padding:12px 20px; border-radius:12px; background:#fff; color:#6E2621; font-weight:700; font-size:14px; cursor:pointer; white-space:nowrap;">Open event</button>' +
+        '<button id="highlightCalBtn" style="padding:12px 20px; border-radius:12px; border:1px solid rgba(255,255,255,.35); background:transparent; color:#fff; font-size:13.5px; font-weight:700; cursor:pointer; white-space:nowrap;">Show on calendar</button>' +
       '</div>' +
     '</div>';
 
@@ -489,6 +538,16 @@ function shiftCalMonth(n) {
   renderAll();
 }
 
+/* The tags on this month's grid, so the pill colours explain themselves. */
+function calendarLegendHtml(cells, map) {
+  var seen = [];
+  cells.forEach(function (c) { (map[c.iso] || []).forEach(function (r) { if (r.tag && seen.indexOf(r.tag) === -1) seen.push(r.tag); }); });
+  if (!seen.length) return '';
+  return '<div class="tb-legend">' + seen.sort().map(function (t) {
+    return '<span><i style="background:' + tagColor(t)[0] + '; box-shadow:inset 0 0 0 1px rgba(58,42,21,.12);"></i>' + esc(t) + '</span>';
+  }).join('') + '</div>';
+}
+
 function renderCalendarGrid() {
   var card = document.getElementById('calendarCard');
   var anchor = fromIso(state.calMonth) || startOfToday();
@@ -524,14 +583,15 @@ function renderCalendarGrid() {
         (r.timeStart ? '<span style="opacity:.85;">' + esc(r.timeStart) + '</span> ' : '') + esc(r.theme || 'Untitled') + '</button>';
     }).join('');
     var moreHtml = extra > 0 ? '<button class="cal-more-btn" data-iso="' + c.iso + '" style="cursor:pointer; text-align:left; width:100%; background:transparent; color:#8a7952; font-size:10.5px; font-weight:700; margin-top:3px;">+' + extra + ' more</button>' : '';
-    return '<div id="cal-' + c.iso + '" style="min-height:104px; background:#fff; padding:8px; display:flex; flex-direction:column; gap:3px;' + (c.inMonth ? '' : 'opacity:.45;') + '">' + dayNumHtml + pillsHtml + moreHtml + '</div>';
+    return '<div id="cal-' + c.iso + '" style="min-height:82px; background:#fff; padding:6px 8px; display:flex; flex-direction:column; gap:3px;' + (c.inMonth ? '' : 'opacity:.45;') + '">' + dayNumHtml + pillsHtml + moreHtml + '</div>';
   }).join('');
 
   card.innerHTML = '<div style="background:#fff; border:1px solid #ece0c2; border-radius:20px; overflow:hidden;">' +
     '<div style="display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); background:#F3E9CE; border-bottom:1px solid #e7d9b3;">' + dowHtml + '</div>' +
     '<div style="display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:1px; background:#f1e7cd;">' + cellsHtml + '</div>' +
     '</div>' +
-    (calendarFilteredRows().length === 0 ? '<p style="text-align:center; color:#b3a37c; font-size:14px; padding:14px 0 0;">No events match this filter.</p>' : '');
+    calendarLegendHtml(cells, map) +
+    (calendarFilteredRows().length === 0 ? '<p class="empty-msg" style="padding:14px 0 0;">No events match this filter.</p>' : '');
 
   Array.prototype.forEach.call(card.querySelectorAll('.cal-evt-pill'), function (btn) {
     var id = btn.getAttribute('data-id');
@@ -927,7 +987,7 @@ function openNew() {
 function openEdit(id) {
   var row = state.rows.filter(function (r) { return r.id === id; })[0];
   if (!row) return;
-  if (/^new-/.test(id)) { flash('Sedang menyimpan, tunggu sebentar…'); return; }
+  if (/^new-/.test(id)) { flash('Still saving, one moment…'); return; }
   state.drawerOpen = true;
   state.editingId = id;
   state.form = { date: row.date, theme: row.theme, tag: row.tag, pastor: row.pastor, notes: row.notes || '', pic: (row.pic || []).slice(), timeStart: row.timeStart || '', timeEnd: row.timeEnd || '' };
@@ -976,7 +1036,7 @@ function renderPicField() {
 
   var chipsHtml = pic.map(function (m) {
     return '<span class="pill-btn on" style="display:inline-flex; align-items:center; gap:6px;">' + esc(m.name) +
-      '<button type="button" data-remove-pic="' + esc(m.id) + '" aria-label="Hapus" style="cursor:pointer; color:inherit; display:inline-flex; padding:0;">' + icon('x', 13) + '</button></span>';
+      '<button type="button" data-remove-pic="' + esc(m.id) + '" aria-label="Remove" style="cursor:pointer; color:inherit; display:inline-flex; padding:0;">' + icon('x', 13) + '</button></span>';
   }).join('');
   var chipsEl = document.getElementById('picChips');
   chipsEl.innerHTML = chipsHtml;
@@ -1089,7 +1149,7 @@ function saveEventClick() {
   state.drawerOpen = false;
   renderDrawer();
   renderAll();
-  flash('Menyimpan…');
+  flash('Saving…');
 
   var fail = function (message) {
     state.rows = before;
@@ -1107,7 +1167,7 @@ function saveEventClick() {
       flash(res.message);
       if (res.tataIbadah && res.tataIbadah.changed && typeof tiAfterScheduleChange === 'function') tiAfterScheduleChange();
     })
-    .withFailureHandler(function (err) { fail(err && err.message ? err.message : String(err)); })
+    .withFailureHandler(function (err) { fail(errText(err, 'save the event')); })
     .saveEvent(payload);
 }
 
@@ -1120,7 +1180,7 @@ function deleteEventClick() {
   state.drawerOpen = false;
   renderDrawer();
   renderAll();
-  flash('Menghapus…');
+  flash('Deleting…');
 
   var fail = function (message) {
     state.rows = before;
@@ -1136,7 +1196,7 @@ function deleteEventClick() {
       if (!res.success) { fail(res.message); return; }
       flash(res.message);
     })
-    .withFailureHandler(function (err) { fail(err && err.message ? err.message : String(err)); })
+    .withFailureHandler(function (err) { fail(errText(err, 'delete the event')); })
     .deleteEvent(id);
 }
 
@@ -1170,7 +1230,7 @@ function fetchSchedule(done) {
     })
     .withFailureHandler(function (err) {
       state.loaded = true;
-      document.getElementById('loadingState').textContent = 'Failed to load schedule: ' + (err && err.message ? err.message : err);
+      document.getElementById('loadingState').textContent = errText(err, 'load the schedule');
       renderAll();
     })
     .getSchedule();

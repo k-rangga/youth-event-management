@@ -72,11 +72,11 @@ function kuStatus(token) {
 /* Sets the first PIN. Refused once a PIN exists (use kuChangePin). */
 function kuSetupPin(pin) {
   pin = String(pin || '');
-  if (pin.length < KU_MIN_PIN) return { success: false, message: 'PIN minimal ' + KU_MIN_PIN + ' karakter.' };
+  if (pin.length < KU_MIN_PIN) return { success: false, message: 'The PIN needs at least ' + KU_MIN_PIN + ' characters.' };
   var lock = LockService.getScriptLock();
   lock.waitLock(30000);
   try {
-    if (kuConfig_().pinHash) return { success: false, message: 'PIN keuangan sudah dibuat. Masukkan PIN untuk membuka.' };
+    if (kuConfig_().pinHash) return { success: false, message: 'A PIN already exists. Enter it to open.' };
     var salt = Utilities.getUuid();
     kuSetConfig_('pinSalt', salt);
     kuSetConfig_('pinHash', kuHash_(salt, pin));
@@ -88,12 +88,12 @@ function kuSetupPin(pin) {
 
 function kuCheckPin_(pin) {
   var cache = CacheService.getScriptCache(), fails = Number(cache.get('ku_fail') || 0);
-  if (fails >= KU_MAX_FAILS) return 'Terlalu banyak PIN salah. Coba lagi dalam 15 menit.';
+  if (fails >= KU_MAX_FAILS) return 'Too many wrong PINs. Try again in 15 minutes.';
   var cfg = kuConfig_();
   if (!cfg.pinHash) return 'PIN keuangan belum dibuat.';
   if (kuHash_(cfg.pinSalt, String(pin || '')) === cfg.pinHash) return '';
   cache.put('ku_fail', String(fails + 1), 900);
-  return 'PIN salah.';
+  return 'Wrong PIN.';
 }
 
 function kuUnlock(pin) {
@@ -109,13 +109,13 @@ function kuLock(token) {
 function kuChangePin(token, oldPin, newPin) {
   kuAuth_(token);
   newPin = String(newPin || '');
-  if (newPin.length < KU_MIN_PIN) return { success: false, message: 'PIN baru minimal ' + KU_MIN_PIN + ' karakter.' };
+  if (newPin.length < KU_MIN_PIN) return { success: false, message: 'The new PIN needs at least ' + KU_MIN_PIN + ' characters.' };
   var err = kuCheckPin_(oldPin);
-  if (err) return { success: false, message: err === 'PIN salah.' ? 'PIN lama salah.' : err };
+  if (err) return { success: false, message: err === 'Wrong PIN.' ? 'Current PIN is wrong.' : err };
   var salt = Utilities.getUuid();
   kuSetConfig_('pinSalt', salt);
   kuSetConfig_('pinHash', kuHash_(salt, newPin));
-  return { success: true, message: 'PIN keuangan diganti' };
+  return { success: true, message: 'Finance PIN changed' };
 }
 
 /* ---------- rows ---------- */
@@ -190,11 +190,11 @@ function saveBudgetLine(token, p) {
   kuAuth_(token);
   p = p || {};
   var eventId = String(p.eventId || '').trim(), desc = String(p.desc || '').trim();
-  if (!eventId) return { success: false, message: 'Event belum dipilih.' };
-  if (!desc) return { success: false, message: 'Isi uraian anggaran.' };
+  if (!eventId) return { success: false, message: 'No event selected.' };
+  if (!desc) return { success: false, message: 'Enter a description.' };
   var qty = p.qty === '' || p.qty == null ? '' : Number(p.qty), price = p.price === '' || p.price == null ? '' : kuNum_(p.price);
   var amount = qty !== '' && price !== '' ? Math.round(qty * price) : kuNum_(p.amount);
-  if (amount <= 0) return { success: false, message: 'Jumlah anggaran harus lebih dari 0.' };
+  if (amount <= 0) return { success: false, message: 'The budget amount must be more than 0.' };
   var line = { id: String(p.id || '') || Utilities.getUuid(), eventId: eventId, type: p.type === 'in' ? 'in' : 'out', category: String(p.category || 'Lain-lain'),
     desc: desc, qty: qty, price: price, amount: amount, notes: String(p.notes || '').trim() };
   kuWithLock_(function () {
@@ -209,7 +209,7 @@ function deleteBudgetLine(token, id) {
   kuAuth_(token);
   id = String(id || '');
   return kuWithLock_(function () {
-    if (!kuDeleteRow_(KU_LINES_SHEET, id)) return { success: false, message: 'Baris anggaran tidak ditemukan.' };
+    if (!kuDeleteRow_(KU_LINES_SHEET, id)) return { success: false, message: 'Budget line not found.' };
     var sh = getSs_().getSheetByName(KU_TX_SHEET);
     if (sh && sh.getLastRow() > 1) {
       var col = sh.getRange(2, 3, sh.getLastRow() - 1, 1).getValues();
@@ -223,14 +223,14 @@ function saveTransaction(token, p) {
   kuAuth_(token);
   p = p || {};
   var eventId = String(p.eventId || '').trim(), date = String(p.date || '').trim(), amount = kuNum_(p.amount);
-  if (!eventId) return { success: false, message: 'Event belum dipilih.' };
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { success: false, message: 'Isi tanggal transaksi.' };
-  if (amount <= 0) return { success: false, message: 'Jumlah harus lebih dari 0.' };
+  if (!eventId) return { success: false, message: 'No event selected.' };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { success: false, message: 'Enter the transaction date.' };
+  if (amount <= 0) return { success: false, message: 'The amount must be more than 0.' };
   var tx = { id: String(p.id || '') || Utilities.getUuid(), eventId: eventId, lineId: String(p.lineId || ''), date: date, type: p.type === 'in' ? 'in' : 'out',
     category: String(p.category || 'Lain-lain'), desc: String(p.desc || '').trim(), amount: amount,
     source: p.type !== 'in' && p.source === 'personal' ? 'personal' : 'kas', paidBy: String(p.paidBy || '').trim(),
     reimbursed: !!p.reimbursed, receiptId: String(p.receiptId || ''), receiptName: String(p.receiptName || '') };
-  if (tx.source === 'personal' && !tx.paidBy) return { success: false, message: 'Isi nama yang membayar.' };
+  if (tx.source === 'personal' && !tx.paidBy) return { success: false, message: 'Enter who paid.' };
   if (tx.source !== 'personal') tx.reimbursed = false;
   var old = p.id ? kuRows_(KU_TX_SHEET, KU_TX_HEAD).map(kuTxFromRow_).filter(function (t) { return t.id === tx.id; })[0] : null;
   if (old && old.receiptId && old.receiptId !== tx.receiptId) kuTrashReceipt_(old.receiptId);
@@ -246,7 +246,7 @@ function deleteTransaction(token, id) {
   kuAuth_(token);
   id = String(id || '');
   var tx = kuRows_(KU_TX_SHEET, KU_TX_HEAD).map(kuTxFromRow_).filter(function (t) { return t.id === id; })[0];
-  if (!tx) return { success: false, message: 'Transaksi tidak ditemukan.' };
+  if (!tx) return { success: false, message: 'Transaction not found.' };
   if (tx.receiptId) kuTrashReceipt_(tx.receiptId);
   kuWithLock_(function () { kuDeleteRow_(KU_TX_SHEET, id); });
   return { success: true };
@@ -256,9 +256,9 @@ function deleteTransaction(token, id) {
 function copyBudget(token, fromEventId, toEventId) {
   kuAuth_(token);
   fromEventId = String(fromEventId || ''); toEventId = String(toEventId || '');
-  if (!fromEventId || !toEventId || fromEventId === toEventId) return { success: false, message: 'Pilih event sumber yang lain.' };
+  if (!fromEventId || !toEventId || fromEventId === toEventId) return { success: false, message: 'Choose a different event to copy from.' };
   var src = kuRows_(KU_LINES_SHEET, KU_LINE_HEAD).map(kuLineFromRow_).filter(function (l) { return l.eventId === fromEventId; });
-  if (!src.length) return { success: false, message: 'Event itu belum punya anggaran.' };
+  if (!src.length) return { success: false, message: 'That event has no budget yet.' };
   var stamp = kuStamp_(), out = src.map(function (l) {
     var c = JSON.parse(JSON.stringify(l)); c.id = Utilities.getUuid(); c.eventId = toEventId; return c;
   });
@@ -283,10 +283,10 @@ function kuReceiptFolder_() {
 /* data: base64 file contents. Returns the Drive file ID to put on the transaction. */
 function uploadReceipt(token, eventId, name, mimeType, data) {
   kuAuth_(token);
-  if (!/^(image\/(jpeg|png|webp|heic|heif)|application\/pdf)$/.test(String(mimeType))) return { success: false, message: 'Bukti harus berupa foto atau PDF.' };
+  if (!/^(image\/(jpeg|png|webp|heic|heif)|application\/pdf)$/.test(String(mimeType))) return { success: false, message: 'Receipts must be a photo or PDF.' };
   var bytes = Utilities.base64Decode(String(data || ''));
-  if (!bytes.length) return { success: false, message: 'File bukti kosong.' };
-  if (bytes.length > KU_RECEIPT_MAX) return { success: false, message: 'File bukti terlalu besar (maks. 8 MB).' };
+  if (!bytes.length) return { success: false, message: 'That receipt file is empty.' };
+  if (bytes.length > KU_RECEIPT_MAX) return { success: false, message: 'Receipt is too large (max 8 MB).' };
   var safe = String(name || 'bukti').replace(/[\\\/:*?"<>|]+/g, ' ').slice(0, 80);
   var file = kuReceiptFolder_().createFile(Utilities.newBlob(bytes, mimeType, 'Event ' + String(eventId) + ' – ' + safe));
   return { success: true, receiptId: file.getId(), receiptName: safe };
@@ -295,10 +295,10 @@ function uploadReceipt(token, eventId, name, mimeType, data) {
 /* Only files a transaction points to and that sit in the receipt folder can be read or trashed. */
 function kuOwnReceipt_(fileId) {
   var known = kuRows_(KU_TX_SHEET, KU_TX_HEAD).some(function (r) { return String(r[11]) === fileId; });
-  if (!fileId || !known) throw new Error('Bukti tidak ditemukan.');
+  if (!fileId || !known) throw new Error('Receipt not found.');
   var file = DriveApp.getFileById(fileId), folderId = kuConfig_().folderId, parents = file.getParents(), inFolder = false;
   while (parents.hasNext()) { if (parents.next().getId() === folderId) inFolder = true; }
-  if (!inFolder) throw new Error('Bukti tidak ditemukan.');
+  if (!inFolder) throw new Error('Receipt not found.');
   return file;
 }
 

@@ -31,7 +31,7 @@ ok('setup gives token', !!t1);
 ok('second setup refused', !r(`kuSetupPin('lainnya1')`).success);
 ok('PIN stored hashed', !JSON.stringify(sheets._Keuangan.rows).includes('rahasia1'), sheets._Keuangan.rows.map(x => x[0]));
 ok('status unlocked with token', r(`kuStatus(${JSON.stringify(t1)})`).unlocked);
-ok('wrong PIN', r(`kuUnlock('salah123')`).message === 'PIN salah.');
+ok('wrong PIN', r(`kuUnlock('salah123')`).message === 'Wrong PIN.');
 const t = r(`kuUnlock('rahasia1')`).token;
 ok('right PIN', !!t);
 const T = JSON.stringify(t);
@@ -61,7 +61,7 @@ ok('tx round-trip', d.txs[0].date === '2026-10-20' && d.txs[0].paidBy === 'Andre
 const g = r(`getReceipt(${T}, ${JSON.stringify(up.receiptId)})`);
 ok('receipt read', Buffer.from(g.data, 'base64').toString() === 'JPEGDATA' && g.mimeType === 'image/jpeg');
 const stray = folder.createFile({ bytes: [1], mime: 'image/png', name: 'other' }).getId();
-ok('unlinked Drive file refused', throws(`getReceipt(${T}, ${JSON.stringify(stray)})`) === 'Bukti tidak ditemukan.');
+ok('unlinked Drive file refused', throws(`getReceipt(${T}, ${JSON.stringify(stray)})`) === 'Receipt not found.');
 
 const up2 = r(`uploadReceipt(${T}, '1', 'nota2.jpg', 'image/jpeg', 'QUJD')`);
 r(`saveTransaction(${T}, {id:${JSON.stringify(x1.tx.id)}, eventId:'1', lineId:${JSON.stringify(l1.line.id)}, type:'out', category:'Konsumsi', date:'2026-10-20', amount:250000, source:'personal', paidBy:'Andreas', reimbursed:true, receiptId:${JSON.stringify(up2.receiptId)}})`);
@@ -76,9 +76,9 @@ ok('delete line', r(`deleteBudgetLine(${T}, ${JSON.stringify(l1.line.id)})`).suc
 ok('its tx becomes unbudgeted', r(`getKeuanganData(${T})`).txs[0].lineId === '');
 ok('delete tx', r(`deleteTransaction(${T}, ${JSON.stringify(x1.tx.id)})`).success && files[up2.receiptId].trashed && sheets.Transaksi.rows.length === 2);
 
-ok('change PIN: wrong old', r(`kuChangePin(${T}, 'salah123', 'barupin1')`).message === 'PIN lama salah.');
+ok('change PIN: wrong old', r(`kuChangePin(${T}, 'salah123', 'barupin1')`).message === 'Current PIN is wrong.');
 ok('change PIN', r(`kuChangePin(${T}, 'rahasia1', 'barupin1')`).success && r(`kuUnlock('barupin1')`).success && !r(`kuUnlock('rahasia1')`).success);
 r(`kuLock(${T})`);
 ok('lock ends session', throws(`getKeuanganData(${T})`) === 'KU_LOCKED');
 for (let i = 0; i < 8; i++) r(`kuUnlock('tebak${i}00')`);
-ok('rate limit after repeated wrong PINs', /Terlalu banyak/.test(r(`kuUnlock('barupin1')`).message));
+ok('rate limit after repeated wrong PINs', /Too many/.test(r(`kuUnlock('barupin1')`).message));

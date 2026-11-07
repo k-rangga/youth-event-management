@@ -42,13 +42,13 @@
 </style>
 
 <script>
-/* ===================== Keuangan (budget vs actual per event) ===================== */
+/* ===================== Finance (budget vs actual per event) ===================== */
 
 var KU_CATS = {
-  out: ['Konsumsi', 'Transport', 'Akomodasi', 'Sewa tempat', 'Sound & multimedia', 'Dekorasi', 'Perlengkapan', 'Cetak & publikasi', 'Honor & persembahan kasih', 'Hadiah', 'Lain-lain'],
-  in: ['Kas pemuda', 'Iuran peserta', 'Sponsor & donasi', 'Subsidi gereja', 'Persembahan', 'Penjualan', 'Lain-lain']
+  out: ['Food', 'Transport', 'Lodging', 'Venue', 'Sound & media', 'Decoration', 'Supplies', 'Print & publicity', 'Honorarium & love gift', 'Prizes', 'Other'],
+  in: ['Youth fund', 'Participant fees', 'Sponsors & donations', 'Church subsidy', 'Offering', 'Sales', 'Other']
 };
-var KU_TYPE = { out: 'Pengeluaran', in: 'Pemasukan' };
+var KU_TYPE = { out: 'Expense', in: 'Income' };
 var KU_LIST_CAP = 120;
 
 var kuState = {
@@ -70,13 +70,13 @@ function kuRp(n) {
   return (n < 0 ? '−' : '') + 'Rp ' + String(Math.abs(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
 
-/* "150000", "150.000", "150rb", "150k", "1,5jt" → rupiah; NaN when unreadable. */
+/* "150000", "150.000", "150k", "150rb", "1.5m", "1,5jt" → rupiah; NaN when unreadable. */
 function kuParseAmt(s) {
   s = String(s == null ? '' : s).toLowerCase().replace(/rp\.?/g, '').replace(/\s+/g, '');
   if (!s) return NaN;
-  var m = /^([\d.,]+)(rb|ribu|k|jt|juta)$/.exec(s);
+  var m = /^([\d.,]+)(rb|ribu|k|jt|juta|m|mio)$/.exec(s);
   if (m) {
-    var mult = m[2] === 'jt' || m[2] === 'juta' ? 1e6 : 1e3;
+    var mult = /^(jt|juta|m|mio)$/.test(m[2]) ? 1e6 : 1e3;
     var v = parseFloat(m[1].replace(/\.(?=\d{3}(\D|$))/g, '').replace(',', '.'));
     return isFinite(v) ? Math.round(v * mult) : NaN;
   }
@@ -86,16 +86,16 @@ function kuParseAmt(s) {
 function kuAmtHint(s) {
   var v = kuParseAmt(s);
   if (!String(s || '').trim()) return '';
-  return isFinite(v) && v > 0 ? '= ' + kuRp(v) : 'Contoh: 150000, 150rb, 1,5jt';
+  return isFinite(v) && v > 0 ? '= ' + kuRp(v) : 'e.g. 150000, 150k, 1.5m';
 }
 
 /* ---------- data helpers ---------- */
 
 function kuEvent(id) {
   var e = kuState.events.filter(function (x) { return x.id === id; })[0];
-  return e || { id: id, date: '', theme: 'Event dihapus (ID ' + id + ')', tag: '', gone: true };
+  return e || { id: id, date: '', theme: 'Deleted event (ID ' + id + ')', tag: '', gone: true };
 }
-function kuEventTitle(e) { return (e.theme && !/^untitled(\s+event)?$/i.test(e.theme.trim())) ? e.theme : 'Tanpa judul'; }
+function kuEventTitle(e) { return (e.theme && !/^untitled(\s+event)?$/i.test(e.theme.trim())) ? e.theme : 'Untitled'; }
 function kuLinesOf(id) { return kuState.lines.filter(function (l) { return l.eventId === id; }); }
 function kuTxsOf(id) { return kuState.txs.filter(function (t) { return t.eventId === id; }); }
 
@@ -114,22 +114,26 @@ function kuPill(text, bg, fg) { return '<span class="ti-pill" style="background:
 
 function kuStatusPills(s) {
   var out = [];
-  if (!s.lines && !s.txs) return kuPill('Belum ada anggaran', '#F3E9CE', '#9a8763');
-  if (s.budOut && s.actOut > s.budOut) out.push(kuPill('Melebihi ' + kuRp(s.actOut - s.budOut), '#fbe3dc', '#8e2a1f'));
-  if (s.owed) out.push(kuPill('Perlu diganti ' + kuRp(s.owed), '#fdf0e6', '#a3420e'));
-  if (!out.length) out.push(s.txs ? kuPill('Sesuai anggaran', '#e3eedf', '#24401F') : kuPill('Direncanakan', '#CFE4F7', '#31536f'));
+  if (!s.lines && !s.txs) return kuPill('No budget', '#F3E9CE', '#9a8763');
+  if (s.budOut && s.actOut > s.budOut) out.push(kuPill('Over by ' + kuRp(s.actOut - s.budOut), '#fbe3dc', '#8e2a1f'));
+  if (s.owed) out.push(kuPill('To repay ' + kuRp(s.owed), '#fdf0e6', '#a3420e'));
+  if (!out.length) out.push(s.txs ? kuPill('On budget', '#e3eedf', '#24401F') : kuPill('Planned', '#CFE4F7', '#31536f'));
   return out.join('');
 }
 
 /* ---------- server calls ---------- */
+
+var KU_WHAT = { getKeuanganData: 'load finance data', saveBudgetLine: 'save the budget line', deleteBudgetLine: 'delete the budget line', saveTransaction: 'save the transaction',
+  deleteTransaction: 'delete the transaction', copyBudget: 'copy the budget', uploadReceipt: 'upload the receipt', getReceipt: 'open the receipt', kuChangePin: 'change the PIN', kuLock: 'lock' };
 
 /* Runs fn(token, …) on the server; a lapsed unlock sends the user back to the PIN screen. */
 function kuCall(name, args, ok, fail) {
   var r = google.script.run
     .withSuccessHandler(ok)
     .withFailureHandler(function (err) {
-      var msg = err && err.message ? err.message : String(err);
-      if (/KU_LOCKED/.test(msg)) { kuRelock(); return; }
+      var raw = err && err.message ? err.message : String(err);
+      if (/KU_LOCKED/.test(raw)) { kuRelock(); return; }
+      var msg = /^Receipt not found/.test(raw) ? 'Receipt not found.' : errText(err, KU_WHAT[name] || 'do that');
       if (fail) fail(msg); else flash(msg);
     });
   r[name].apply(r, [kuState.token].concat(args || []));
@@ -139,7 +143,7 @@ function kuRelock() {
   kuState.token = ''; kuStore('');
   kuState.loaded = false; kuState.form = null; kuState.receipt = null;
   kuState.status = { pinSet: true };
-  kuState.pin = { v: '', v2: '', error: 'Sesi keuangan berakhir. Masukkan PIN lagi.', busy: false };
+  kuState.pin = { v: '', v2: '', error: 'Session ended. Enter the PIN again.', busy: false };
   kuRender();
 }
 
@@ -147,7 +151,7 @@ function kuEnter() {
   if (!kuState.status) {
     google.script.run
       .withSuccessHandler(function (st) { kuState.status = st; if (st.unlocked) kuLoad(); else { kuState.token = ''; kuStore(''); } kuRender(); })
-      .withFailureHandler(function (err) { kuState.loadError = err && err.message ? err.message : String(err); kuRender(); })
+      .withFailureHandler(function (err) { kuState.loadError = errText(err, 'open Finance'); kuRender(); })
       .kuStatus(kuState.token);
   } else if (kuState.token && !kuState.loaded && !kuState.loading) kuLoad();
   kuRender();
@@ -165,7 +169,7 @@ function kuLoad() {
 
 function kuSubmitPin() {
   var p = kuState.pin, setup = !kuState.status.pinSet;
-  if (setup && p.v !== p.v2) { p.error = 'Kedua PIN tidak sama.'; kuRender(); return; }
+  if (setup && p.v !== p.v2) { p.error = 'The PINs don\'t match.'; kuRender(); return; }
   p.busy = true; p.error = ''; kuRender();
   google.script.run
     .withSuccessHandler(function (res) {
@@ -176,7 +180,7 @@ function kuSubmitPin() {
       kuState.pin = { v: '', v2: '', error: '', busy: false };
       kuLoad(); kuRender();
     })
-    .withFailureHandler(function (err) { p.busy = false; p.error = err && err.message ? err.message : String(err); kuRender(); })[setup ? 'kuSetupPin' : 'kuUnlock'](p.v);
+    .withFailureHandler(function (err) { p.busy = false; p.error = errText(err, 'check the PIN'); kuRender(); })[setup ? 'kuSetupPin' : 'kuUnlock'](p.v);
 }
 
 /* ---------- render ---------- */
@@ -185,24 +189,24 @@ function kuRender() {
   var root = document.getElementById('viewKeuangan');
   if (!root) return;
   var s = kuState;
-  if (!s.status) root.innerHTML = kuHeader('Keuangan · Pemuda GKI Kota Wisata', 'Keuangan', '') + kuMsg(s.loadError ? 'Gagal membuka keuangan: ' + esc(s.loadError) : 'Memuat…');
+  if (!s.status) root.innerHTML = kuHeader('Pemuda GKI Kota Wisata', 'Finance', '') + kuMsg(s.loadError ? esc(s.loadError) : 'Loading…');
   else if (!s.token) root.innerHTML = kuPinHtml();
-  else if (!s.loaded) root.innerHTML = kuHeader('Keuangan · Pemuda GKI Kota Wisata', 'Keuangan', '') + kuMsg(s.loadError ? 'Gagal memuat data keuangan: ' + esc(s.loadError) : 'Memuat data keuangan…');
+  else if (!s.loaded) root.innerHTML = kuHeader('Pemuda GKI Kota Wisata', 'Finance', '') + kuMsg(s.loadError ? esc(s.loadError) : 'Loading…');
   else if (s.screen === 'event' && s.eventId) root.innerHTML = kuEventHtml();
   else root.innerHTML = kuListHtml();
   kuRenderPanel();
   kuRenderReceipt();
 }
 
-function kuMsg(text) { return '<div style="text-align:center; color:#b3a37c; font-size:14px; padding:40px 20px;">' + text + '</div>'; }
+function kuMsg(text) { return '<div class="empty-msg" style="padding:40px 20px;">' + text + '</div>'; }
 
 function kuHeader(eyebrow, title, right, back) {
-  return '<header class="page-pad" style="background:#F3E9CE; border-bottom:1px solid #e7d9b3; padding:22px 32px 20px;">' +
-    '<div style="max-width:1320px; margin:0 auto; display:flex; align-items:flex-end; justify-content:space-between; gap:20px; flex-wrap:wrap;">' +
+  return '<header class="page-head">' +
+    '<div class="page-head-in">' +
       '<div style="display:flex; flex-direction:column; gap:4px; min-width:0;">' +
-        (back ? '<span data-ku="back" class="ti-link" style="display:inline-flex; align-items:center; gap:4px; margin-bottom:4px;">' + icon('left', 14) + 'Semua event</span>' : '') +
+        (back ? '<span data-ku="back" class="ti-link" style="display:inline-flex; align-items:center; gap:4px; margin-bottom:4px;">' + icon('left', 14) + 'All events</span>' : '') +
         '<span class="ti-eyebrow" style="line-height:1.4;">' + eyebrow + '</span>' +
-        '<h1 style="margin:0; font-weight:800; letter-spacing:-.025em; font-size:34px; line-height:1.15; color:#3a2a15; text-wrap:pretty;">' + title + '</h1>' +
+        '<h1 class="page-title">' + title + '</h1>' +
       '</div>' + right +
     '</div>' +
   '</header>';
@@ -210,41 +214,38 @@ function kuHeader(eyebrow, title, right, back) {
 
 function kuPinHtml() {
   var p = kuState.pin, setup = !kuState.status.pinSet;
-  return kuHeader('Keuangan · Pemuda GKI Kota Wisata', 'Keuangan', '') +
-    '<main class="page-pad" style="padding:40px 32px 60px;"><div class="ti-card" style="max-width:400px; margin:0 auto; padding:24px; display:flex; flex-direction:column; gap:14px;">' +
-      '<h2 style="margin:0; font-weight:800; font-size:20px; letter-spacing:-.02em;">' + (setup ? 'Buat PIN keuangan' : 'Masukkan PIN keuangan') + '</h2>' +
-      '<p style="margin:0; font-size:14px; line-height:1.55; color:#6b5a38;">' + (setup
-        ? 'Data keuangan dikunci dengan PIN, karena aplikasi ini bisa dibuka siapa saja yang punya link. Bagikan PIN hanya ke pengurus yang mengelola keuangan.'
-        : 'Halaman ini hanya untuk pengurus yang mengelola keuangan.') + '</p>' +
+  return kuHeader('Pemuda GKI Kota Wisata', 'Finance', '') +
+    '<main class="page-main" style="padding-top:40px;"><div class="ti-card" style="max-width:400px; margin:0 auto; padding:24px; display:flex; flex-direction:column; gap:14px;">' +
+      '<h2 style="margin:0; font-weight:800; font-size:20px; letter-spacing:-.02em;">' + (setup ? 'Create a finance PIN' : 'Enter the finance PIN') + '</h2>' +
+      (setup ? '<p style="margin:0; font-size:14px; line-height:1.55; color:#6b5a38;">Share it only with whoever handles the money.</p>' : '') +
       (p.error ? '<div class="ku-err">' + esc(p.error) + '</div>' : '') +
-      '<label class="ti-label"><span>PIN' + (setup ? ' (minimal 6 karakter)' : '') + '</span>' +
+      '<label class="ti-label"><span>PIN' + (setup ? ' (at least 6 characters)' : '') + '</span>' +
         '<input id="kuPin" data-kupin="v" type="password" autocomplete="' + (setup ? 'new-password' : 'current-password') + '" class="ti-field" value="' + esc(p.v) + '"></label>' +
-      (setup ? '<label class="ti-label"><span>Ulangi PIN</span><input data-kupin="v2" type="password" autocomplete="new-password" class="ti-field" value="' + esc(p.v2) + '"></label>' : '') +
-      '<button data-ku="pinGo" class="ti-btn-orange"' + (p.busy ? ' disabled style="opacity:.6"' : '') + '>' + (p.busy ? 'Memeriksa…' : setup ? 'Simpan PIN dan buka' : 'Buka') + '</button>' +
+      (setup ? '<label class="ti-label"><span>Repeat PIN</span><input data-kupin="v2" type="password" autocomplete="new-password" class="ti-field" value="' + esc(p.v2) + '"></label>' : '') +
+      '<button data-ku="pinGo" class="ti-btn-orange"' + (p.busy ? ' disabled style="opacity:.6"' : '') + '>' + (p.busy ? 'Checking…' : setup ? 'Save and open' : 'Open') + '</button>' +
     '</div></main>';
 }
 
 function kuListHtml() {
   var s = kuState;
   var right = '<span style="display:flex; gap:8px; flex-wrap:wrap;">' +
-    '<button data-ku="changePin" class="ti-btn-outline">Ganti PIN</button>' +
-    '<button data-ku="lock" class="ti-btn-outline">Kunci</button></span>';
-  var html = kuHeader('Keuangan · Pemuda GKI Kota Wisata', 'Anggaran event', right);
-  html += '<main class="page-pad" style="padding:26px 32px 60px;"><div style="max-width:1320px; margin:0 auto; display:flex; flex-direction:column; gap:18px;">';
+    '<button data-ku="changePin" class="ti-btn-outline">Change PIN</button>' +
+    '<button data-ku="lock" class="ti-btn-outline">Lock</button></span>';
+  var html = kuHeader('Pemuda GKI Kota Wisata', 'Event budgets', right);
+  html += '<main class="page-main"><div class="page-wrap">';
 
   var owed = 0, owedN = 0;
   s.txs.forEach(function (t) { if (t.source === 'personal' && !t.reimbursed) { owed += t.amount; owedN++; } });
   if (owed) {
-    html += '<div style="background:#fdf0e6; border:1px solid #f6cfb3; border-radius:16px; padding:13px 18px; font-size:14px; line-height:1.5;">' +
-      '<strong style="font-weight:800; color:#a3420e;">' + kuRp(owed) + ' perlu diganti</strong> · ' + owedN + ' pembayaran pribadi belum diganti dari kas.</div>';
+    html += '<div class="notice"><span><strong style="font-weight:800; color:#a3420e;">' + kuRp(owed) + ' to repay</strong> · ' + owedN + (owedN === 1 ? ' personal payment' : ' personal payments') + '</span></div>';
   }
 
   html += '<div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">' +
-    '<div style="display:flex; align-items:center; gap:8px; background:#fff; border:1px solid #e6d8b6; border-radius:12px; padding:0 14px; height:42px; min-width:240px; flex:0 1 340px;">' +
+    '<div class="search-box" style="min-width:240px; flex:0 1 340px;">' +
       '<span style="color:#b3a37c;">' + icon('search', 16) + '</span>' +
-      '<input id="kuQ" data-kuq="1" value="' + esc(s.q) + '" placeholder="Cari event" autocomplete="off" style="border:none; outline:none; background:transparent; width:100%; font-size:14px;">' +
+      '<input id="kuQ" data-kuq="1" value="' + esc(s.q) + '" placeholder="Search events" autocomplete="off">' +
     '</div>' +
-    '<div style="display:flex; gap:6px;">' + [['budget', 'Dengan anggaran'], ['all', 'Semua event']].map(function (f) {
+    '<div style="display:flex; gap:6px;">' + [['budget', 'With budget'], ['all', 'All events']].map(function (f) {
       return '<button data-ku="filter" data-v="' + f[0] + '" class="pill-btn' + (s.filter === f[0] ? ' on' : '') + '">' + f[1] + '</button>';
     }).join('') + '</div></div>';
 
@@ -266,11 +267,10 @@ function kuListEvents() {
 function kuRowsHtml() {
   var s = kuState, rows = kuListEvents();
   if (!rows.length) {
-    return '<div style="text-align:center; color:#b3a37c; font-size:14px; padding:16px 0; line-height:1.6;">' +
-      (s.q ? 'Tidak ada event yang cocok.' : s.filter === 'budget' ? 'Belum ada event dengan anggaran. Pilih <b>Semua event</b> lalu buka sebuah event untuk mulai membuat anggaran.' : 'Belum ada event di jadwal Event input.') + '</div>';
+    return '<div class="empty-msg">' + (s.q ? 'No matching events.' : s.filter === 'budget' ? 'No budgets yet. Open an event under <b>All events</b>.' : 'No events in Event input.') + '</div>';
   }
   var head = '<div class="ku-row ku-row-head" style="cursor:default; background:transparent; border-color:transparent; box-shadow:none; padding-top:0; padding-bottom:0; font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:#8a7952;">' +
-    '<span></span><span>Event</span><span class="ku-num c-num">Anggaran keluar</span><span class="ku-num c-num">Realisasi</span><span></span></div>';
+    '<span></span><span>Event</span><span class="ku-num c-num">Budget</span><span class="ku-num c-num">Actual</span><span></span></div>';
   return head + rows.slice(0, KU_LIST_CAP).map(function (e) {
     var sum = kuSum(e.id), d = fromIso(e.date), over = sum.budOut && sum.actOut > sum.budOut;
     return '<button data-ku="open" data-id="' + esc(e.id) + '" class="ku-row">' +
@@ -280,34 +280,44 @@ function kuRowsHtml() {
       '</span>' +
       '<span style="min-width:0; display:flex; flex-direction:column; gap:3px;">' +
         '<span style="font-weight:700; font-size:15.5px; color:' + (e.gone ? '#9a8763' : '#3a2a15') + '; text-wrap:pretty;">' + esc(kuEventTitle(e)) + '</span>' +
-        '<span style="font-size:13px; color:#8a7952; font-weight:600;">' + esc([e.tag, sum.lines ? sum.lines + ' baris anggaran' : '', sum.txs ? sum.txs + ' transaksi' : ''].filter(Boolean).join(' · ')) + '</span>' +
+        '<span style="font-size:13px; color:#8a7952; font-weight:600;">' + esc([e.tag, sum.lines ? sum.lines + ' budget lines' : '', sum.txs ? sum.txs + ' transactions' : ''].filter(Boolean).join(' · ')) + '</span>' +
       '</span>' +
       '<span class="ku-num c-num" style="font-weight:700; color:#6b5a38;">' + (sum.budOut ? kuRp(sum.budOut) : '<span style="color:#cdbd96;">–</span>') + '</span>' +
       '<span class="ku-num c-num" style="font-weight:700; color:' + (over ? TI_RED : '#3a2a15') + ';">' + (sum.actOut ? kuRp(sum.actOut) : '<span style="color:#cdbd96;">–</span>') + '</span>' +
       '<span class="c-pills" style="display:flex; gap:4px; flex-wrap:wrap; justify-content:flex-end;">' + kuStatusPills(sum) + '</span>' +
     '</button>';
-  }).join('') + (rows.length > KU_LIST_CAP ? '<div style="text-align:center; color:#9a8763; font-size:13px;">' + (rows.length - KU_LIST_CAP) + ' event lain tersembunyi. Persempit dengan pencarian.</div>' : '');
+  }).join('') + (rows.length > KU_LIST_CAP ? '<div style="text-align:center; color:#9a8763; font-size:13px;">' + (rows.length - KU_LIST_CAP) + ' more. Search to narrow down.</div>' : '');
 }
 
 /* ---------- render: one event ---------- */
 
 function kuEventHtml() {
-  var e = kuEvent(kuState.eventId), sum = kuSum(e.id), lines = kuLinesOf(e.id);
+  var e = kuEvent(kuState.eventId), sum = kuSum(e.id), blank = !sum.lines && !sum.txs;
   var right = '<span style="display:flex; gap:8px; flex-wrap:wrap;">' +
-    (!lines.length ? '<button data-ku="copyOpen" class="ti-btn-outline">Salin anggaran event lain</button>' : '') +
-    '<button data-ku="lineNew" data-type="out" class="ti-btn-outline">+ Baris anggaran</button>' +
-    '<button data-ku="txNew" data-type="out" class="ti-btn-orange" style="padding:9px 16px; font-size:14px;">+ Catat transaksi</button></span>';
-  var html = kuHeader('Keuangan · ' + esc(e.date ? tiDateLong(e.date) : 'tanpa tanggal') + (e.tag ? ' · ' + esc(e.tag) : ''), esc(kuEventTitle(e)), right, true);
-  html += '<main class="page-pad" style="padding:26px 32px 60px;"><div style="max-width:1320px; margin:0 auto; display:flex; flex-direction:column; gap:20px;">';
+    (blank ? '' : '<button data-ku="lineNew" data-type="out" class="ti-btn-outline">+ Budget line</button>') +
+    '<button data-ku="txNew" data-type="out" class="' + (blank ? 'ti-btn-outline' : 'ti-btn-orange') + '"' + (blank ? '' : ' style="padding:9px 16px; font-size:14px;"') + '>+ Record transaction</button></span>';
+  var html = kuHeader(esc(e.date ? tiDateLong(e.date) : 'No date') + (e.tag ? ' · ' + esc(e.tag) : ''), esc(kuEventTitle(e)), right, true);
+  html += '<main class="page-main"><div class="page-wrap">';
+
+  /* A new event starts from a plain choice instead of empty totals. */
+  if (blank) {
+    html += '<section class="ti-card" style="padding:36px 24px; display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center;">' +
+      '<h2 style="margin:0; font-weight:800; font-size:20px; letter-spacing:-.02em;">No budget yet</h2>' +
+      '<span style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center;">' +
+        '<button data-ku="lineNew" data-type="out" class="ti-btn-orange">Create budget</button>' +
+        '<button data-ku="copyOpen" class="ti-btn-outline" style="padding:12px 16px; font-size:14px;">Copy from another event</button>' +
+      '</span></section>';
+    return html + '</div></main>';
+  }
 
   var bal = sum.actIn - sum.actOut;
   html += '<section class="ku-tiles">' +
-    kuTile('Pengeluaran', sum.actOut, sum.budOut, true) +
-    kuTile('Pemasukan', sum.actIn, sum.budIn, false) +
-    '<div class="ku-tile"><span class="ti-eyebrow">Saldo event</span><span class="ku-big" style="color:' + (bal < 0 ? TI_RED : TI_GREEN) + ';">' + kuRp(bal) + '</span>' +
-      '<span style="font-size:12.5px; color:#8a7952; font-weight:600;">Rencana: ' + kuRp(sum.budIn - sum.budOut) + '</span></div>' +
-    '<div class="ku-tile"><span class="ti-eyebrow">Perlu diganti</span><span class="ku-big" style="color:' + (sum.owed ? '#a3420e' : '#3a2a15') + ';">' + kuRp(sum.owed) + '</span>' +
-      '<span style="font-size:12.5px; color:#8a7952; font-weight:600;">' + (sum.owedN ? sum.owedN + ' pembayaran pribadi' : 'Tidak ada talangan') + '</span></div>' +
+    kuTile('Expenses', sum.actOut, sum.budOut, true) +
+    kuTile('Income', sum.actIn, sum.budIn, false) +
+    '<div class="ku-tile"><span class="ti-eyebrow">Balance</span><span class="ku-big" style="color:' + (bal < 0 ? TI_RED : TI_GREEN) + ';">' + kuRp(bal) + '</span>' +
+      '<span style="font-size:12.5px; color:#8a7952; font-weight:600;">Planned: ' + kuRp(sum.budIn - sum.budOut) + '</span></div>' +
+    '<div class="ku-tile"><span class="ti-eyebrow">To repay</span><span class="ku-big" style="color:' + (sum.owed ? '#a3420e' : '#3a2a15') + ';">' + kuRp(sum.owed) + '</span>' +
+      '<span style="font-size:12.5px; color:#8a7952; font-weight:600;">' + (sum.owedN ? sum.owedN + (sum.owedN === 1 ? ' personal payment' : ' personal payments') : 'Nothing owed') + '</span></div>' +
   '</section>';
 
   html += kuSectionHtml(e.id, 'out') + kuSectionHtml(e.id, 'in');
@@ -321,7 +331,7 @@ function kuTile(label, act, bud, isOut) {
     '<span class="ku-big">' + kuRp(act) + '</span>' +
     '<div class="ku-bar"><span style="width:' + (bud ? pct : 0) + '%; background:' + color + ';"></span></div>' +
     '<span style="font-size:12.5px; color:' + (bud && over && isOut ? TI_RED : '#8a7952') + '; font-weight:600;">' +
-      (bud ? 'dari anggaran ' + kuRp(bud) + ' · ' + Math.round(act / bud * 100) + '%' : 'Belum ada anggaran') + '</span></div>';
+      (bud ? 'of ' + kuRp(bud) + ' · ' + Math.round(act / bud * 100) + '%' : 'No budget') + '</span></div>';
 }
 
 /* Budget lines grouped by category, each with its transactions under it; unbudgeted transactions get their own row. */
@@ -350,25 +360,23 @@ function kuSectionHtml(eventId, type) {
     if (loose.length) {
       var la = kuTotal(loose);
       catAct += la;
-      rows += kuLineRow('Di luar anggaran', '', 0, la, type, '', '') + loose.map(kuTxRow).join('');
+      rows += kuLineRow('Unbudgeted', '', 0, la, type, '', '') + loose.map(kuTxRow).join('');
     }
     totBud += catBud; totAct += catAct;
     body += '<div class="ku-grid ku-cat"><span>' + esc(cat) + '</span><span class="ku-num c-bud">' + kuRp(catBud) + '</span><span class="ku-num">' + kuRp(catAct) + '</span>' +
       '<span class="ku-num c-diff">' + kuDiff(catBud, catAct, type) + '</span><span></span></div>' + rows;
   });
 
-  var title = type === 'out' ? 'Pengeluaran' : 'Pemasukan';
+  var title = type === 'out' ? 'Expenses' : 'Income';
   var html = '<section class="ti-card" style="overflow:hidden;">' +
     '<div style="display:flex; justify-content:space-between; align-items:center; gap:12px; padding:14px 18px; flex-wrap:wrap;">' +
       '<h2 style="margin:0; font-weight:800; font-size:19px; letter-spacing:-.02em;">' + title + '</h2>' +
-      '<span style="display:flex; gap:12px;"><span data-ku="lineNew" data-type="' + type + '" class="ti-link">+ Anggaran</span><span data-ku="txNew" data-type="' + type + '" class="ti-link">+ Transaksi</span></span>' +
+      '<span style="display:flex; gap:12px;"><span data-ku="lineNew" data-type="' + type + '" class="ti-link">+ Budget</span><span data-ku="txNew" data-type="' + type + '" class="ti-link">+ Transaction</span></span>' +
     '</div>';
   if (!body) {
-    return html + '<div style="padding:4px 18px 18px; font-size:14px; color:#9a8763; line-height:1.55;">' +
-      (type === 'out' ? 'Belum ada anggaran atau transaksi pengeluaran. Mulai dengan <span data-ku="lineNew" data-type="out" class="ti-link" style="font-size:14px;">baris anggaran</span>, misalnya konsumsi atau transport.'
-        : 'Belum ada pemasukan. Catat kas, iuran peserta, sponsor, atau subsidi gereja di sini.') + '</div></section>';
+    return html + '<div style="padding:4px 18px 18px; font-size:14px; color:#9a8763;">' + (type === 'out' ? 'No expenses yet.' : 'No income yet.') + '</div></section>';
   }
-  html += '<div class="ku-grid ku-head"><span>Uraian</span><span class="ku-num c-bud">Anggaran</span><span class="ku-num">Realisasi</span><span class="ku-num c-diff">Selisih</span><span class="c-acts"></span></div>' + body;
+  html += '<div class="ku-grid ku-head"><span>Item</span><span class="ku-num c-bud">Budget</span><span class="ku-num">Actual</span><span class="ku-num c-diff">Difference</span><span class="c-acts"></span></div>' + body;
   html += '<div class="ku-grid ku-total"><span>Total ' + title.toLowerCase() + '</span><span class="ku-num c-bud">' + kuRp(totBud) + '</span><span class="ku-num">' + kuRp(totAct) + '</span>' +
     '<span class="ku-num c-diff">' + kuDiff(totBud, totAct, type) + '</span><span></span></div>';
   return html + '</section>';
@@ -376,7 +384,7 @@ function kuSectionHtml(eventId, type) {
 
 function kuTotal(txs) { return txs.reduce(function (n, t) { return n + t.amount; }, 0); }
 
-/* Selisih: for spending, budget left (red when over); for income, what came in beyond the plan (amber when short). */
+/* Difference: for spending, budget left (red when over); for income, what came in beyond the plan (amber when short). */
 function kuDiff(bud, act, type) {
   if (!bud && !act) return '–';
   var d = type === 'out' ? bud - act : act - bud;
@@ -386,8 +394,8 @@ function kuDiff(bud, act, type) {
 
 function kuLineRow(desc, sub, bud, act, type, attrs, lineId) {
   var acts = lineId
-    ? '<span class="ku-acts"><span role="button" data-ku="txNew" data-type="' + type + '" data-line="' + esc(lineId) + '" class="icon-btn ku-act more" title="Catat transaksi untuk baris ini" aria-label="Catat transaksi">' + icon('plus', 16) + '</span>' +
-      '<span role="button" data-ku="lineDel" data-id="' + esc(lineId) + '" class="icon-btn ku-act del" title="Hapus baris anggaran" aria-label="Hapus baris anggaran">' + icon('trash', 15) + '</span></span>'
+    ? '<span class="ku-acts"><span role="button" data-ku="txNew" data-type="' + type + '" data-line="' + esc(lineId) + '" class="icon-btn ku-act more" title="Record a transaction for this line" aria-label="Record transaction">' + icon('plus', 16) + '</span>' +
+      '<span role="button" data-ku="lineDel" data-id="' + esc(lineId) + '" class="icon-btn ku-act del" title="Delete budget line" aria-label="Delete budget line">' + icon('trash', 15) + '</span></span>'
     : '<span></span>';
   return '<div class="ku-grid ku-line" ' + (attrs || 'style="cursor:default;"') + '>' +
     '<span style="min-width:0; display:flex; flex-direction:column; gap:1px;"><span style="font-weight:600; color:' + (lineId ? '#3a2a15' : '#8a7952') + '; ' + (lineId ? '' : 'font-style:italic;') + '">' + esc(desc) + '</span>' +
@@ -400,15 +408,15 @@ function kuLineRow(desc, sub, bud, act, type, attrs, lineId) {
 
 function kuTxRow(t) {
   var who = t.source === 'personal'
-    ? kuPill(t.paidBy + (t.reimbursed ? ' · sudah diganti' : ' · perlu diganti'), t.reimbursed ? '#e3eedf' : '#fdf0e6', t.reimbursed ? '#24401F' : '#a3420e')
+    ? kuPill(t.paidBy + (t.reimbursed ? ' · repaid' : ' · to repay'), t.reimbursed ? '#e3eedf' : '#fdf0e6', t.reimbursed ? '#24401F' : '#a3420e')
     : '';
   return '<div class="ku-tx" data-ku="txEdit" data-id="' + esc(t.id) + '">' +
     '<span class="c-date tnum">' + esc(tiShort(t.date)) + '</span>' +
-    '<span style="min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + esc(t.desc || (t.type === 'in' ? 'Pemasukan' : 'Pembayaran')) + '</span>' +
+    '<span style="min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + esc(t.desc || (t.type === 'in' ? 'Income' : 'Payment')) + '</span>' +
     '<span class="c-who" style="display:flex; gap:6px; align-items:center;">' + who +
-      (t.receiptId ? '<span role="button" data-ku="receipt" data-id="' + esc(t.receiptId) + '" data-name="' + esc(t.receiptName) + '" class="ti-link" style="font-size:12px;">Bukti</span>' : '') + '</span>' +
+      (t.receiptId ? '<span role="button" data-ku="receipt" data-id="' + esc(t.receiptId) + '" data-name="' + esc(t.receiptName) + '" class="ti-link" style="font-size:12px;">Receipt</span>' : '') + '</span>' +
     '<span class="ku-num" style="color:#3a2a15;">' + kuRp(t.amount) + '</span>' +
-    '<span class="ku-acts"><span role="button" data-ku="txDel" data-id="' + esc(t.id) + '" class="icon-btn ku-act del more" title="Hapus transaksi" aria-label="Hapus transaksi">' + icon('trash', 15) + '</span></span>' +
+    '<span class="ku-acts"><span role="button" data-ku="txDel" data-id="' + esc(t.id) + '" class="icon-btn ku-act del more" title="Delete transaction" aria-label="Delete transaction">' + icon('trash', 15) + '</span></span>' +
   '</div>';
 }
 
@@ -438,19 +446,19 @@ function kuRenderPanel() {
   if (!host) { host = document.createElement('div'); host.id = 'kuPanel'; document.body.appendChild(host); }
   var f = kuState.form;
   if (!f) { host.innerHTML = ''; return; }
-  var title = { line: f.id ? 'Ubah anggaran' : 'Baris anggaran baru', tx: f.id ? 'Ubah transaksi' : 'Catat transaksi', copy: 'Salin anggaran', pin: 'Ganti PIN keuangan' }[f.kind];
+  var title = { line: f.id ? 'Edit budget line' : 'New budget line', tx: f.id ? 'Edit transaction' : 'Record transaction', copy: 'Copy budget', pin: 'Change finance PIN' }[f.kind];
   var body = f.kind === 'line' ? kuLineForm(f) : f.kind === 'tx' ? kuTxForm(f) : f.kind === 'copy' ? kuCopyForm(f) : kuPinForm(f);
   host.innerHTML = '<div style="position:fixed; inset:0; z-index:85;"><div data-ku="closePanel" style="position:absolute; inset:0; background:rgba(58,42,21,.38);"></div></div>' +
     '<section class="ti-lib-panel" role="dialog" aria-modal="true" aria-label="' + esc(title) + '">' +
-      '<div style="flex-shrink:0; background:#F3E9CE; border-bottom:1px solid #e7d9b3; padding:18px 22px; display:flex; justify-content:space-between; align-items:center; gap:12px;">' +
-        '<div style="display:flex; flex-direction:column; gap:2px; min-width:0;"><span class="ti-eyebrow">' + esc(kuState.eventId ? kuEventTitle(kuEvent(kuState.eventId)) : 'Keuangan') + '</span>' +
+      '<div class="drawer-head">' +
+        '<div style="display:flex; flex-direction:column; gap:2px; min-width:0;"><span class="ti-eyebrow">' + esc(kuState.eventId ? kuEventTitle(kuEvent(kuState.eventId)) : 'Finance') + '</span>' +
         '<h2 style="margin:0; font-weight:800; font-size:21px; letter-spacing:-.02em;">' + title + '</h2></div>' +
-        '<button data-ku="closePanel" class="icon-btn" aria-label="Tutup" style="width:36px; height:36px; border-radius:11px; background:rgba(58,42,21,.08); cursor:pointer;">' + icon('x', 18) + '</button>' +
+        '<button data-ku="closePanel" class="icon-btn close-btn" aria-label="Close">' + icon('x', 18) + '</button>' +
       '</div>' +
       '<div class="ku-panel-body">' + (f.error ? '<div class="ku-err">' + esc(f.error) + '</div>' : '') + body + '</div>' +
-      '<div style="flex-shrink:0; border-top:1px solid #e7d9b3; padding:14px 22px; display:flex; justify-content:flex-end; gap:8px; background:#FBF6E7;">' +
-        '<button data-ku="closePanel" class="ti-btn-outline" style="padding:10px 16px; font-size:14px;">Batal</button>' +
-        '<button data-ku="save" class="ti-btn-orange"' + (f.busy ? ' disabled style="opacity:.6"' : '') + '>' + (f.busy ? 'Menyimpan…' : f.kind === 'copy' ? 'Salin' : 'Simpan') + '</button>' +
+      '<div class="drawer-foot">' +
+        '<button data-ku="closePanel" class="ti-btn-outline" style="padding:10px 16px; font-size:14px;">Cancel</button>' +
+        '<button data-ku="save" class="ti-btn-orange"' + (f.busy ? ' disabled style="opacity:.6"' : '') + '>' + (f.busy ? (f.newReceipt ? 'Uploading receipt…' : 'Saving…') : f.kind === 'copy' ? 'Copy' : 'Save') + '</button>' +
       '</div>' +
     '</section>';
 }
@@ -470,57 +478,56 @@ function kuInput(field, value, attrs) {
 }
 
 function kuAmtField(label, field, value) {
-  return kuField(label, kuInput(field, value, 'inputmode="decimal" autocomplete="off" placeholder="mis. 150rb atau 1,5jt"'),
+  return kuField(label, kuInput(field, value, 'inputmode="decimal" autocomplete="off" placeholder="e.g. 150k or 1.5m"'),
     '<span id="kuHint-' + field + '" class="ku-hint" style="font-size:12px; color:#8a7952; font-weight:600; margin-top:-2px;">' + esc(kuAmtHint(value)) + '</span>');
 }
 
 function kuLineForm(f) {
   var total = f.mode === 'unit' ? kuParseAmt(f.price) * Number(String(f.qty).replace(',', '.')) : NaN;
-  return kuField('Jenis', kuSeg('type', f.type, [['out', 'Pengeluaran'], ['in', 'Pemasukan']])) +
-    kuField('Kategori', tiComboHtml('kuCat')) +
-    kuField('Uraian', kuInput('desc', f.desc, 'placeholder="' + (f.type === 'out' ? 'mis. Snack 60 porsi' : 'mis. Iuran 40 peserta') + '" autocomplete="off"')) +
-    kuField('Hitung', kuSeg('mode', f.mode, [['total', 'Jumlah total'], ['unit', 'Qty × harga']])) +
+  return kuField('Type', kuSeg('type', f.type, [['out', 'Expense'], ['in', 'Income']])) +
+    kuField('Category', tiComboHtml('kuCat')) +
+    kuField('Description', kuInput('desc', f.desc, 'placeholder="' + (f.type === 'out' ? 'e.g. Snacks for 60' : 'e.g. Fees from 40 people') + '" autocomplete="off"')) +
+    kuField('Amount as', kuSeg('mode', f.mode, [['total', 'Total'], ['unit', 'Qty × price']])) +
     (f.mode === 'unit'
-      ? '<div style="display:grid; grid-template-columns:96px 1fr; gap:12px; align-items:start;">' + kuField('Qty', kuInput('qty', f.qty, 'inputmode="decimal" autocomplete="off"')) + kuAmtField('Harga satuan', 'price', f.price) + '</div>' +
+      ? '<div style="display:grid; grid-template-columns:96px 1fr; gap:12px; align-items:start;">' + kuField('Qty', kuInput('qty', f.qty, 'inputmode="decimal" autocomplete="off"')) + kuAmtField('Unit price', 'price', f.price) + '</div>' +
         '<div id="kuLineTotal" style="font-size:14px; font-weight:700; color:#6E2621;">' + (isFinite(total) && total > 0 ? 'Total ' + kuRp(total) : '') + '</div>'
-      : kuAmtField('Jumlah', 'amount', f.amount)) +
-    kuField('Catatan', '<textarea data-kuf="notes" class="ti-field" rows="2" style="resize:vertical;">' + esc(f.notes) + '</textarea>');
+      : kuAmtField('Amount', 'amount', f.amount)) +
+    kuField('Notes', '<textarea data-kuf="notes" class="ti-field" rows="2" style="resize:vertical;">' + esc(f.notes) + '</textarea>');
 }
 
 function kuTxForm(f) {
-  var html = kuField('Jenis', kuSeg('type', f.type, [['out', 'Pengeluaran'], ['in', 'Pemasukan']])) +
-    '<div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:start;">' + kuAmtField('Jumlah', 'amount', f.amount) + kuField('Tanggal', kuInput('date', f.date, 'type="date"')) + '</div>' +
-    kuField('Baris anggaran', tiComboHtml('kuLine')) +
-    (f.lineId ? '' : kuField('Kategori', tiComboHtml('kuCat'))) +
-    kuField('Keterangan', kuInput('desc', f.desc, 'placeholder="' + (f.type === 'out' ? 'mis. DP katering' : 'mis. Iuran gelombang 1') + '" autocomplete="off"'));
+  var html = kuField('Type', kuSeg('type', f.type, [['out', 'Expense'], ['in', 'Income']])) +
+    '<div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:start;">' + kuAmtField('Amount', 'amount', f.amount) + kuField('Date', kuInput('date', f.date, 'type="date"')) + '</div>' +
+    kuField('Budget line', tiComboHtml('kuLine')) +
+    (f.lineId ? '' : kuField('Category', tiComboHtml('kuCat'))) +
+    kuField('Description', kuInput('desc', f.desc, 'placeholder="' + (f.type === 'out' ? 'e.g. Catering deposit' : 'e.g. First round of fees') + '" autocomplete="off"'));
   if (f.type === 'out') {
-    html += kuField('Dibayar dari', kuSeg('source', f.source, [['kas', 'Kas pemuda'], ['personal', 'Uang pribadi (talangan)']]));
+    html += kuField('Paid from', kuSeg('source', f.source, [['kas', 'Youth fund'], ['personal', 'Personal money']]));
     if (f.source === 'personal') {
-      html += kuField('Dibayar oleh', tiComboHtml('kuPaidBy')) +
-        '<label class="ku-chk"><input type="checkbox" data-kuf="reimbursed"' + (f.reimbursed ? ' checked' : '') + '>Sudah diganti dari kas</label>';
+      html += kuField('Paid by', tiComboHtml('kuPaidBy')) +
+        '<label class="ku-chk"><input type="checkbox" data-kuf="reimbursed"' + (f.reimbursed ? ' checked' : '') + '>Repaid from the fund</label>';
     }
   }
   var has = f.newReceipt || f.receiptId;
-  html += kuField('Bukti (foto nota atau PDF)',
+  html += kuField('Receipt (photo or PDF)',
     (has ? '<div style="display:flex; align-items:center; gap:10px; background:#fff; border:1px solid #e6d8b6; border-radius:12px; padding:10px 12px;">' +
         (f.newReceipt && f.newReceipt.preview ? '<img src="' + f.newReceipt.preview + '" alt="" style="width:44px; height:44px; object-fit:cover; border-radius:8px;">' : '<span style="color:#8a7952;">' + icon('external', 18) + '</span>') +
-        '<span style="flex:1; min-width:0; font-size:13.5px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + esc(f.newReceipt ? f.newReceipt.name : f.receiptName || 'Bukti') + (f.newReceipt ? ' · belum disimpan' : '') + '</span>' +
-        (f.receiptId && !f.newReceipt ? '<span role="button" data-ku="receipt" data-id="' + esc(f.receiptId) + '" data-name="' + esc(f.receiptName) + '" class="ti-link">Lihat</span>' : '') +
-        '<span role="button" data-ku="receiptRemove" class="ti-link" style="color:' + TI_RED + ';">Hapus</span></div>'
+        '<span style="flex:1; min-width:0; font-size:13.5px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + esc(f.newReceipt ? f.newReceipt.name : f.receiptName || 'Receipt') + (f.newReceipt ? ' · not saved yet' : '') + '</span>' +
+        (f.receiptId && !f.newReceipt ? '<span role="button" data-ku="receipt" data-id="' + esc(f.receiptId) + '" data-name="' + esc(f.receiptName) + '" class="ti-link">View</span>' : '') +
+        '<span role="button" data-ku="receiptRemove" class="ti-link" style="color:' + TI_RED + ';">Remove</span></div>'
       : '<input type="file" data-kufile="1" accept="image/*,application/pdf" class="ti-field" style="padding:9px 12px;">'),
-    f.reading ? '<span style="font-size:12px; color:#8a7952; font-weight:600;">Menyiapkan foto…</span>' : '');
+    f.reading ? '<span style="font-size:12px; color:#8a7952; font-weight:600;">Preparing photo…</span>' : '');
   return html;
 }
 
 function kuCopyForm(f) {
-  return '<p style="margin:0; font-size:14px; line-height:1.55; color:#6b5a38;">Semua baris anggaran dari event yang dipilih disalin ke event ini. Transaksinya tidak ikut disalin; jumlahnya bisa diubah setelahnya.</p>' +
-    kuField('Salin dari', tiComboHtml('kuCopy'));
+  return kuField('Copy from', tiComboHtml('kuCopy'));
 }
 
 function kuPinForm(f) {
-  return kuField('PIN lama', '<input data-kuf="old" type="password" autocomplete="current-password" class="ti-field" value="' + esc(f.old) + '">') +
-    kuField('PIN baru (minimal 6 karakter)', '<input data-kuf="pin" type="password" autocomplete="new-password" class="ti-field" value="' + esc(f.pin) + '">') +
-    kuField('Ulangi PIN baru', '<input data-kuf="pin2" type="password" autocomplete="new-password" class="ti-field" value="' + esc(f.pin2) + '">');
+  return kuField('Current PIN', '<input data-kuf="old" type="password" autocomplete="current-password" class="ti-field" value="' + esc(f.old) + '">') +
+    kuField('New PIN (at least 6 characters)', '<input data-kuf="pin" type="password" autocomplete="new-password" class="ti-field" value="' + esc(f.pin) + '">') +
+    kuField('Repeat new PIN', '<input data-kuf="pin2" type="password" autocomplete="new-password" class="ti-field" value="' + esc(f.pin2) + '">');
 }
 
 /* Searchable dropdowns reuse the Tata Ibadah combo (tiComboHtml); tiComboSpec hands ku* keys to this. */
@@ -528,7 +535,7 @@ function kuComboSpec(k) {
   var f = kuState.form || {};
   if (k === 'kuCat') {
     return {
-      ph: 'Pilih kategori', value: f.category, text: f.category || '',
+      ph: 'Choose a category', value: f.category, text: f.category || '',
       options: function () { return KU_CATS[f.type].map(function (c) { return { v: c, label: c }; }); },
       pick: function (v) { f.category = v; }
     };
@@ -536,9 +543,9 @@ function kuComboSpec(k) {
   if (k === 'kuLine') {
     var cur = kuState.lines.filter(function (l) { return l.id === f.lineId; })[0];
     return {
-      ph: 'Cari baris anggaran', value: f.lineId, text: cur ? cur.desc : 'Di luar anggaran',
+      ph: 'Search budget lines', value: f.lineId, text: cur ? cur.desc : 'Unbudgeted',
       options: function () {
-        return [{ v: '', label: 'Di luar anggaran', sub: 'tidak direncanakan', keep: true }].concat(kuLinesOf(kuState.eventId).filter(function (l) { return l.type === f.type; }).map(function (l) {
+        return [{ v: '', label: 'Unbudgeted', sub: 'not planned', keep: true }].concat(kuLinesOf(kuState.eventId).filter(function (l) { return l.type === f.type; }).map(function (l) {
           return { v: l.id, label: l.desc, sub: l.category + ' · ' + kuRp(l.amount) };
         }));
       },
@@ -552,7 +559,7 @@ function kuComboSpec(k) {
   }
   if (k === 'kuPaidBy') {
     return {
-      free: true, value: f.paidBy, text: f.paidBy || '', ph: 'Cari atau tulis nama', fresh: 'Nama baru',
+      free: true, value: f.paidBy, text: f.paidBy || '', ph: 'Search or type a name', fresh: 'New name',
       options: function () {
         var seen = {}, out = [];
         kuState.txs.slice().reverse().concat(memberPool().map(function (m) { return { paidBy: m.name }; })).forEach(function (t) {
@@ -566,13 +573,13 @@ function kuComboSpec(k) {
   }
   var src = kuState.events.filter(function (e) { return e.id === f.from; })[0];
   return { // kuCopy
-    ph: 'Cari event yang punya anggaran', value: f.from, text: src ? kuEventTitle(src) : '',
+    ph: 'Search events with a budget', value: f.from, text: src ? kuEventTitle(src) : '',
     options: function () {
       var n = {};
       kuState.lines.forEach(function (l) { n[l.eventId] = (n[l.eventId] || 0) + 1; });
       return kuState.events.filter(function (e) { return n[e.id] && e.id !== kuState.eventId; })
         .sort(function (a, b) { return a.date < b.date ? 1 : -1; })
-        .map(function (e) { return { v: e.id, label: kuEventTitle(e), sub: tiDayLabel(e.date) + ' · ' + n[e.id] + ' baris · ' + kuRp(kuSum(e.id).budOut) }; });
+        .map(function (e) { return { v: e.id, label: kuEventTitle(e), sub: tiDayLabel(e.date) + ' · ' + n[e.id] + ' lines · ' + kuRp(kuSum(e.id).budOut) }; });
     },
     pick: function (v) { f.from = v; }
   };
@@ -598,28 +605,28 @@ function kuSave() {
   var done = function () { kuState.form = null; kuRender(); };
   if (f.kind === 'line') {
     var p = { id: f.id, eventId: kuState.eventId, type: f.type, category: f.category, desc: f.desc, notes: f.notes, qty: '', price: '', amount: '' };
-    if (!f.category) return fail('Pilih kategori.');
+    if (!f.category) return fail('Choose a category.');
     if (f.mode === 'unit') {
       p.qty = Number(String(f.qty).replace(',', '.')); p.price = kuParseAmt(f.price);
-      if (!(p.qty > 0) || !(p.price > 0)) return fail('Isi qty dan harga satuan.');
+      if (!(p.qty > 0) || !(p.price > 0)) return fail('Enter qty and unit price.');
     } else {
       p.amount = kuParseAmt(f.amount);
-      if (!(p.amount > 0)) return fail('Isi jumlah anggaran, mis. 500000 atau 500rb.');
+      if (!(p.amount > 0)) return fail('Enter an amount, e.g. 500000 or 500k.');
     }
     f.busy = true; f.error = ''; kuRenderPanel();
     kuCall('saveBudgetLine', [p], function (res) {
       if (!res.success) return fail(res.message);
       kuState.lines = kuState.lines.filter(function (l) { return l.id !== res.line.id; }).concat([res.line]);
-      flash(f.id ? 'Anggaran diperbarui' : 'Baris anggaran ditambahkan');
+      flash(f.id ? 'Budget line updated' : 'Budget line added');
       done();
     }, fail);
     return;
   }
   if (f.kind === 'tx') {
     var amt = kuParseAmt(f.amount);
-    if (!(amt > 0)) return fail('Isi jumlah, mis. 250000 atau 250rb.');
-    if (!f.lineId && !f.category) return fail('Pilih baris anggaran atau kategori.');
-    if (f.type === 'out' && f.source === 'personal' && !String(f.paidBy).trim()) return fail('Isi nama yang membayar.');
+    if (!(amt > 0)) return fail('Enter an amount, e.g. 250000 or 250k.');
+    if (!f.lineId && !f.category) return fail('Choose a budget line or category.');
+    if (f.type === 'out' && f.source === 'personal' && !String(f.paidBy).trim()) return fail('Enter who paid.');
     f.busy = true; f.error = ''; kuRenderPanel();
     var send = function (receiptId, receiptName) {
       var line = kuState.lines.filter(function (l) { return l.id === f.lineId; })[0];
@@ -628,7 +635,7 @@ function kuSave() {
       kuCall('saveTransaction', [t], function (res) {
         if (!res.success) return fail(res.message);
         kuState.txs = kuState.txs.filter(function (x) { return x.id !== res.tx.id; }).concat([res.tx]);
-        flash(f.id ? 'Transaksi diperbarui' : 'Transaksi dicatat');
+        flash(f.id ? 'Transaction updated' : 'Transaction recorded');
         done();
       }, fail);
     };
@@ -642,18 +649,18 @@ function kuSave() {
     return;
   }
   if (f.kind === 'copy') {
-    if (!f.from) return fail('Pilih event sumber.');
+    if (!f.from) return fail('Choose an event to copy from.');
     f.busy = true; f.error = ''; kuRenderPanel();
     kuCall('copyBudget', [f.from, kuState.eventId], function (res) {
       if (!res.success) return fail(res.message);
       kuState.lines = kuState.lines.concat(res.lines);
-      flash(res.lines.length + ' baris anggaran disalin');
+      flash(res.lines.length + ' budget lines copied');
       done();
     }, fail);
     return;
   }
   if (f.kind === 'pin') {
-    if (f.pin !== f.pin2) return fail('Kedua PIN baru tidak sama.');
+    if (f.pin !== f.pin2) return fail('The new PINs don\'t match.');
     f.busy = true; f.error = ''; kuRenderPanel();
     kuCall('kuChangePin', [f.old, f.pin], function (res) {
       if (!res.success) return fail(res.message);
@@ -667,13 +674,13 @@ function kuSave() {
 function kuReadFile(file) {
   var f = kuState.form;
   if (!file || !f) return;
-  if (!/^image\//.test(file.type) && file.type !== 'application/pdf') { f.error = 'Bukti harus berupa foto atau PDF.'; kuRenderPanel(); return; }
-  if (file.size > 20 * 1024 * 1024) { f.error = 'File terlalu besar.'; kuRenderPanel(); return; }
+  if (!/^image\//.test(file.type) && file.type !== 'application/pdf') { f.error = 'Receipts must be a photo or PDF.'; kuRenderPanel(); return; }
+  if (file.size > 20 * 1024 * 1024) { f.error = 'That file is too large.'; kuRenderPanel(); return; }
   f.reading = true; f.error = ''; kuKeepFormValues(); kuRenderPanel();
   var reader = new FileReader();
   reader.onload = function () {
     var url = String(reader.result), raw = function () {
-      if (file.size > 8 * 1024 * 1024) { f.reading = false; f.error = 'File bukti terlalu besar (maks. 8 MB).'; kuRenderPanel(); return; }
+      if (file.size > 8 * 1024 * 1024) { f.reading = false; f.error = 'Receipt is too large (max 8 MB).'; kuRenderPanel(); return; }
       f.newReceipt = { name: file.name, mimeType: file.type, data: url.slice(url.indexOf(',') + 1), preview: /^image\//.test(file.type) ? url : '' };
       f.reading = false; kuRenderPanel();
     };
@@ -690,14 +697,14 @@ function kuReadFile(file) {
     img.onerror = raw;   // e.g. HEIC outside Safari: upload unchanged
     img.src = url;
   };
-  reader.onerror = function () { f.reading = false; f.error = 'File tidak bisa dibaca.'; kuRenderPanel(); };
+  reader.onerror = function () { f.reading = false; f.error = 'Couldn\'t read that file.'; kuRenderPanel(); };
   reader.readAsDataURL(file);
 }
 
 /* ---------- receipt viewer ---------- */
 
 function kuOpenReceipt(id, name) {
-  kuState.receipt = { loading: true, name: name || 'Bukti' };
+  kuState.receipt = { loading: true, name: name || 'Receipt' };
   kuRenderReceipt();
   kuCall('getReceipt', [id], function (res) {
     if (!kuState.receipt) return;
@@ -723,7 +730,7 @@ function kuRenderReceipt() {
   if (!host) { host = document.createElement('div'); host.id = 'kuReceipt'; document.body.appendChild(host); }
   var r = kuState.receipt;
   if (!r) { host.innerHTML = ''; return; }
-  var inner = r.loading ? '<div style="color:#b3a37c; padding:40px;">Memuat bukti…</div>'
+  var inner = r.loading ? '<div style="color:#b3a37c; padding:40px;">Loading receipt…</div>'
     : r.error ? '<div class="ku-err" style="margin:20px;">' + esc(r.error) + '</div>'
     : /^image\//.test(r.mimeType) ? '<img src="' + r.url + '" alt="' + esc(r.name) + '" style="max-width:100%; max-height:calc(100vh - 160px); display:block; margin:0 auto;">'
     : '<iframe src="' + r.url + '" title="' + esc(r.name) + '" style="width:100%; height:calc(100vh - 160px); border:0;"></iframe>';
@@ -732,8 +739,8 @@ function kuRenderReceipt() {
     '<div style="position:relative; background:#FBF6E7; border-radius:18px; max-width:900px; width:100%; overflow:hidden; box-shadow:0 30px 70px rgba(58,42,21,.4);">' +
       '<div style="display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px 16px; background:#F3E9CE; border-bottom:1px solid #e7d9b3;">' +
         '<span style="font-weight:700; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + esc(r.name) + '</span>' +
-        '<span style="display:flex; gap:10px; align-items:center;">' + (r.url ? '<a href="' + r.url + '" download="' + esc(r.name) + '" class="ti-link">Unduh</a>' : '') +
-        '<button data-ku="receiptClose" class="icon-btn" aria-label="Tutup" style="width:34px; height:34px; border-radius:10px; background:rgba(58,42,21,.08); cursor:pointer;">' + icon('x', 17) + '</button></span>' +
+        '<span style="display:flex; gap:10px; align-items:center;">' + (r.url ? '<a href="' + r.url + '" download="' + esc(r.name) + '" class="ti-link">Download</a>' : '') +
+        '<button data-ku="receiptClose" class="icon-btn close-btn" aria-label="Close">' + icon('x', 17) + '</button></span>' +
       '</div>' +
       '<div style="padding:12px; background:#fff; text-align:center;">' + inner + '</div>' +
     '</div></div>';
@@ -781,12 +788,12 @@ function kuAskDeleteLine(id) {
   var l = kuState.lines.filter(function (x) { return x.id === id; })[0];
   if (!l) return;
   var n = kuState.txs.filter(function (t) { return t.lineId === id; }).length;
-  tiConfirm({ title: 'Hapus baris anggaran?', text: l.desc + ' (' + kuRp(l.amount) + ') akan dihapus.' + (n ? ' ' + n + ' transaksinya tetap tersimpan sebagai “di luar anggaran”.' : ''), ok: 'Hapus', danger: true }, function () {
+  tiConfirm({ title: 'Delete budget line?', text: l.desc + ' (' + kuRp(l.amount) + ').' + (n ? ' Its ' + n + ' transactions stay as unbudgeted.' : ''), ok: 'Delete', danger: true }, function () {
     kuCall('deleteBudgetLine', [id], function (res) {
       if (!res.success) { flash(res.message); return; }
       kuState.lines = kuState.lines.filter(function (x) { return x.id !== id; });
       kuState.txs.forEach(function (t) { if (t.lineId === id) t.lineId = ''; });
-      flash('Baris anggaran dihapus');
+      flash('Budget line deleted');
       kuRender();
     });
   });
@@ -795,12 +802,12 @@ function kuAskDeleteLine(id) {
 function kuAskDeleteTx(id) {
   var t = kuState.txs.filter(function (x) { return x.id === id; })[0];
   if (!t) return;
-  tiConfirm({ title: 'Hapus transaksi?', text: (t.desc || KU_TYPE[t.type]) + ' · ' + kuRp(t.amount) + ' · ' + tiShort(t.date) + ' akan dihapus' + (t.receiptId ? ', dan fotonya dipindah ke sampah Drive' : '') + '.', ok: 'Hapus', danger: true }, function () {
+  tiConfirm({ title: 'Delete transaction?', text: (t.desc || KU_TYPE[t.type]) + ' · ' + kuRp(t.amount) + ' · ' + tiShort(t.date) + (t.receiptId ? '. Its receipt moves to Drive trash.' : '.'), ok: 'Delete', danger: true }, function () {
     kuCall('deleteTransaction', [id], function (res) {
       if (!res.success) { flash(res.message); return; }
       kuState.txs = kuState.txs.filter(function (x) { return x.id !== id; });
       kuState.form = null;
-      flash('Transaksi dihapus');
+      flash('Transaction deleted');
       kuRender();
     });
   });

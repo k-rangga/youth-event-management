@@ -92,9 +92,9 @@
     // Keuangan: PIN "123456" (db.ku.pin = null starts at the setup screen)
     kuStatus: function (t) { return { pinSet: !!db.ku.pin, unlocked: !!t && db.ku.tokens.indexOf(t) !== -1 }; },
     kuSetupPin: function (pin) { if (db.ku.pin) return { success: false, message: 'PIN keuangan sudah dibuat.' }; if (String(pin).length < 6) return { success: false, message: 'PIN minimal 6 karakter.' }; db.ku.pin = pin; return kuTok(); },
-    kuUnlock: function (pin) { return pin === db.ku.pin ? kuTok() : { success: false, message: 'PIN salah.' }; },
+    kuUnlock: function (pin) { return pin === db.ku.pin ? kuTok() : { success: false, message: 'Wrong PIN.' }; },
     kuLock: function (t) { db.ku.tokens = db.ku.tokens.filter(function (x) { return x !== t; }); return { success: true }; },
-    kuChangePin: function (t, o, n) { kuAuth(t); if (o !== db.ku.pin) return { success: false, message: 'PIN lama salah.' }; if (String(n).length < 6) return { success: false, message: 'PIN baru minimal 6 karakter.' }; db.ku.pin = n; return { success: true, message: 'PIN keuangan diganti' }; },
+    kuChangePin: function (t, o, n) { kuAuth(t); if (o !== db.ku.pin) return { success: false, message: 'Current PIN is wrong.' }; if (String(n).length < 6) return { success: false, message: 'PIN baru minimal 6 karakter.' }; db.ku.pin = n; return { success: true, message: 'PIN keuangan diganti' }; },
     getKeuanganData: function (t) { kuAuth(t); return JSON.parse(JSON.stringify({ events: api.getSchedule().concat([{ id: '7', date: '2026-08-15', theme: 'Retreat Pemuda 2026', pastor: '', tag: 'Fellowship' }]), lines: db.ku.lines, txs: db.ku.txs })); },
     saveBudgetLine: function (t, p) { kuAuth(t); var l = JSON.parse(JSON.stringify(p)); l.id = l.id || 'l' + (++db.ku.n); if (l.qty !== '' && l.price !== '') l.amount = Math.round(l.qty * l.price); db.ku.lines = db.ku.lines.filter(function (x) { return x.id !== l.id; }).concat([l]); return { success: true, line: l }; },
     deleteBudgetLine: function (t, id) { kuAuth(t); db.ku.lines = db.ku.lines.filter(function (x) { return x.id !== id; }); db.ku.txs.forEach(function (x) { if (x.lineId === id) x.lineId = ''; }); return { success: true }; },
