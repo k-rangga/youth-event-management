@@ -27,3 +27,25 @@ ok('single space kept (spacer)', same(fill([[' ', { size: 1 }]]), [' ']));
 ok('inner line break kept', same(fill('a\r\nb\n'), ['a\nb']));
 ok('later runs survive an empty one', same(fill([['\n', {}], ['Amin', {}]]), ['Amin']));
 ok('text Docs still refuses is skipped, not fatal', same(fill([['☐', {}], ['Amin', {}]], /☐/), ['Amin']) && warns.length === 1, warns);
+
+// stripPageMark_ removes only the marker, and without inserting empty text.
+{
+  let footer = '{{PAGE}}  |  PEMUDA KOTA WISATA', saved = false;
+  const el = { asText: () => ({ deleteText: (a, b) => { footer = footer.slice(0, a) + footer.slice(b + 1); } }) };
+  ctx.DocumentApp.openById = () => ({ saveAndClose: () => { saved = true; }, getFooter: () => ({
+    replaceText: (r, v) => { if (v === '') throw new Error('Cannot insert an empty text element.'); },
+    findText: re => { const m = footer.match(new RegExp(re)); return m && { getElement: () => el, getStartOffset: () => m.index, getEndOffsetInclusive: () => m.index + m[0].length - 1 }; }
+  }) });
+  ctx.stripPageMark_('x');
+  ok('page marker removed', footer === 'PEMUDA KOTA WISATA' && saved, footer);
+  ctx.DocumentApp.openById = () => ({ saveAndClose: () => {}, getFooter: () => null });
+  ctx.stripPageMark_('x');
+  ok('no footer is fine', true);
+}
+// litLocated_ names the failing line once.
+{
+  const e = new Error('Boom'); e.stack = 'Error: Boom\n    at litFill_ (Liturgi:300:9)\n    at x (Liturgi:9:1)';
+  const a = ctx.litLocated_(e);
+  ok('error names its line', a.message === 'Boom [di litFill_ (Liturgi:300:9) < x (Liturgi:9:1)]', a.message);
+  ok('not located twice', ctx.litLocated_(a) === a || !/\[di .*\[di /.test(ctx.litLocated_(a).message));
+}

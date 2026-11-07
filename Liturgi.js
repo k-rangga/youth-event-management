@@ -47,7 +47,7 @@ function makeLiturgyDoc_(svc, name) {
     doc.saveAndClose();
   } catch (e) {
     file.setTrashed(true);
-    throw e;
+    throw litLocated_(e);
   }
   return file;
 }
@@ -110,8 +110,17 @@ function addPageNumbers_(docx) {
 /* Without page numbers: drop the marker from the Doc's footer. */
 function stripPageMark_(fileId) {
   var doc = DocumentApp.openById(fileId), footer = doc.getFooter();
-  if (footer) footer.replaceText('\\{\\{PAGE\\}\\}\\s*\\|\\s*', '');
+  var mark = footer && footer.findText('\\{\\{PAGE\\}\\}\\s*\\|\\s*');
+  if (mark) mark.getElement().asText().deleteText(mark.getStartOffset(), mark.getEndOffsetInclusive());
   doc.saveAndClose();
+}
+
+/* Adds where it failed to the message, since the app shows only the message and has no log access. */
+function litLocated_(e) {
+  var where = String(e && e.stack || '').split('\n').filter(function (l) { return /^\s*at /.test(l); }).slice(0, 3)
+    .map(function (l) { return l.trim().replace(/^at /, ''); }).join(' < ');
+  if (!where || /\[di /.test(e.message)) return e;
+  return new Error(e.message + ' [di ' + where + ']');
 }
 
 /*
@@ -142,6 +151,8 @@ function produceLiturgy_(svc, name, kind) {
     if (kind === 'pdf') return source.getAs(MimeType.PDF).setName(name + '.pdf');
     keep = source;
     return source;
+  } catch (e) {
+    throw litLocated_(e);
   } finally {
     trash.forEach(function (f) { if (f !== keep) { try { f.setTrashed(true); } catch (e) { /* already gone */ } } });
   }
