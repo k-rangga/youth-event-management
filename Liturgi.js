@@ -734,7 +734,7 @@ function writeFooter_(doc, date, inPlace) {
   }
   if (!footer) footer = doc.addFooter();
   var fp = footer.getNumChildren() ? footer.getChild(0).asParagraph() : footer.appendParagraph('');
-  fp.setText('');
+  if (fp.getText()) fp.clear(); // setText('') is refused by Docs ("Cannot insert an empty text element")
   fp.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
   if (!inPlace) fp.appendText(PAGE_MARK).setAttributes(litAttrs_({ size: 8, color: '#555555', bold: true }));
   fp.appendText((inPlace ? '' : '  |  ') + 'PEMUDA KOTA WISATA – ' + label).setAttributes(litAttrs_({ size: 8, color: '#555555' }));

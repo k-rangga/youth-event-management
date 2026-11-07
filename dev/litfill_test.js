@@ -49,3 +49,21 @@ ok('text Docs still refuses is skipped, not fatal', same(fill([['☐', {}], ['Am
   ok('error names its line', a.message === 'Boom [di litFill_ (Liturgi:300:9) < x (Liturgi:9:1)]', a.message);
   ok('not located twice', ctx.litLocated_(a) === a || !/\[di .*\[di /.test(ctx.litLocated_(a).message));
 }
+
+// writeFooter_ on a new Doc: the blank footer paragraph is never set to empty text.
+{
+  const footerFor = text => {
+    const runs = text ? [text] : [];
+    const fp = { getText: () => runs.join(''), clear: () => { runs.length = 0; return fp; }, setAlignment: () => fp,
+      setText: v => { if (v === '') throw new Error('Cannot insert an empty text element.'); runs.splice(0, runs.length, v); return fp; },
+      appendText: v => { if (!v) throw new Error('Cannot insert an empty text element.'); runs.push(v); return { setAttributes: () => {} }; } };
+    return { fp, footer: { getNumChildren: () => 1, getChild: () => ({ asParagraph: () => fp }) } };
+  };
+  ctx.DocumentApp.HorizontalAlignment = { CENTER: 'C' };
+  const fresh = footerFor('');
+  ctx.writeFooter_({ getFooter: () => null, addFooter: () => fresh.footer }, '8 November 2026', false);
+  ok('new footer written', fresh.fp.getText() === '{{PAGE}}  |  PEMUDA KOTA WISATA – TATA IBADAH MINGGU, 8 NOVEMBER 2026', fresh.fp.getText());
+  const old = footerFor('lama');
+  ctx.writeFooter_({ getFooter: () => old.footer }, '8 November 2026', false);
+  ok('old footer text replaced', !/lama/.test(old.fp.getText()) && /PEMUDA/.test(old.fp.getText()), old.fp.getText());
+}
