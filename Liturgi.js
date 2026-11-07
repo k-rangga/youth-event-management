@@ -275,11 +275,34 @@ function litMerge_(a, b) {
 
 function litRuns_(runs) { return typeof runs === 'string' ? [[runs, {}]] : runs; }
 
+/*
+ * Saved text can look filled but hold nothing printable (only a line break, a
+ * zero-width character). Docs refuses that with "Cannot insert an empty text
+ * element", which would stop the whole booklet, so such text is left out.
+ */
+function litCleanText_(text) {
+  return String(text == null ? '' : text)
+    .replace(/\r\n?/g, '\n')
+    .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f\u200b\u2060\ufeff]/g, '')
+    .replace(/^\n+|\n+$/g, '');
+}
+
+function litAppend_(para, text, attrs) {
+  var clean = litCleanText_(text);
+  if (!clean) return;
+  try {
+    para.appendText(clean).setAttributes(attrs);
+  } catch (e) {
+    if (!/empty text/i.test(e.message)) throw e;
+    console.warn('Skipped text Docs refused: ' + JSON.stringify(clean));
+  }
+}
+
 /* Writes runs into a paragraph and applies paragraph opts (align, indent, before, after, line). */
 function litFill_(para, runs, opts) {
   opts = opts || {};
   litRuns_(runs).forEach(function (r) {
-    if (r[0]) para.appendText(r[0]).setAttributes(litAttrs_(litMerge_(opts, r[1])));
+    litAppend_(para, r[0], litAttrs_(litMerge_(opts, r[1])));
   });
   var H = DocumentApp.HorizontalAlignment;
   para.setAlignment({ center: H.CENTER, right: H.RIGHT, justify: H.JUSTIFY }[opts.align] || H.LEFT);

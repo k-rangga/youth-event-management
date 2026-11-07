@@ -25,3 +25,4 @@ Tata Ibadah builder (liturgy, song library, PDF/.docx/Google Doc output).
 `node dev/server_test.js . all` runs the server code against fake sheets (Bible fetch hits alkitab.mobi);
 `node dev/pagenum_test.js` checks the page-number .docx edit.
 `node dev/keuangan_test.js .` checks the Keuangan server code (PIN, lines, transactions, receipts). In the harness, `#keuangan` opens with PIN `123456`.
+`node dev/litfill_test.js` checks that text with nothing printable never stops the booklet.
